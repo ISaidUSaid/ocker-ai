@@ -5,7 +5,7 @@ The intended integration is a reusable chronology surface inside an existing leg
 ## JavaScript
 
 ```js
-import {parseRecord, mountChronology, buildChronology, parsePdf} from '@ocker-ai/core';
+import {parseRecord, mountChronology, buildChronology, findRelationships, parsePdf} from '@ocker-ai/core';
 import '@ocker-ai/core/styles.css';
 
 const record = parseRecord(await file.text()); // schema, references and embedded hashes checked
@@ -24,7 +24,14 @@ view.destroy();
 
 The component does not own persistence. `getRecord()` returns a copy; `setRecord()` verifies the supplied record before replacing it. `onChange` and bubbling `ocker:change` emit a complete updated record after annotation mutations. `onEventClick`, `onSourceClick`, `assetResolver`, `labels`, `locale`, `animate`, `showToolbar`, `mobile` and `authorId` are available options. Referenced author IDs must exist in `actors`.
 
-For basic PDF building, call `parsePdf(file, {kind:'affidavit', workerSrc:'/assets/pdf.worker.min.mjs'})`, review/store the intermediate object, then call `buildChronology([intermediate], {llm: yourAdapter, signal, onProgress})`. Relationship inference is a separate `findRelationships(record, options)` action. The returned record replaces the old one only after validation.
+For basic PDF building, call `parsePdf(file, {kind:'affidavit', workerSrc:'/assets/pdf.worker.min.mjs'})`, review/store the intermediate object, then call `buildChronology([intermediate], {llm: yourAdapter, signal, onProgress})`. At the SDK level, relationship inference is the separate `findRelationships(record, options)` function. The example apps compose both functions into one **Build chronology** action and replace the displayed record only after both stages succeed. Hosts can use the same composition:
+
+```js
+const options = {llm: yourAdapter, signal, onProgress};
+const proposed = await buildChronology(intermediates, options);
+const complete = await findRelationships(proposed, options);
+view.setRecord(complete);
+```
 
 Use `createOpenAICompatibleAdapter({endpoint, model, apiKey})` if your provider implements chat completions. A custom `llm` callback receives `{task, prompt, input, signal}` and returns an object or JSON string. Do not force your organisation's provider/model choices into an exported file.
 

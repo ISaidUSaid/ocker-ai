@@ -51,9 +51,9 @@ Arrays do not establish chronology order. Consumers SHOULD sort known dates chro
 
 A document has `id`, `title`, `kind` (`affidavit`, `order`, `report`) and `paragraphs`. Optional `author` is the source author name; `assetId` identifies the original file. A paragraph has `id`, one-based `page`, optional source `label`, and exact extracted `text`. A label is not an array offset and may be a printed paragraph number.
 
-An intermediate object has `format: "ocker-document"`, `version: "0.1.0"`, one `document` and an optional `asset`. It is a reviewable boundary between PDF text extraction and chronology generation. Its document asset reference, when supplied, MUST resolve to the included asset. An extractor must not label its own AI summary as extracted source text.
+An intermediate object has `format: "ocker-document"`, `version: "0.1.0"`, one `document` and an optional `asset`. It is a reviewable boundary between document text extraction and chronology generation. Its document asset reference, when supplied, MUST resolve to the included asset. An extractor must not label its own AI summary as extracted source text.
 
-The RIs deliberately implement only ordinary text-PDF extraction with public libraries. They do not OCR image pages, interpret scanned forms, repair complex reading order or provide special document reconstruction. A wholly image-only PDF is rejected. Empty image pages in a mixed PDF do not acquire invented text. Encrypted or malformed PDFs may be rejected by the underlying library. These limitations do not restrict OCKER files created by other, more capable producers.
+The RIs import PDF, DOCX, RTF and plain text; browser examples also accept rich-text/HTML paste without executing its markup. Non-PDF text uses logical page 1 rather than invented word-processor pagination. For PDFs, the RIs deliberately implement only ordinary text extraction with public libraries. They do not OCR image pages, interpret scanned forms, repair complex reading order or provide special document reconstruction. A wholly image-only PDF is rejected. Empty image pages in a mixed PDF do not acquire invented text. Encrypted or malformed PDFs may be rejected by the underlying library. These limitations do not restrict OCKER files created by other, more capable producers.
 
 ## 4. Dates
 

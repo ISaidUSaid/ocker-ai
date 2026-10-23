@@ -32,7 +32,7 @@ Do not mark a runtime verified if its toolchain or provider integration has not 
 
 Hosting: GitHub Pages is blocked by the private-repository account plan. Keep the repo private. Deployment workflow is ready; no paid upgrade authorised.
 
-Validation evidence and platform limits are recorded in VALIDATION.md. Implementation commit dcd5aed is pushed to private origin/main. Final implementation commit 2a8676a passed all GitHub CI jobs (web, Java and C#): https://github.com/ISaidUSaid/ocker-ai/actions/runs/39957378878. All implementation/review workers have finished. The remaining hosting decision and cross-platform acceptance limits are recorded in VALIDATION.md.
+Validation evidence and platform limits are recorded in VALIDATION.md. Implementation commit `6db6cebc617c94f5063c4a5cbf898490830bec15` is pushed to private origin/main and passed all GitHub CI jobs (web, Java and C#): https://github.com/ISaidUSaid/ocker-ai/actions/runs/40017749018. All implementation/review workers have finished. The remaining hosting decision and cross-platform acceptance limits are recorded in VALIDATION.md.
 
 ## Follow-up — 24 October 2026
 
@@ -44,3 +44,13 @@ Validation evidence and platform limits are recorded in VALIDATION.md. Implement
 - [x] Java/C#/web workers finished. Shared/browser/framework/native builds and proportionate tests pass.
 
 Naming remains unchanged. Adam ruled COBBER out because of existing software businesses and Australian marks 2255706 (class9) and 2369208 (classes9/42). OCKER remains the working name; Docker resemblance needs focused trademark assessment before public branding. `cobber.ai` is taken; Adam was comfortable with a path on isaidusaid.com, but that does not resolve the naming conflict. No domain, repository name, visibility or original product files were changed. Public hosting remains the existing separate blocker for the private GitHub plan.
+
+## Private draft handoff — 24 October 2026
+
+Adam confirmed that OCKER stays as the working title after the ChronoMate availability review. No rename is planned for this draft.
+
+- [x] Reconcile the final delivery notes with the implemented document formats and combined example Build flow.
+- [x] Verify that local HEAD matches origin/main and the web, Java and C# CI jobs all succeeded for the implementation commit above.
+- [x] Keep the repository private, Apache-2.0 licensed and authored by Jenko.
+
+The private draft implementation is complete. The outstanding live-example hosting decision, real-provider acceptance with a supplied key and cross-platform native GUI acceptance are explicitly separate from the completed automated build/test baseline. No account upgrade, public visibility change or package publication has been authorised or performed.

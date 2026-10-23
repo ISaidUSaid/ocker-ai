@@ -1,4 +1,4 @@
-# Validation record — 23 October 2026
+# Validation record — updated 24 October 2026
 
 Author: Jenko <adam@isaidusaid.com>
 
@@ -69,3 +69,9 @@ The browser configuration uses installed Chrome on macOS/Linux when available an
 - One Build action completes extraction and relationship comparison before applying a record. Provider notices replace consent checkboxes; endpoint/protocol live in advanced settings. Presets leave models unchanged and clear previous keys. Keyless requests are restricted to loopback endpoints. Browser examples include Anthropic Messages support; native presets use chat-completions APIs.
 - Passed: 17 JS core/import/provider tests; 16 spec checks; 12 browser interaction tests; 3 Angular/React/Node runtime tests including JSON Apply; 5 Node API tests; all browser/library builds; 8 Java core tests and full Maven reactor; .NET solution build/core tests with zero warnings. npm audit reports zero vulnerabilities. No paid LLM calls were made; provider wire formats and combined-build behaviour were exercised with mocks.
 - The updated native windows compile and their data paths pass tests. New native dialog interactions still need normal acceptance checks on each supported operating system; no claim of exhaustive cross-platform GUI validation is made.
+
+## Final private draft verification — 24 October 2026
+
+The latest implementation is `6db6cebc617c94f5063c4a5cbf898490830bec15`; local HEAD and origin/main were verified to match. The GitHub API confirms that all three jobs in [run 40017749018](https://github.com/ISaidUSaid/ocker-ai/actions/runs/40017749018) completed successfully: web (including browser and framework interaction tests), Java, and C#. Earlier validation sections retain the baseline history; the 24 October workflow update describes the current sample and test counts.
+
+OCKER remains the working title at Adam's direction. This handoff does not make the repository public, publish packages or resolve the private-repository Pages restriction. No original ISaidUSaid.com files were changed.

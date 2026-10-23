@@ -11,6 +11,7 @@ This is a private draft 0.1.0. These checks establish the RI baseline; they are 
 | JavaScript SDK | 11 Node tests: schema/reference/hash checks, annotations, real PDF.js parsing, mocked extraction/relationships, cancellation and credential separation |
 | Specification | 16 schema, negative-input, semantic, integrity and round-trip checks; packaged schemas checked against the normative copies |
 | Browser UI | 6 Playwright tests: filters, glass/none, source view, mobile annotations, spaces in note input, colour persistence, pin-based drag/drop, invalid-drop rejection, related-card modal, PDF-to-mocked-provider build, PNG/PDF downloads |
+| Framework runtime | 3 additional browser smoke tests: Angular, React and Node-backed Angular each load the sample, switch to compact view and retain a new note |
 | Angular | Reusable package and full client-only example built with Angular 22; BreakpointObserver supplies device state |
 | React | Reusable package/types and client-only example built; consumes the public core API |
 | Node + Angular | Backend/Angular production build and 3 API tests; real multipart PDF import and a local mock completion server |
@@ -39,12 +40,13 @@ npm test --workspace=@ocker-ai/node-demo
 npm run build --workspace=@ocker-ai/node-demo
 npx playwright install chromium
 node node_modules/@playwright/test/cli.js test -c ri/js/playwright.config.js
+node node_modules/@playwright/test/cli.js test -c ri/js/framework.playwright.config.js
 mvn -f ri/java/pom.xml install
 dotnet build 'ri/c#/Ocker.sln'
 dotnet run --project 'ri/c#/tests/Ocker.Core.Tests'
 ```
 
-The browser configuration uses installed Chrome on macOS when available and Playwright Chromium elsewhere. It starts its own local Vite server when needed. CI repeats the web/spec, Java and C# build/test paths. Native GUI screenshots require a display and are not part of headless CI.
+The browser configuration uses installed Chrome on macOS/Linux when available and Playwright Chromium elsewhere. It starts its own local Vite server when needed. CI repeats the web/spec, Java and C# build/test paths. Native GUI screenshots require a display and are not part of headless CI.
 
 ## Boundaries and remaining verification
 

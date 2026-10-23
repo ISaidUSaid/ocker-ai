@@ -1,5 +1,8 @@
 name: Validate OCKER
 on: [push, pull_request, workflow_dispatch]
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -13,11 +16,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test && npm run check:spec && npm run build && npm run demo:build
-      - run: npx playwright install --with-deps chromium
+      - run: |
+          if command -v google-chrome; then
+            google-chrome --version
+          else
+            npx playwright install --with-deps chromium
+          fi
       - run: node node_modules/@playwright/test/cli.js test -c ri/js/playwright.config.js
       - run: npm run build --workspace=@ocker-ai/angular && npm run build --workspace=@ocker-ai/react
       - run: npm run build --workspace=@ocker-ai/angular-demo && npm run build --workspace=@ocker-ai/react-demo
       - run: npm run test --workspace=@ocker-ai/node-demo && npm run build --workspace=@ocker-ai/node-demo
+      - run: node node_modules/@playwright/test/cli.js test -c ri/js/framework.playwright.config.js
   java:
     runs-on: ubuntu-latest
     steps:

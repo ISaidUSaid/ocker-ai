@@ -32,4 +32,4 @@ Do not mark a runtime verified if its toolchain or provider integration has not 
 
 Hosting: GitHub Pages is blocked by the private-repository account plan. Keep the repo private. Deployment workflow is ready; no paid upgrade authorised.
 
-Validation evidence and platform limits are recorded in VALIDATION.md. Implementation commit dcd5aed is pushed to private origin/main. GitHub CI is running; Java and C# jobs have passed.
+Validation evidence and platform limits are recorded in VALIDATION.md. Implementation commit dcd5aed is pushed to private origin/main. GitHub native jobs passed. Added passing runtime smoke coverage for all three framework examples and corrected Angular async change detection. Final CI rerun follows that fix.

@@ -26,20 +26,21 @@ export class OckerChronologyComponent implements AfterViewInit, OnChanges, OnDes
   private readonly destroyed = new Subject<void>();
   private instance?: ReturnType<typeof mountChronology>;
 
+  constructor(){this.mobile=this.breakpoints.isMatched('(max-width: 700px)');}
   ngAfterViewInit(): void {
     this.mobile = this.breakpoints.isMatched('(max-width: 700px)');
     this.breakpoints.observe('(max-width: 700px)').pipe(takeUntil(this.destroyed)).subscribe(state => {
       this.mobile = state.matches;
-      this.instance?.setOptions({ ...this.options, mobile: this.mobile, onChange: this.changed });
+      this.zone.runOutsideAngular(() => this.instance?.setOptions({ ...this.options, mobile: this.mobile, onChange: this.changed }));
     });
     this.mount();
   }
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.instance) return;
-    if (changes['record']) this.instance.setRecord(this.record);
-    if (changes['options']) this.instance.setOptions({ ...this.options, mobile: this.mobile, onChange: this.changed });
+    if (changes['record']) this.zone.runOutsideAngular(() => this.instance!.setRecord(this.record));
+    if (changes['options']) this.zone.runOutsideAngular(() => this.instance!.setOptions({ ...this.options, mobile: this.mobile, onChange: this.changed }));
   }
   ngOnDestroy(): void { this.destroyed.next(); this.destroyed.complete(); this.instance?.destroy(); }
-  private mount(): void { this.instance = mountChronology(this.host.nativeElement, this.record, { ...this.options, mobile: this.mobile, onChange: this.changed }); }
+  private mount(): void { this.instance = this.zone.runOutsideAngular(() => mountChronology(this.host.nativeElement, this.record, { ...this.options, mobile: this.mobile, onChange: this.changed })); }
   private changed = (next: Record) => this.zone.run(() => { this.options.onChange?.(next); this.recordChange.emit(next); });
 }

@@ -10,7 +10,7 @@ This is a private draft 0.1.0. These checks establish the RI baseline; they are 
 |---|---|
 | JavaScript SDK | 11 Node tests: schema/reference/hash checks, annotations, real PDF.js parsing, mocked extraction/relationships, cancellation and credential separation |
 | Specification | 16 schema, negative-input, semantic, integrity and round-trip checks; packaged schemas checked against the normative copies |
-| Browser UI | 6 Playwright tests: filters, glass/none, source view, mobile annotations, spaces in note input, colour persistence, pin-based drag/drop, invalid-drop rejection, related-card modal, PDF-to-mocked-provider build, PNG/PDF downloads |
+| Browser UI | 7 Playwright tests: filters, glass/none, source view, mobile annotations, spaces in note input, colour persistence, pin-based drag/drop, invalid-drop rejection, related-card modal, PDF-to-mocked-provider build, PNG/PDF downloads, derivative-frame labelling |
 | Framework runtime | 3 additional browser smoke tests: Angular, React and Node-backed Angular each load the sample, switch to compact view and retain a new note |
 | Angular | Reusable package and full client-only example built with Angular 22; BreakpointObserver supplies device state |
 | React | Reusable package/types and client-only example built; consumes the public core API |

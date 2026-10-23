@@ -127,10 +127,11 @@ public final class ChronologyView extends BorderPane {
         outer.getChildren().addAll(body, overlay);
         outer.setOnMouseClicked(e -> { options.onEventClick.accept(event); overlay.setOpacity(.2); });
         outer.setOnMouseExited(e -> overlay.setOpacity(1));
-        outer.setOnDragOver(e -> { if (!options.readOnly && e.getDragboard().hasString() && e.getDragboard().getString().startsWith("ocker:")) e.acceptTransferModes(TransferMode.MOVE); e.consume(); });
+        outer.setOnDragOver(e -> { if (outer.getLayoutBounds().contains(outer.sceneToLocal(e.getSceneX(),e.getSceneY())) && !options.readOnly && e.getDragboard().hasString() && e.getDragboard().getString().startsWith("ocker:")) e.acceptTransferModes(TransferMode.MOVE); e.consume(); });
         outer.setOnDragDropped(e -> {
             if (options.readOnly || !e.getDragboard().hasString()) return;
             Point2D pin = outer.sceneToLocal(e.getSceneX(), e.getSceneY());
+            if(!outer.getLayoutBounds().contains(pin)){e.setDropCompleted(false);e.consume();return;}
             String payload = e.getDragboard().getString();
             try {
                 if (payload.equals("ocker:new-note")) noteEditor(event, null, pin.getX(), pin.getY());
@@ -194,7 +195,7 @@ public final class ChronologyView extends BorderPane {
         Dialog<Void> dialog = new Dialog<>(); dialog.setTitle("Source evidence"); VBox body = new VBox(12);
         var document = record.documents().stream().filter(d -> d.id().equals(source.documentId())).findFirst().orElseThrow();
         Label text = new Label(source.quote() == null ? "No retained excerpt" : source.quote()); text.setWrapText(true); body.getChildren().addAll(new Label(document.title()), text);
-        record.assets().stream().filter(a -> a.id().equals(source.assetId() == null ? document.assetId() : source.assetId())).findFirst().ifPresent(asset -> { if (asset.data() != null) body.getChildren().add(action("Save original evidence", () -> { FileChooser chooser = new FileChooser(); chooser.setInitialFileName(asset.name()); var file = chooser.showSaveDialog(getScene().getWindow()); if (file != null) try { Files.write(file.toPath(), Base64.getDecoder().decode(asset.data())); } catch (IOException error) { options.onError.accept(error); } })); body.getChildren().add(new Label("SHA-256: " + asset.sha256())); });
+        record.assets().stream().filter(a -> a.id().equals(source.assetId() == null ? document.assetId() : source.assetId())).findFirst().ifPresent(asset -> { if (asset.data() != null) body.getChildren().add(action(asset.derivedFrom()==null?"Save original evidence":"Save derived asset", () -> { FileChooser chooser = new FileChooser(); chooser.setInitialFileName(asset.name()); var file = chooser.showSaveDialog(getScene().getWindow()); if (file != null) try { Files.write(file.toPath(), Base64.getDecoder().decode(asset.data())); } catch (IOException error) { options.onError.accept(error); } })); body.getChildren().add(new Label("SHA-256: " + asset.sha256())); });
         dialog.getDialogPane().setContent(new ScrollPane(body)); dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE); showModal(dialog);
     }
     private void relatedWeb(Event selected) {

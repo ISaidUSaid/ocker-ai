@@ -88,8 +88,8 @@ public sealed class ChronologyView : UserControl
         var overlay = new Grid { ClipToBounds = false, Children = { body, canvas } };
         var card = new Border { BorderBrush = Brushes.LightGray, Background = _options.Palette?.CardBackground??Brushes.White, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Child = overlay, Margin = new Thickness(10 * _zoom, 2, 10 * _zoom, 2) };
         DragDrop.SetAllowDrop(card,true);
-        card.AddHandler(DragDrop.DragOverEvent,(_,e)=>{e.DragEffects=_dragKind is null?DragDropEffects.None:DragDropEffects.Copy;e.Handled=true;});
-        card.AddHandler(DragDrop.DropEvent,(_,e)=>{if(_dragKind is null||_options.ReadOnly)return;var point=e.GetPosition(card);var position=new PinPosition(point.X/_zoom,point.Y/_zoom);
+        card.AddHandler(DragDrop.DragOverEvent,(_,e)=>{e.DragEffects=_dragKind is null||!new Rect(card.Bounds.Size).Contains(e.GetPosition(card))?DragDropEffects.None:DragDropEffects.Copy;e.Handled=true;});
+        card.AddHandler(DragDrop.DropEvent,(_,e)=>{if(_dragKind is null||_options.ReadOnly)return;var point=e.GetPosition(card);if(!new Rect(card.Bounds.Size).Contains(point))return;var position=new PinPosition(point.X/_zoom,point.Y/_zoom);
           if(_dragNote is not null)Change(global::Ocker.Ocker.EditNote(_record!,_dragNote with {EventId=evt.Id,Position=position}));
           else if(_dragKind=="authority")AddAuthority(evt);else ShowEditor("New note","",body=>Change(global::Ocker.Ocker.AddNote(_record!,evt.Id,body,position,_options.AuthorId)));e.Handled=true;});
         if (_options.Animate) { card.Opacity = 0; card.Transitions = new Transitions { new DoubleTransition { Property = Visual.OpacityProperty, Duration = TimeSpan.FromMilliseconds(180) } }; Dispatcher.UIThread.Post(() => card.Opacity = 1, DispatcherPriority.Background); }
@@ -140,7 +140,7 @@ public sealed class ChronologyView : UserControl
     private void ShowSource(Source source) {
         var document=_record!.Documents.FirstOrDefault(d=>d.Id==source.DocumentId);var assetId=source.AssetId??document?.AssetId;var asset=_record.Assets.FirstOrDefault(a=>a.Id==assetId);
         var window=CreateDialog("Evidence source",620,440);var close=new Button {Content="Close"};close.Click+=(_,_)=>window.Close();var actions=new WrapPanel {Children={close}};
-        if(asset?.Data is not null){var save=new Button {Content="Save original evidence"};save.Click+=async(_,_)=>{var file=await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions {Title="Save original evidence",SuggestedFileName=asset.Name});if(file is not null){await using var stream=await file.OpenWriteAsync();await stream.WriteAsync(Convert.FromBase64String(asset.Data));}};actions.Children.Add(save);}
+        if(asset?.Data is not null){var save=new Button {Content=asset.DerivedFrom is null?"Save original evidence":"Save derived asset"};save.Click+=async(_,_)=>{var file=await window.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions {Title="Save evidence asset",SuggestedFileName=asset.Name});if(file is not null){await using var stream=await file.OpenWriteAsync();await stream.WriteAsync(Convert.FromBase64String(asset.Data));}};actions.Children.Add(save);}
         var text=$"{document?.Title ?? source.DocumentId} · paragraph {source.ParagraphId ?? "—"}\nSHA-256: {asset?.Sha256 ?? "—"}\n\n{source.Quote ?? "No retained excerpt."}";
         var layout=new DockPanel {Margin=new Thickness(18),Children={actions,new ScrollViewer {Content=new TextBlock {Text=text,TextWrapping=TextWrapping.Wrap}}}};DockPanel.SetDock(actions,Dock.Bottom);window.Content=layout;ShowModal(window);
     }

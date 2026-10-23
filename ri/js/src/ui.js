@@ -52,10 +52,11 @@ export function mountChronology(element,initial,configuration={}) {
     const box=modal(t('sourceEvidence','Source evidence'));
     for(const s of e.sources){const doc=record.documents.find(d=>d.id===s.documentId);const p=doc?.paragraphs.find(p=>p.id===s.paragraphId);const item=el('article','ocker-source');item.append(el('h3','',doc?.title??s.documentId),el('p','ocker-meta',`Page ${s.page??p?.page??'—'} · Paragraph ${p?.label??s.paragraphId??'—'}`),el('blockquote','',s.quote??p?.text??''));
       const asset=record.assets.find(a=>a.id===(s.assetId??doc?.assetId));
+      if(asset?.derivedFrom)item.append(el('p','ocker-meta','Derived asset · source: '+(record.assets.find(a=>a.id===asset.derivedFrom)?.name??asset.derivedFrom)));
       if(asset?.data){const url=URL.createObjectURL(new Blob([base64ToBytes(asset.data)],{type:asset.mediaType}));box.dialog.addEventListener('close',()=>URL.revokeObjectURL(url),{once:true});
         if(asset.mediaType.startsWith('image/')){const image=el('img','ocker-evidence-image');image.src=url;image.alt=asset.name;item.append(image);}
         if(asset.mediaType.startsWith('video/')){const video=el('video','ocker-evidence-video');video.src=url;video.controls=true;if(s.selector?.kind==='time')video.addEventListener('loadedmetadata',()=>{video.currentTime=(s.selector.start??0)/1000;},{once:true});item.append(video);}
-        item.append(button(t('downloadOriginal','Download original evidence'),()=>download(base64ToBytes(asset.data),asset.mediaType,asset.name)));item.append(el('small','ocker-hash','SHA-256: '+asset.sha256));
+        item.append(button(asset.derivedFrom?t('downloadDerived','Download derived asset'):t('downloadOriginal','Download original evidence'),()=>download(base64ToBytes(asset.data),asset.mediaType,asset.name)));item.append(el('small','ocker-hash','SHA-256: '+asset.sha256));
       }else if(asset?.uri){
         item.append(el('p','',t('externalEvidence','External evidence is referenced but has not been fetched.')));
         if(options.assetResolver){const resolve=button(t('resolveEvidence','Load referenced evidence'),async()=>{resolve.disabled=true;try{const bytes=await options.assetResolver(clone(asset));if(bytes.byteLength!==asset.byteLength||await sha256(bytes)!==asset.sha256)throw new Error('Evidence integrity check failed: '+asset.id);item.append(button(t('downloadOriginal','Download original evidence'),()=>download(bytes,asset.mediaType,asset.name)));resolve.remove();}catch(e){resolve.disabled=false;error(e);}});item.append(resolve);}
@@ -121,7 +122,7 @@ export function mountChronology(element,initial,configuration={}) {
   function clearDrag(){cancelAnimationFrame(dragFrame);document.removeEventListener('pointermove',moveDrag);document.removeEventListener('pointerup',finishDrag);document.removeEventListener('keydown',escapeDrag);ghost?.remove();ghost=null;drag=null;}
   function escapeDrag(event){if(event.key==='Escape')clearDrag();}
   function finishDrag(event){
-    const value=drag;if(!value)return;const card=document.elementsFromPoint(event.clientX,event.clientY).map(e=>e.closest?.('.ocker-card')).find(e=>e&&root.contains(e));
+    const value=drag;if(!value)return;const card=document.elementsFromPoint(event.clientX,event.clientY).map(e=>e.closest?.('.ocker-card')).find(e=>{if(!e||!root.contains(e))return false;const r=e.getBoundingClientRect();return event.clientX>=r.left&&event.clientX<=r.right&&event.clientY>=r.top&&event.clientY<=r.bottom;});
     let position,eventId;
     if(card){const r=card.getBoundingClientRect();const factor=r.width/card.offsetWidth;position={x:(event.clientX-r.left)/factor,y:(event.clientY-r.top)/factor};eventId=card.dataset.eventId;}
     clearDrag();if(!card)return;

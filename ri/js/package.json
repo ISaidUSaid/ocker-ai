@@ -11,29 +11,60 @@
       "import": "./src/index.js"
     },
     "./styles.css": "./src/styles.css",
-    "./demo": "./demo/workbench.js"
+    "./demo": "./demo/workbench.js",
+    "./demo/code": {
+      "types": "./demo/integration-code.d.ts",
+      "import": "./demo/integration-code.js"
+    },
+    "./demo/documents": {
+      "types": "./demo/document-import.d.ts",
+      "import": "./demo/document-import.js"
+    },
+    "./demo/editor": {
+      "types": "./demo/record-editor.d.ts",
+      "import": "./demo/record-editor.js"
+    },
+    "./demo/providers": {
+      "types": "./demo/provider-shortcuts.d.ts",
+      "import": "./demo/provider-shortcuts.js"
+    }
   },
   "files": [
     "src",
     "demo/workbench.js",
     "README.md",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "demo/integration-code.js",
+    "demo/integration-code.d.ts",
+    "demo/document-import.js",
+    "demo/document-import.d.ts",
+    "demo/record-editor.d.ts",
+    "demo/record-editor.js",
+    "demo/provider-shortcuts.d.ts",
+    "demo/provider-shortcuts.js"
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build --config vite.library.config.js",
     "demo:build": "vite build",
     "test": "node --test test/*.test.js",
-    "predev": "node demo/prepare.js",
-    "predemo:build": "node demo/prepare.js"
+    "predev": "node ../../prompt-library/prepare.mjs && node demo/prepare.js",
+    "predemo:build": "node ../../prompt-library/prepare.mjs && node demo/prepare.js",
+    "pretest": "node ../../prompt-library/prepare.mjs",
+    "prebuild": "node ../../prompt-library/prepare.mjs",
+    "prepack": "node ../../prompt-library/prepare.mjs"
   },
   "dependencies": {
+    "@codemirror/lang-json": "^6.0.2",
     "@noble/hashes": "^2.4.0",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
+    "codemirror": "^6.0.2",
     "html-to-image": "1.11.13",
+    "htmlparser2": "^12.0.0",
     "jspdf": "4.2.1",
+    "mammoth": "^1.13.0",
     "pdfjs-dist": "6.4.299"
   },
   "devDependencies": {

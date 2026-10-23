@@ -1,0 +1,722 @@
+{
+  "sourceGeneratedAt": "2026-10-20T20:33:13.057949584Z",
+  "verifiedAt": "2026-10-24",
+  "accounts": {
+    "jill-affidavit": [
+      {
+        "id": "jill-event-001",
+        "title": "Jill Blogs and Joe Blogs met",
+        "summary": "Jill Blogs states she and Joe Blogs met in 2015.",
+        "date": {
+          "precision": "day",
+          "value": "2015-01-01",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "Joe and I met in 2015 and married in 2017.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶3",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Initial meeting (2015)"
+      },
+      {
+        "id": "jill-event-007",
+        "title": "Jill called Joe a worthless excuse for a parent",
+        "summary": "Jill Blogs states that in May 2024 she called Joe Blogs a “worthless excuse for a parent.”",
+        "date": {
+          "precision": "day",
+          "value": "2024-05-01",
+          "approximate": true
+        },
+        "status": "agreed",
+        "sourceText": "In May 2024 I called him a “worthless excuse for a parent” and in June 2024 I called him a “fat loser”.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶14",
+        "assertedBy": "Jill Blogs",
+        "narrative": "May 2024 alleged parenting insult"
+      },
+      {
+        "id": "jill-event-008",
+        "title": "Joe emailed Jill calling her a pathetic loser",
+        "summary": "Jill Blogs states that on 10 May 2024 Joe Blogs sent her an email calling her a “pathetic loser.”",
+        "date": {
+          "precision": "day",
+          "value": "2024-05-10",
+          "approximate": false
+        },
+        "status": "unresolved",
+        "sourceText": "On May 10 2024 Joe send me an email calling me a ‘pathetic loser’.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶4",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Alleged insulting email from Joe Blogs to Jill Blogs (10 May 2024)"
+      },
+      {
+        "id": "jill-event-009",
+        "title": "Joe threatened Jill she would never see Johnny again",
+        "summary": "Jill Blogs states that on 28 May 2024 Joe Blogs threatened to make sure she would “never see him again” (referring to Johnny).",
+        "date": {
+          "precision": "day",
+          "value": "2024-05-28",
+          "approximate": false
+        },
+        "status": "unresolved",
+        "sourceText": "On May 28 2024 he threatened to make sure I “never see him again’ (meaning Johnny), I was fearful he was going to kill our son.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶5",
+        "assertedBy": "Jill Blogs",
+        "narrative": "28 May 2024 reported threat about contact with Johnny"
+      },
+      {
+        "id": "jill-event-010",
+        "title": "Joe told Jill to disappear",
+        "summary": "Jill Blogs states that Joe attempted to convince her to commit suicide on June 26, 2024, saying, “Maybe you should just disappear, the world would be better off without you.”",
+        "date": {
+          "precision": "day",
+          "value": "2024-06-26",
+          "approximate": false
+        },
+        "status": "unresolved",
+        "sourceText": "In a very concerning communication from Joe on June 26 2024 he attempt to convince me to commit suicide saying “Maybe you should just disappear, the world would be better off without you.”",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶6",
+        "assertedBy": "Jill Blogs",
+        "narrative": "26 Jun 2024 statement described as encouraging self-harm"
+      },
+      {
+        "id": "jill-event-013",
+        "title": "Conversation before Joe prepared to go out",
+        "summary": "On the evening of 1 November 2025, Joe was preparing to go out.",
+        "date": {
+          "precision": "day",
+          "value": "2025-11-01",
+          "approximate": false
+        },
+        "status": "unresolved",
+        "sourceText": "On the evening of 1 November 2025, Joe was preparing to go out.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶14",
+        "assertedBy": "Jill Blogs",
+        "narrative": "1 Nov 2025 conversation before Joe went out"
+      },
+      {
+        "id": "jill-event-014",
+        "title": "Conversation before Joe prepared to go out",
+        "summary": "Joe’s response was to talk about buying drinks for his friends.",
+        "date": {
+          "precision": "day",
+          "value": "2025-11-01",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "Joe’s response was to talk about buying drinks for his friends.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶16",
+        "assertedBy": "Jill Blogs",
+        "narrative": "1 Nov 2025 conversation before Joe went out"
+      },
+      {
+        "id": "jill-event-015",
+        "title": "Joe struck Jill across the face and final separation",
+        "summary": "Jill states the parties separated on a final basis on 3 Nov 2025 after Joe allegedly grabbed her throat and tried to choke her for 7–10 seconds.",
+        "date": {
+          "precision": "day",
+          "value": "2025-11-03",
+          "approximate": false
+        },
+        "status": "unresolved",
+        "sourceText": "We separated on a final basis on 3 November 2025 after Joe grabbed my throat and tried to choke me for about 7 to 10 seconds.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶4",
+        "assertedBy": "Jill Blogs",
+        "narrative": "3 Nov 2025 alleged slap/choking and final separation"
+      },
+      {
+        "id": "jill-event-016",
+        "title": "Joe struck Jill across the face and final separation",
+        "summary": "Jill alleges that on 3 Nov 2025 Joe struck her across the face with an open hand.",
+        "date": {
+          "precision": "day",
+          "value": "2025-11-03",
+          "approximate": false
+        },
+        "status": "disputed",
+        "sourceText": "27. On 3 November 2025, Joe was at the matrimonial home. He began interrogating me about a  man named \"Martin.\"  \n28. He asked, \"Yesterday while I was in town?\" implying I had been unfaithful.  \n29. I replied, \"Martin? I don't know the doctor.\"  \n30. Joe screamed, \"Sure you do. Young, good-looking, outfitting his sailboat down there? He  says you've been staring at him from the window all day.\"  \n31. Without warning, Joe struck me across the face with an open hand.  \n32. As I sobbed, he taunted me, asking if it gave me pleasure to humiliate him.  \n33. When I tried to answer him, he grabbed my throat and choked me for over a minute.  \n34. Immediately after releasing my neck, while I was gasping for air, he said in a bizarrely calm  voice, \"You'll pout and spoil our supper. Our beautiful supper. Just smell the bread.\"  \n35. I have video evidence of this assault from the home securi",
+        "page": 4,
+        "paragraphRef": "27.",
+        "assertedBy": "Jill Blogs",
+        "narrative": "3 Nov 2025 alleged slap/choking and final separation"
+      },
+      {
+        "id": "jill-event-017",
+        "title": "Joe struck Jill across the face and final separation",
+        "summary": "Jill states she has home security system video evidence of the alleged assault.",
+        "date": {
+          "precision": "day",
+          "value": "2025-11-03",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "I have video evidence of this assault from the home security system.",
+        "page": 4,
+        "paragraphRef": "Page 4 ¶9",
+        "assertedBy": "Jill Blogs",
+        "narrative": "3 Nov 2025 alleged slap/choking and final separation"
+      },
+      {
+        "id": "jill-event-034",
+        "title": "The Respondent, Joe Blogs (\"Joe\"), is the father of Johnny.",
+        "summary": "The Respondent, Joe Blogs (\"Joe\"), is the father of Johnny.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "The Respondent, Joe Blogs (\"Joe\"), is the father of Johnny.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶2",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Identification of Johnny’s father"
+      },
+      {
+        "id": "jill-event-035",
+        "title": "I am not innocent in this matter, I have sent some emails to Joe that I regret.",
+        "summary": "I am not innocent in this matter, I have sent some emails to Joe that I regret.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "agreed",
+        "sourceText": "I am not innocent in this matter, I have sent some emails to Joe that I regret.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶13",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Jill notes regretted emails to Joe"
+      },
+      {
+        "id": "jill-event-036",
+        "title": "Jill threatened to withdraw child support",
+        "summary": "Jill Blogs states she at times threatened to withdraw child support.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "9. I also, at times, threatened to withdraw child support. I have spoken to my psychologist about my behaviour and I know now that this was wrong.",
+        "page": 3,
+        "paragraphRef": "9.",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Late May 2024 dispute over threats to withdraw child support"
+      },
+      {
+        "id": "jill-event-037",
+        "title": "Denies blackmailing Joe",
+        "summary": "Jill Blogs states she has never blackmailed Joe Blogs.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "disputed",
+        "sourceText": "I have never blackmailed Joe or threatened to make up false claims about him, he is lying.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶7",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Late May 2024 dispute over threats to withdraw child support"
+      },
+      {
+        "id": "jill-event-038",
+        "title": "Jill withheld Johnny from weekend visitation",
+        "summary": "Jill Blogs denies that she has ever threatened to withhold Johnny from visitation with Joe.",
+        "date": {
+          "precision": "day",
+          "value": "2024-05-25",
+          "approximate": true
+        },
+        "status": "disputed",
+        "sourceText": "I have never threatened to withhold Johnny from visitation with Joe.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶8",
+        "assertedBy": "Jill Blogs",
+        "narrative": "25 May 2024 disputed weekend visitation exchange"
+      },
+      {
+        "id": "jill-event-039",
+        "title": "Conversation before Joe prepared to go out",
+        "summary": "Jill Blogs states she joked to Joe Blogs: “You almost look too good. I don't want all those girls staring at you... save it for me.”",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I was attempting to repair the tension between us. I commented on his appearance, jokingly saying, \"You almost look too good. I don't want all those girls staring at you... save it for me.\"",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶15",
+        "assertedBy": "Jill Blogs",
+        "narrative": "1 Nov 2025 conversation before Joe went out"
+      },
+      {
+        "id": "jill-event-040",
+        "title": "Jill controls the household budget",
+        "summary": "Jill Blogs admits she controls the household budget.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I reminded him of our tight budget. I said, \"I don't give you cash so you can spend it on other people.\" I admit I control the household budget, but this is only because Joe is irresponsible with money.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶17",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Household budget control and limits on cash provided to Joe"
+      },
+      {
+        "id": "jill-event-041",
+        "title": "Jill screamed obscenities after Joe received a call",
+        "summary": "Jill Blogs states that during the conversation, Joe Blogs’s phone rang.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "During this conversation, his phone rang. He looked panicked and asked, \"Is that my phone?\"",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶18",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Dispute Following Phone Call and Bedroom Lock-In"
+      },
+      {
+        "id": "jill-event-042",
+        "title": "Jill screamed obscenities after Joe received a call",
+        "summary": "Jill Blogs states the call displayed a number she did not know.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "disputed",
+        "sourceText": "I looked at the screen. It was a number I did not know. I asked, \"Who the [expletive] is this?\"",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶19",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Dispute Following Phone Call and Bedroom Lock-In"
+      },
+      {
+        "id": "jill-event-043",
+        "title": "Jill screamed obscenities after Joe received a call",
+        "summary": "Jill Blogs states Joe Blogs locked himself in the bedroom.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "Joe claimed it was \"just an old friend from school\" but refused to elaborate. He then locked himself in the bedroom.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶20",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Dispute Following Phone Call and Bedroom Lock-In"
+      },
+      {
+        "id": "jill-event-044",
+        "title": "Jill screamed obscenities after Joe received a call",
+        "summary": "Jill Blogs admits she followed Joe Blogs and knocked loudly on the door.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I admit that I followed him and knocked loudly on the door. I shouted, \"Let me in! Open the [expletive] door!\".",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶21",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Dispute Following Phone Call and Bedroom Lock-In"
+      },
+      {
+        "id": "jill-event-045",
+        "title": "Page 3 ¶23",
+        "summary": "Joe characterizes Jill's reaction as violence amid gaslighting.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "disputed",
+        "sourceText": "Joe characterizes this as violence, but it was the reaction of a wife who has been gaslit for months.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶23",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Dispute over characterization of hyperventilating and sobbing episode"
+      },
+      {
+        "id": "jill-event-046",
+        "title": "Accordingly, I seek sole parental responsibility. Joe is volatile, controlling, and physically dangerous.",
+        "summary": "Accordingly, I seek sole parental responsibility. Joe is volatile, controlling, and physically dangerous.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "Accordingly, I seek sole parental responsibility. Joe is volatile, controlling, and physically dangerous.",
+        "page": 4,
+        "paragraphRef": "Page 4 ¶13",
+        "assertedBy": "Jill Blogs",
+        "narrative": "Jill seeks sole parental responsibility over the child"
+      }
+    ],
+    "joe-affidavit": [
+      {
+        "id": "joe-event-002",
+        "title": "Throughout 2024 and 2025 relationship with Jill have been strained despite my best efforts to get them back on track.",
+        "summary": "Throughout 2024 and 2025 relationship with Jill have been strained despite my best efforts to get them back on track.",
+        "date": {
+          "precision": "day",
+          "value": "2024-01-01",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "Throughout 2024 and 2025 relationship with Jill have been strained despite my best efforts to get them back on track.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶14",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Reportedly strained relationship (2024–2025)"
+      },
+      {
+        "id": "joe-event-003",
+        "title": "Jill threatened to withdraw child support",
+        "summary": "On May 29 2024 she blackmailed me with the threat of withdrawing child support if I did not comply with her requests.",
+        "date": {
+          "precision": "day",
+          "value": "2024-01-01",
+          "approximate": true
+        },
+        "status": "disputed",
+        "sourceText": "On May 29 2024 she blackmailed me with the threat of withdrawing child support if I did not comply with her requests.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶3",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Late May 2024 dispute over threats to withdraw child support"
+      },
+      {
+        "id": "joe-event-004",
+        "title": "Jill called Joe a \"fat loser\"",
+        "summary": "On June 20 2024 she called me a fat loser.",
+        "date": {
+          "precision": "day",
+          "value": "2024-01-01",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "On June 20 2024 she called me a fat loser.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶4",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Alleged verbal insult on 20 June 2024"
+      },
+      {
+        "id": "joe-event-005",
+        "title": "Jill threatened to accuse Joe of abusing Johnny",
+        "summary": "Joe Blogs alleges that on June 12, 2024, she said she would tell people he abused Johnny unless he did what she wanted.",
+        "date": {
+          "precision": "day",
+          "value": "2024-01-01",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "Most concerningly, on June 12 2024 explicitly stated she would start telling people that I abused Johnny if I did not do what she wanted me to do. Her false domestic violence claims are an extension of this blackmail.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶7",
+        "assertedBy": "Joe Blogs",
+        "narrative": "12 Jun 2024 alleged threat to report abuse"
+      },
+      {
+        "id": "joe-event-006",
+        "title": "Jill threatened Joe: \"I'll make sure you regret it\"",
+        "summary": "Joe Blogs states that on May 1, 2024 Jill threatened him, saying “I'll make sure you regret it” if he didn’t do what she said.",
+        "date": {
+          "precision": "day",
+          "value": "2024-05-01",
+          "approximate": false
+        },
+        "status": "unresolved",
+        "sourceText": "When discussing custody from April to June 2024, Jill’s behaviour was even worse, including on May 1 2024 where she explicitly threatened me “I'll make sure you regret it.” If I didn’t do what she said.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶17",
+        "assertedBy": "Joe Blogs",
+        "narrative": "1 May 2024 alleged menacing statement"
+      },
+      {
+        "id": "joe-event-011",
+        "title": "Email from Jill to Joe with subject 'test' and abusive content",
+        "summary": "Joe Blogs states that on 10 October 2024 Jill sent him an email with the subject 'test'.",
+        "date": {
+          "precision": "day",
+          "value": "2024-10-10",
+          "approximate": false
+        },
+        "status": "unresolved",
+        "sourceText": "Jill has gone to incredible lengths to insult me, for example, on 10 October 2024 Jill sent me an email with the subject ‘test’, presumably to make me read it.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶15",
+        "assertedBy": "Joe Blogs",
+        "narrative": "10 Oct 2024 email with disputed abusive language"
+      },
+      {
+        "id": "joe-event-012",
+        "title": "Email from Jill to Joe with subject 'test' and abusive content",
+        "summary": "Joe Blogs states that the subject's contents read “Go fuck yourself Joe”.",
+        "date": {
+          "precision": "day",
+          "value": "2024-10-10",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "The contents of the subject simply read “Go fuck yourself Joe”",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶16",
+        "assertedBy": "Joe Blogs",
+        "narrative": "10 Oct 2024 email with disputed abusive language"
+      },
+      {
+        "id": "joe-event-018",
+        "title": "I am the Respondent in these proceedings.",
+        "summary": "I am the Respondent in these proceedings.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I am the Respondent in these proceedings.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶4",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Respondent status identified"
+      },
+      {
+        "id": "joe-event-019",
+        "title": "I agree with the background facts regarding our marriage and child.",
+        "summary": "I agree with the background facts regarding our marriage and child.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I agree with the background facts regarding our marriage and child.",
+        "page": 2,
+        "paragraphRef": "Page 2 ¶5",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Joe’s agreement on background facts"
+      },
+      {
+        "id": "joe-event-020",
+        "title": "I have more examples I can show the court of this behaviour.",
+        "summary": "I have more examples I can show the court of this behaviour.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I have more examples I can show the court of this behaviour.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶5",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Statement re additional examples for the court"
+      },
+      {
+        "id": "joe-event-021",
+        "title": "Jill withheld Johnny from weekend visitation",
+        "summary": "Joe Blogs states that on May 25 Jill withheld Johnny from his regular weekend visitation.",
+        "date": {
+          "precision": "day",
+          "value": "2024-05-25",
+          "approximate": true
+        },
+        "status": "disputed",
+        "sourceText": "On May 25 she withheld Johnny from his regular weekend visitation for no reason at all.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶6",
+        "assertedBy": "Joe Blogs",
+        "narrative": "25 May 2024 disputed weekend visitation exchange"
+      },
+      {
+        "id": "joe-event-022",
+        "title": "Jill made menacing comment about girls staring and fighting them off",
+        "summary": "Joe alleges Jill commented about \"girls staring at me\" and needing to \"fight them off,\" which he says she delivered in a menacing tone despite laughing.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "She made a comment about \"girls staring at me\" and needing to \"fight them off.\" While she laughed, her tone was menacing.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶11",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Reported menacing remark about girls staring at Joe"
+      },
+      {
+        "id": "joe-event-023",
+        "title": "Jill refused to give Joe cash due to suspicion",
+        "summary": "Joe Blogs states Jill said, “I don't give you cash so you can spend it on other people.”",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "She then financially shamed me, stating, \"I don't give you cash so you can spend it on other people.\" Jill controls all our finances. I have to ask her for money for basic social interactions.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶12",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Household budget control and limits on cash provided to Joe"
+      },
+      {
+        "id": "joe-event-024",
+        "title": "Jill screamed obscenities after Joe received a call",
+        "summary": "Joe Blogs states Jill screamed obscenities when he received a call from an old school friend.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "When I received a call from an old school friend, Jill exploded. She screamed obscenities.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶13",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Dispute Following Phone Call and Bedroom Lock-In"
+      },
+      {
+        "id": "joe-event-025",
+        "title": "Jill screamed obscenities after Joe received a call",
+        "summary": "Joe Blogs states Jill hammered on the bedroom door with such force he thought the hinges would break.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I retreated to the bedroom for safety. Jill did not \"knock.\" She hammered on the door with such force I thought the hinges would break. She was screaming, \"Open the [expletive] door!\" She was out of control.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶14",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Dispute Following Phone Call and Bedroom Lock-In"
+      },
+      {
+        "id": "joe-event-026",
+        "title": "Joe struck Jill across the face and final separation",
+        "summary": "Joe denies the assault allegations.",
+        "date": {
+          "precision": "day",
+          "value": "2025-11-03",
+          "approximate": true
+        },
+        "status": "disputed",
+        "sourceText": "I vehemently deny the assault allegations.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶19",
+        "assertedBy": "Joe Blogs",
+        "narrative": "3 Nov 2025 alleged slap/choking and final separation"
+      },
+      {
+        "id": "joe-event-027",
+        "title": "Conversation before Joe prepared to go out",
+        "summary": "Joe Blogs states the conversation Jill alleges occurred on November 3 actually took place on November 1.",
+        "date": {
+          "precision": "day",
+          "value": "2025-11-01",
+          "approximate": true
+        },
+        "status": "unresolved",
+        "sourceText": "The conversation alleged by Jill to have taken place on November 3, actually took place on the 1st of November. I confronted Jill about her infidelity. I had reliable information that she had been fixated on a neighbour, \"Martin,\" who is outfitting a sailboat.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶20",
+        "assertedBy": "Joe Blogs",
+        "narrative": "1 Nov 2025 conversation before Joe went out"
+      },
+      {
+        "id": "joe-event-028",
+        "title": "Argument involving Martin and humiliation comment",
+        "summary": "Joe Blogs states Jill said she didn't know him.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I asked her about it calmly. She lied to my face, saying she didn't know him.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶21",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Dispute involving Martin and remarks by Jill and Joe"
+      },
+      {
+        "id": "joe-event-029",
+        "title": "Argument involving Martin and humiliation comment",
+        "summary": "Joe Blogs states he asked Jill, “Does it give you that much pleasure to humiliate me?”",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I became emotional. I asked, \"Does it give you that much pleasure to humiliate me?\"",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶22",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Dispute involving Martin and remarks by Jill and Joe"
+      },
+      {
+        "id": "joe-event-030",
+        "title": "Jill hyperventilated and sobbed hysterically",
+        "summary": "Joe Blogs states Jill began to hyperventilate and sob hysterically.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "Jill began to hyperventilate and sob hysterically. She was working herself into a panic to avoid answering my questions.",
+        "page": 3,
+        "paragraphRef": "Page 3 ¶23",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Dispute over characterization of hyperventilating and sobbing episode"
+      },
+      {
+        "id": "joe-event-031",
+        "title": "Joe Blogs alleges Jill’s violence allegations are a distraction from her threatening behaviour",
+        "summary": "Joe Blogs alleges that Jill’s violence allegations are a distraction from her own threatening behaviour toward him during this period.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "Jill’s allegations of violence is an attempt to distract from her own threatening behaviour towards me during this period.",
+        "page": 4,
+        "paragraphRef": "Page 4 ¶4",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Joe says Jill’s violence allegations were a distraction"
+      },
+      {
+        "id": "joe-event-032",
+        "title": "Jill is attempting to alienate me from Johnny to cover up her own emotional instability and infidelity.",
+        "summary": "Jill is attempting to alienate me from Johnny to cover up her own emotional instability and infidelity.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "Jill is attempting to alienate me from Johnny to cover up her own emotional instability and infidelity.",
+        "page": 4,
+        "paragraphRef": "Page 4 ¶6",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Joe’s claim of parental alienation and possible infidelity"
+      },
+      {
+        "id": "joe-event-033",
+        "title": "I seek equal shared parental responsibility.",
+        "summary": "I seek equal shared parental responsibility.",
+        "date": {
+          "precision": "unknown"
+        },
+        "status": "unresolved",
+        "sourceText": "I seek equal shared parental responsibility.",
+        "page": 4,
+        "paragraphRef": "Page 4 ¶7",
+        "assertedBy": "Joe Blogs",
+        "narrative": "Request for equal shared parental responsibility"
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "from": "joe-event-003",
+      "to": "jill-event-037",
+      "type": "contradicts",
+      "rationale": "Imported contradiction assessment between these source-linked accounts. Review the original paragraphs; the link is not a finding of fact."
+    },
+    {
+      "from": "jill-event-016",
+      "to": "joe-event-026",
+      "type": "contradicts",
+      "rationale": "Imported contradiction assessment between these source-linked accounts. Review the original paragraphs; the link is not a finding of fact."
+    },
+    {
+      "from": "joe-event-021",
+      "to": "jill-event-038",
+      "type": "contradicts",
+      "rationale": "Imported contradiction assessment between these source-linked accounts. Review the original paragraphs; the link is not a finding of fact."
+    },
+    {
+      "from": "jill-event-042",
+      "to": "joe-event-024",
+      "type": "contradicts",
+      "rationale": "Imported contradiction assessment between these source-linked accounts. Review the original paragraphs; the link is not a finding of fact."
+    }
+  ]
+}

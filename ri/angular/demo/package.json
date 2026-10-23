@@ -4,8 +4,8 @@
   "scripts": {
     "start": "ng serve",
     "build": "ng build",
-    "prebuild": "node ../../js/demo/prepare.js public/assets/pdf.worker.min.mjs",
-    "prestart": "node ../../js/demo/prepare.js public/assets/pdf.worker.min.mjs"
+    "prebuild": "node ../../../prompt-library/prepare.mjs && node ../../js/demo/prepare.js public/assets/pdf.worker.min.mjs",
+    "prestart": "node ../../../prompt-library/prepare.mjs && node ../../js/demo/prepare.js public/assets/pdf.worker.min.mjs"
   },
   "dependencies": {
     "@angular/animations": "^22.2.3",

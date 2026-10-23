@@ -54,3 +54,9 @@ npm pack --workspace=@ocker-ai/core
 ```
 
 The package publishes source ESM plus types/styles; the library build is also available in `dist/library`. Generated build output and caches are not committed. Package publication is not automatic.
+
+## Documents and prompts
+
+Use `parseDocument(file, {kind, title})` for PDF, DOCX, RTF, TXT or HTML, `parseText(text, options)` for plain text, or `parseRichText(html, options)` for rich content. HTML is parsed into evidence text, never executed. Original bytes and hashes remain in the intermediate asset; the LLM receives only attributed text paragraphs. The ordinary PDF importer performs no OCR. DOCX is read with Mammoth; formatting is not used to infer court-page numbers.
+
+The canonical templates live in root `prompt-library/`. npm lifecycle hooks generate the package-local prompt module before development, tests, builds and packaging. Java and .NET copy/embed the same templates with their own build systems. Override the LLM callback for custom provider/prompt behaviour.

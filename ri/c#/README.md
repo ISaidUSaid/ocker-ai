@@ -12,7 +12,7 @@ dotnet run --project 'ri/c#/src/Ocker.Desktop'
 dotnet run --project 'ri/c#/tests/Ocker.Core.Tests'
 ```
 
-Open a saved record or queue ordinary text PDFs. The example has in-memory provider settings, document kinds, progress/cancellation, source excerpts and original evidence download, editable notes, outside-edge coloured precedents, related-event cards and PNG/PDF export. Compact mode follows window width; the reusable view can also receive explicit `Mobile` state. All cards remain mounted.
+Open a saved record or queue PDF, DOCX, RTF and plain-text documents. The example has in-memory provider settings, document kinds, progress/cancellation, source excerpts and original evidence download, editable notes, outside-edge coloured precedents, related-event cards and PNG/PDF export. Compact mode follows window width; the reusable view can also receive explicit `Mobile` state. All cards remain mounted.
 
 ```csharp
 var work = new OckerOptions {

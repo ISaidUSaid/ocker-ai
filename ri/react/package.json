@@ -35,6 +35,8 @@
   "scripts": {
     "build": "vite build && tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "demo": "npm run dev --workspace=@ocker-ai/react-demo"
+    "demo": "npm run dev --workspace=@ocker-ai/react-demo",
+    "prebuild": "node ../../prompt-library/prepare.mjs",
+    "pretypecheck": "node ../../prompt-library/prepare.mjs"
   }
 }

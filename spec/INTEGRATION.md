@@ -47,3 +47,9 @@ Java separates `ocker-core`, `ocker-javafx` and `ocker-example`. C# separates `O
 Default dialog theme is `glass`; `none` disables the translucent border and backdrop blur. Palette overrides are separate. Browser classes are prefixed `ocker-`; CSS variables start `--ocker-`. Framework components do not require Material/MDC. A host may replace the CSS completely.
 
 Notes use pin-relative coordinates and preserve those through zoom. Precedents derive the outside card edge, so importers do not have to reproduce a source viewport. Mobile devices use compact note markers and explicit annotation buttons. The RIs intentionally render every event card; they do not include the product's sliding-window machinery.
+
+## Example workbench utilities
+
+Browser examples share `@ocker-ai/core/demo/code`, `/demo/editor`, `/demo/providers` and `/demo/documents` helpers. The JSON editor takes `getRecord`, `onApply` and `theme` callbacks, validates the complete record including references and embedded hashes before applying, and never serialises provider controls. The reusable chronology packages remain independent of those example controls.
+
+Provider shortcuts use documented endpoints from [OpenAI](https://developers.openai.com/api/reference/overview), [Anthropic](https://platform.claude.com/docs/en/api/overview), [Gemini](https://ai.google.dev/gemini-api/docs/openai), [Mistral](https://docs.mistral.ai/api/endpoint/chat), [Groq](https://console.groq.com/docs/openai), [OpenRouter](https://openrouter.ai/docs/api_reference/overview), and [Ollama](https://docs.ollama.com/api/openai-compatibility). No model is selected by a shortcut. Direct browser Anthropic calls opt into its browser-access header only for explicit user-initiated requests. The Node example requires configured provider origin allowlisting.

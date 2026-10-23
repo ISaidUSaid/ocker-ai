@@ -1,41 +1,39 @@
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
-import {mkdir,writeFile} from 'node:fs/promises';
-import {fileURLToPath} from 'node:url';
-import {jsPDF} from 'jspdf';
-import {createRecord,makeAsset,exportRecord,verifyAssets} from '../../ri/js/src/model.js';
+import {mkdir,writeFile,readFile,copyFile} from 'node:fs/promises';
+import {createRecord,exportRecord,verifyAssets} from '../../ri/js/src/model.js';
+import {parsePdf} from '../../ri/js/src/pdf.js';
 const root=new URL('../examples/',import.meta.url),web=new URL('../../ri/js/demo/public/examples/',import.meta.url);
-await mkdir(root,{recursive:true});await mkdir(web,{recursive:true});
-const stamp='2026-10-23T00:00:00Z';
-const record=createRecord('Joe & Jill · Two accounts, one chronology');record.id='joe-jill-example';record.createdAt=record.updatedAt=stamp;
+await mkdir(web,{recursive:true});
+const stamp='2026-10-24T00:00:00Z',record=createRecord('Joe & Jill · Two accounts, one chronology');
+record.id='joe-jill-example';record.createdAt=record.updatedAt=stamp;
 record.actors=[{id:'joe',name:'Joe Blogs',role:'deponent'},{id:'jill',name:'Jill Blogs',role:'deponent'},{id:'practitioner',name:'Example practitioner',role:'practitioner'}];
-const data=[{id:'joe-affidavit',name:'Joe Blogs',file:'JoeBlogsAffidavit.pdf',paragraphs:[
- ['2017','year','We married in 2017.','Marriage'],
- ['2024-05-25','day','On 25 May 2024, Johnny did not attend my agreed weekend visit.','Weekend visit did not occur'],
- ['2024-05-29','day','On 29 May 2024, Jill threatened to withdraw child support unless I agreed.','Alleged child-support threat'],
- ['2024-10-10','day','On 10 October 2024, Jill sent me an email with the subject test.','Email with subject test'],
- ['2025-11-03','day','I did not strike Jill on 3 November 2025.','Joe denies striking Jill'],
- ['2025-11-03','day','We separated on 3 November 2025.','Final separation']
-]},{id:'jill-affidavit',name:'Jill Blogs',file:'JillBlogsAffidavit.pdf',paragraphs:[
- ['2017','year','Joe and I married in 2017.','Marriage'],
- ['2024-05-25','day','Johnny did not attend the agreed weekend visit on 25 May 2024.','Weekend visit did not occur'],
- ['2024-05-29','day','I made no threat to withdraw child support on 29 May 2024.','Jill denies child-support threat'],
- ['2024-10-10','day','On 10 October 2024, I sent Joe an email with the subject test.','Email with subject test'],
- ['2025-11-03','day','On 3 November 2025, Joe struck me across the face.','Jill alleges a strike'],
- ['2025-11-03','day','We separated on a final basis on 3 November 2025.','Final separation']
-]}];
-for(const source of data){
- const pdf=new jsPDF();pdf.setFont('helvetica','bold');pdf.setFontSize(20);pdf.text('Fictional affidavit',20,25);pdf.setFontSize(13);pdf.text(source.name,20,37);pdf.setFont('helvetica','normal');pdf.setFontSize(10);pdf.text('OCKER training example. Fictional parties and events; not a court filing.',20,48);
- const paragraphs=source.paragraphs.map((p,index)=>({id:source.id+'-p'+(index+1),page:1,label:String(index+1),text:p[2]}));
- paragraphs.forEach((p,index)=>pdf.text(pdf.splitTextToSize(p.label+'. '+p.text,170),20,65+index*26));
- const bytes=new Uint8Array(pdf.output('arraybuffer'));const asset=await makeAsset(bytes,source.file);asset.id=source.id+'-pdf';
- const document={id:source.id,title:source.name+' — fictional affidavit',kind:'affidavit',author:source.name,assetId:asset.id,paragraphs};record.documents.push(document);record.assets.push(asset);
- const intermediate={format:'ocker-document',version:'0.1.0',document,asset};await writeFile(new URL(source.id+'.document.json',root),JSON.stringify(intermediate,null,2)+'\n');await writeFile(new URL(source.file,web),bytes);
- for(const [index,[value,precision,summary,title]]of source.paragraphs.entries())record.events.push({id:source.id+'-e'+(index+1),title,summary,date:{precision,value},assertedBy:source.name,actorIds:[source.id.startsWith('joe')?'joe':'jill'],status:index===2||index===4?'disputed':'alleged',sources:[{documentId:source.id,paragraphId:paragraphs[index].id,page:1,quote:paragraphs[index].text}],narrative:index<2?'Family background':'Accounts of events'});
+const fixture=JSON.parse(await readFile(new URL('source/accounts.json',root),'utf8')),accounts=fixture.accounts;
+for(const [key,events] of Object.entries(accounts)) {
+ const name=key.startsWith('joe')?'Joe':'Jill',file=name+'BlogsAffidavit.pdf';
+ const parsed=await parsePdf(new Uint8Array(await readFile(new URL('source/'+file,root))),{title:file,author:name+' Blogs',kind:'affidavit'});
+ const {document,asset}=parsed;document.id=key;asset.id=key+'-pdf';document.assetId=asset.id;
+ document.paragraphs.forEach((p,i)=>{p.id=key+'-p'+(i+1);});
+ record.documents.push(document);record.assets.push(asset);
+ for(const [i,account] of events.entries()) {
+  const normal=value=>value.normalize('NFKC').replace(/[^\p{L}\p{N}]/gu,'').toLowerCase();
+  const match=normal(account.sourceText);const pageMatch=/[Pp]age\s*(\d+)|^p(\d+)/.exec(account.paragraphRef??'');const page=account.page??Number(pageMatch?.[1]??pageMatch?.[2]??1);
+  const originalText=document.paragraphs.filter(p=>p.page===page).map(p=>p.text).join(' ');
+  if(!normal(originalText).includes(match))throw new Error('Fixture paragraph does not occur in original PDF: '+account.id);
+  let paragraph=document.paragraphs.find(p=>p.page===page&&p.text===account.sourceText);
+  if(!paragraph){paragraph={id:key+'-account-'+(i+1),page,label:account.paragraphRef,text:account.sourceText};document.paragraphs.push(paragraph);}
+  record.events.push({id:account.id,title:account.title,summary:account.summary,date:account.date,assertedBy:account.assertedBy??name+' Blogs',actorIds:[name.toLowerCase()],status:account.status,sources:[{documentId:key,paragraphId:paragraph.id,page,quote:paragraph.text}],narrative:account.narrative});
+ }
+ await writeFile(new URL(key+'.document.json',root),JSON.stringify(parsed,null,2)+'\n');await copyFile(new URL('source/'+file,root),new URL(file,web));
 }
-for(const [index,type]of ['supports','supports','contradicts','supports','contradicts','supports'].entries())record.relationships.push({id:'relation-'+(index+1),from:'joe-affidavit-e'+(index+1),to:'jill-affidavit-e'+(index+1),type,rationale:type==='supports'?'Both deponents give the same material account of this event.':'The deponents give opposing accounts of the same material proposition.',provenance:{method:'human',createdAt:stamp,authorId:'practitioner'}});
-record.notes=[{id:'example-note',eventId:'joe-affidavit-e3',body:'Compare the two accounts and check the original paragraphs before drawing a conclusion.',position:{x:75,y:185},createdAt:stamp,updatedAt:stamp,authorId:'practitioner'}];
-record.authorities=[{id:'example-precedent',eventId:'jill-affidavit-e5',title:'Fictional authority — replace with a real citation',citation:'Example v Example [2026] DEMO 1',type:'unspecified',color:'blue',body:'Demonstration only. This is not a real authority.',createdAt:stamp,updatedAt:stamp,authorId:'practitioner'}];
+record.relationships=fixture.relationships.map((r,i)=>({id:'relation-'+(i+1),...r,provenance:{method:'imported',createdAt:stamp,authorId:'practitioner'}}));
+const contested=record.events.find(e=>e.status==='disputed'&&e.title.toLowerCase().includes('blackmail'))??record.events.find(e=>e.status==='disputed');
+const agreed=record.events.find(e=>e.status==='agreed');
+record.notes=[
+ {id:'example-review-note',eventId:contested.id,body:'Compare the alleged demand with the denial. An admission of child-support threats does not, by itself, settle whether blackmail occurred.',position:{x:300,y:30},createdAt:stamp,updatedAt:stamp,authorId:'practitioner'},
+ {id:'example-common-ground-note',eventId:agreed.id,body:'Common ground on the words used. Keep the differing explanations and surrounding context separate.',position:{x:300,y:30},createdAt:stamp,updatedAt:stamp,authorId:'practitioner'}
+];
+record.authorities=[{id:'example-precedent',eventId:contested.id,title:'Briginshaw v Briginshaw',citation:'(1938) 60 CLR 336; [1938] HCA 34',type:'binding',color:'blue',court:'High Court of Australia',jurisdiction:'Australia',sourceUrl:'https://www.hcourt.gov.au/cases-and-judgments/judgments/1-clr-100-clr/briginshaw-v-briginshaw',body:'Example research flag for contested allegations. Review the judgment and verify its application to the issue and applicable statutory framework before relying on it.',createdAt:stamp,updatedAt:stamp,authorId:'practitioner'}];
 await verifyAssets(record);const json=exportRecord(record);await writeFile(new URL('joe-jill.ocker.json',root),json);await writeFile(new URL('joe-jill.ocker.json',web),json);
 const minimal=createRecord('Empty valid chronology');minimal.id='minimal-example';minimal.createdAt=minimal.updatedAt=stamp;await writeFile(new URL('minimal.ocker.json',root),exportRecord(minimal));
-console.log('Built fictional PDFs, intermediate documents and portable example ('+record.events.length+' events).');
+console.log('Built source-backed test fixture: '+record.events.length+' events; '+record.documents.map(d=>d.paragraphs.length).join('/')+' extracted text lines.');

@@ -12,7 +12,6 @@ body { margin:0; min-width:320px; }
 .demo__controls,.demo__provider { display:flex; flex-wrap:wrap; gap:.75rem; align-items:end; max-width:70rem; margin:1.5rem auto; padding:1rem; border:1px solid #ffffff2b; border-radius:1.2rem; background:#ffffff16; backdrop-filter:blur(18px); }
 .demo--none .demo__controls,.demo--none .demo__provider { border-color:#ccd1da; background:#fff; backdrop-filter:none; }
 .demo__controls label,.demo__provider label { display:grid; gap:.35rem; font-size:.82rem; font-weight:700; }
-.demo__consent { min-width:18rem; }
 .demo__provider div { display:flex; gap:.65rem; flex-wrap:wrap; }
 .demo__controls input,.demo__controls select,.demo__controls button,.demo__provider input,.demo__provider button { min-height:2.65rem; padding:.45rem .7rem; border:1px solid #ffffff55; border-radius:.65rem; background:#151b36cc; color:inherit; font:inherit; }
 .demo--none .demo__controls input,.demo--none .demo__controls select,.demo--none .demo__controls button,.demo--none .demo__provider input,.demo--none .demo__provider button { border-color:#b9c0cb; background:#fff; }
@@ -20,3 +19,34 @@ body { margin:0; min-width:320px; }
 .demo__provider button:disabled { opacity:.5; cursor:not-allowed; }
 .demo__status { max-width:70rem; margin:-.8rem auto 1rem; color:#bcecff; }
 @media (max-width:600px) { .demo { padding:1rem; } .demo__controls { align-items:stretch; } .demo__controls label,.demo__controls button { width:100%; } }
+.demo__controls input,.demo__provider input { max-width:22rem; }
+.demo__controls select { max-width:11rem; }
+.demo__code { align-self:end; min-width:10rem; }
+.demo__code summary { min-height:2.65rem; display:flex; align-items:center; padding:.45rem .7rem; border:1px solid #ffffff55; border-radius:.65rem; background:#151b36cc; cursor:pointer; font-weight:800; list-style:none; transition:border-color .16s ease,background .16s ease,transform .16s ease; }
+.demo__code summary::-webkit-details-marker { display:none; }
+.demo__code summary:hover,.demo__controls input:hover,.demo__controls select:hover,.demo__provider input:hover { border-color:#fff; }
+.demo__controls button,.demo__provider button { transition:filter .16s ease,transform .16s ease; }
+.demo__controls button:not(:disabled):hover,.demo__provider button:not(:disabled):hover,.demo__code summary:hover { filter:brightness(1.12); transform:translateY(-1px); }
+.demo__code[open] { flex:1 1 22rem; }
+.demo__code > div { margin-top:.6rem; max-width:100%; }
+.demo--none .demo__code summary { border-color:#b9c0cb; background:#fff; }
+.demo--none .demo__code summary:hover,.demo--none .demo__controls input:hover,.demo--none .demo__controls select:hover,.demo--none .demo__provider input:hover { border-color:#4b5566; }
+.demo__paste { flex:1 1 15rem; min-width:15rem; }
+.demo__pastebox { min-height:4.4rem; max-width:28rem; padding:.55rem .7rem; border:1px solid #ffffff55; border-radius:.65rem; background:#151b36cc; color:inherit; font:inherit; resize:vertical; }
+.demo__pastebox:hover { border-color:#fff; }
+.demo__sample { background:#1c2546!important; color:#f8fbff!important; border:1px solid #ffffff55!important; }
+.demo--none .demo__pastebox,.demo--none .demo__sample { border-color:#b9c0cb!important; background:#fff!important; color:#182033!important; }
+.demo--none .demo__pastebox:hover { border-color:#4b5566; }
+.demo__pastebox { white-space:pre-wrap; overflow:auto; }
+.demo__records,.demo__example { max-width:70rem; margin:1rem auto; }
+.demo__records { display:flex; flex-wrap:wrap; align-items:end; gap:.75rem; padding:1rem; border:1px solid #ffffff2b; border-radius:1.2rem; background:#ffffff16; backdrop-filter:blur(18px); }
+.demo__records label { display:grid; gap:.35rem; font-size:.82rem; font-weight:700; }
+.demo__records input { min-height:2.65rem; padding:.45rem .7rem; border:1px solid #ffffff55; border-radius:.65rem; background:#151b36cc; color:inherit; font:inherit; }
+.demo__example { color:#c9d9ef; font-size:.9rem; }
+.demo--none .demo__records { border-color:#ccd1da; background:#fff; backdrop-filter:none; }
+.demo--none .demo__records input { border-color:#b9c0cb; background:#fff; }
+.demo__provider-notice { flex-basis:100%; margin:0; color:#c9d9ef; font-size:.84rem; }
+.demo--none .demo__provider-notice { color:#3f4b61; }
+.demo__advanced { display:flex; flex-wrap:wrap; gap:.75rem; flex-basis:100%; }
+.demo__advanced summary { cursor:pointer; font-weight:800; }
+.demo__advanced label { margin-top:.65rem; }

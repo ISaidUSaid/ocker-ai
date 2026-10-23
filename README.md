@@ -17,7 +17,15 @@ npm install
 npm run dev
 ```
 
-Open the printed local URL. Choose **Explore Joe & Jill** for a complete fictional chronology with embedded PDF evidence, or open your own `.ocker.json` file. Ordinary text PDFs can be imported as affidavits, orders or reports. To build a new chronology, choose your provider endpoint/model, enter your API key and explicitly enable sending document text. The key stays in memory. Reading the saved example needs no key.
+Open the printed local URL. **Add your own documents**, choose a provider and model, enter your API key and choose **Build chronology**. That single action creates the events and compares the accounts for support and contradiction. The visible process steps and progress show the work as it happens. Keys stay in memory and out of exported records.
+
+PDF, DOCX, RTF and plain text import into the same intermediate format. Browser examples also accept pasted rich text and HTML without executing its markup. Original file bytes remain attached as evidence; non-PDF paragraphs use logical page 1 rather than invented Word pagination. PDF imports require selectable text and do not perform OCR.
+
+**Import OCKER file** opens an existing `.ocker.json` record. The separate **Joe and Jill Blogs Example Chronology** link loads a saved example converted from the tested production chronology, verified read-only on 24 October 2026. It contains the 46 displayed cards from that artifact, common ground, four direct contradiction links, the original test PDFs and fresh demonstration notes/precedents. No message matching, advanced relationship data, production annotations or private account identifiers are included. It is a saved import, not a new LLM result.
+
+**Show code** exposes copyable integration examples using the selected theme, with no credentials. **Edit OCKER file** opens a pretty-printed JSON editor with syntax colours, formatting, Cancel and validated Apply. Browser editors use CodeMirror; native examples pair an editable text area with a synchronized coloured preview. Invalid edits leave the current record unchanged.
+
+Provider shortcut buttons fill common provider endpoints and local Ollama without choosing a model. Switching providers clears the previous key. Browser examples support Anthropic Messages as well as chat-completions APIs; native shortcuts currently use chat-completions-compatible providers. Empty keys are allowed only for loopback providers. Browser CORS and local Ollama origin access remain host configuration responsibilities.
 
 ```sh
 npm test
@@ -32,8 +40,9 @@ The browser example is fully client-side. Angular and React examples are also cl
 
 | Path | Deliverable |
 |---|---|
+| [`prompt-library`](prompt-library/README.md) | Canonical public extraction and relationship prompts, copied by each RI build |
 | [`spec`](spec/README.md) | Normative format, JSON Schemas, intermediate document format, conformance rules and examples |
-| [`ri/js`](ri/js/README.md) | ESM JavaScript SDK, configurable text-PDF/LLM adapters, reusable browser UI and standalone demo |
+| [`ri/js`](ri/js/README.md) | ESM JavaScript SDK, configurable document/LLM adapters, reusable browser UI and standalone demo |
 | [`ri/angular`](ri/angular/README.md) | Reusable Angular component and client-only example |
 | [`ri/react`](ri/react/README.md) | Reusable React component and client-only example |
 | [`ri/node.js`](ri/node.js/README.md) | Node backend with an Angular front end |
@@ -44,7 +53,7 @@ The browser example is fully client-side. Angular and React examples are also cl
 
 - Import/export versioned OCKER JSON and preserve extension data.
 - Keep source paragraphs and original evidence bytes together, with byte lengths and SHA-256 hashes.
-- Parse ordinary text PDFs with public libraries; create reviewable intermediate JSON.
+- Import PDF, DOCX, RTF, plain text and browser rich text; create reviewable intermediate JSON using public libraries.
 - Build attributed chronology accounts using a supplied LLM adapter.
 - Infer only **support** and **contradiction** relationships, with reasons and provenance.
 - Filter/search/zoom, inspect source evidence and open a related-event web.

@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build"
+    "build": "tsc --noEmit && vite build",
+    "predev": "node ../../../prompt-library/prepare.mjs && node ../../js/demo/prepare.js public/assets/pdf.worker.min.mjs",
+    "prebuild": "node ../../../prompt-library/prepare.mjs && node ../../js/demo/prepare.js public/assets/pdf.worker.min.mjs"
   },
   "dependencies": {
     "@ocker-ai/core": "^0.1.0",

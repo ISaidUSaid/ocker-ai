@@ -17,3 +17,5 @@ obj/
 ri/js/demo/public/pdf.worker.min.mjs
 
 **/public/assets/pdf.worker.min.mjs
+
+ri/js/src/prompts.generated.json

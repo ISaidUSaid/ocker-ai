@@ -12,7 +12,7 @@ mvn -f ri/java/ocker-example/pom.xml javafx:run
 mvn -f ri/java/pom.xml test
 ```
 
-Open a saved OCKER file, or queue ordinary text PDFs with their document kind. Enter a provider endpoint, model and key, then approve sending text before building. Settings stay in memory. A failed or cancelled operation leaves the displayed record unchanged. The application supports source excerpts/original downloads, filters, zoom, note pins, outside-edge coloured authorities, a related-account web and PNG/PDF export.
+Open a saved OCKER file, or queue PDF, plain text, RTF and DOCX documents with their document kind. Enter a provider endpoint, model and key, then approve sending text before building. Settings stay in memory. A failed or cancelled operation leaves the displayed record unchanged. The application supports source excerpts/original downloads, filters, zoom, note pins, outside-edge coloured authorities, a related-account web and PNG/PDF export.
 
 ```java
 var options = OckerOptions.builder()
@@ -20,7 +20,7 @@ var options = OckerOptions.builder()
     .cancellation(() -> cancelled.get())
     .onProgress(progress -> showProgress(progress))
     .build();
-var document = Ocker.parsePdf(path, documentId, title, "affidavit", options);
+var document = Ocker.parseDocument(path, documentId, title, "affidavit", options);
 var record = Ocker.buildChronology(Ocker.createRecord("Matter chronology"), document, options);
 record = Ocker.findRelationships(record, options);
 
@@ -32,7 +32,7 @@ var view = new ChronologyView(record, ChronologyViewOptions.builder()
     .build());
 ```
 
-`CompletionAdapter` is replaceable. PDF import uses ordinary PDFBox text extraction, without OCR. JSON import/export checks the shared schema, references and embedded byte hashes. `parseIntermediate` / `exportIntermediate` preserve reviewable PDF paragraphs and the source asset. Sources and attributed accounts are separate from legal findings.
+`CompletionAdapter` is replaceable. PDF import uses ordinary PDFBox text extraction without OCR; plain text, RTF and DOCX imports preserve the original asset with extracted reviewable paragraphs. JSON import/export checks the shared schema, references and embedded byte hashes. `parseIntermediate` / `exportIntermediate` preserve the document paragraphs and source asset. Sources and attributed accounts are separate from legal findings.
 
 Style `ChronologyView` with JavaFX stylesheets and its `-ocker-*` looked-up colours. Compact layout follows control width; all cards remain mounted. JavaFX UI work belongs on the application thread; the example runs parsing/provider operations on a worker.
 

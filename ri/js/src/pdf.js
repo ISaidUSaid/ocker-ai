@@ -5,7 +5,7 @@ export async function parsePdf(input,options={}) {
   options.signal?.throwIfAborted();
   const bytes=input instanceof Uint8Array?input:new Uint8Array(input instanceof ArrayBuffer?input:await input.arrayBuffer());
   if(bytes.byteLength>(options.maxBytes??25*1024*1024))throw new Error('PDF exceeds the configured size limit.');
-  if(new TextDecoder().decode(bytes.subarray(0,5))!=='%PDF-')throw new Error('Choose a standard text PDF.');
+  if(new TextDecoder().decode(bytes.subarray(0,5))!=='%PDF-')throw new Error('Choose a PDF with selectable text.');
   const pdfjs=typeof window==='undefined'?await import('pdfjs-dist/legacy/build/pdf.mjs'):await import('./pdf-browser.js').then(m=>m.configurePdfJs(options.workerSrc));
   const task=pdfjs.getDocument({data:bytes.slice(),isEvalSupported:false,useSystemFonts:true});
   const abort=()=>{void task.destroy();};options.signal?.addEventListener('abort',abort,{once:true});

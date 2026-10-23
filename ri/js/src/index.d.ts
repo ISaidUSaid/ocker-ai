@@ -51,3 +51,12 @@ export const RELATIONSHIP_PROMPT:string;
 export function assertIntermediate(item:Intermediate):Intermediate;
 export function parseIntermediate(input:string|Uint8Array):Intermediate;
 export function exportIntermediate(item:Intermediate):string;
+
+export interface DocumentOptions extends PdfOptions {format?:'pdf'|'docx'|'rtf'|'txt'|'text'|'html'|'htm';maxExpandedBytes?:number;maxTextCharacters?:number}
+export function parseDocument(input:Uint8Array|ArrayBuffer|Blob,options?:DocumentOptions):Promise<Intermediate>;
+export function parseText(text:string,options?:DocumentOptions):Promise<Intermediate>;
+export function rtfText(rtf:string):string;
+export function parseRichText(html:string,options?:DocumentOptions):Promise<Intermediate>;
+
+export function isLoopbackEndpoint(endpoint:string):boolean;
+export function createProviderAdapter(options:{protocol?:'openai'|'anthropic';endpoint:string;model:string;apiKey?:string;fetch?:typeof fetch;headers?:{[key:string]:string};temperature?:number;responseFormat?:boolean;maxResponseBytes?:number;maxTokens?:number}):LlmAdapter;

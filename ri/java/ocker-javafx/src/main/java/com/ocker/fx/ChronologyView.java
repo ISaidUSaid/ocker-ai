@@ -115,6 +115,7 @@ public final class ChronologyView extends BorderPane {
         Label title = new Label(event.title()); title.setWrapText(true); title.getStyleClass().add("ocker-event-title");
         Label summary = new Label(event.summary()); summary.setWrapText(true);
         body.getChildren().addAll(date, title, new Label(Objects.toString(event.assertedBy(), "")), summary);
+        if ("agreed".equals(event.status())) { Label commonGround = new Label("Common ground"); commonGround.getStyleClass().add("ocker-common-ground"); body.getChildren().add(commonGround); }
         FlowPane actions = new FlowPane(6, 6);
         for (Source source : event.sources()) actions.getChildren().add(action("Source evidence", () -> { options.onSourceClick.accept(source); sourceViewer(source); }));
         if (record.relationships().stream().anyMatch(r -> r.from().equals(event.id()) || r.to().equals(event.id()))) actions.getChildren().add(action("Related", () -> relatedWeb(event)));

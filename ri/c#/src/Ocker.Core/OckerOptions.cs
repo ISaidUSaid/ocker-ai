@@ -22,7 +22,7 @@ public sealed class OpenAiCompatibleAdapter(HttpClient client, Uri endpoint, str
     public async Task<string> CompleteAsync(CompletionRequest request, CancellationToken cancellationToken)
     {
         using var message = new HttpRequestMessage(HttpMethod.Post, endpoint);
-        message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+        if (!string.IsNullOrWhiteSpace(apiKey)) message.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
         message.Content = JsonContent.Create(new { model, messages = new[] { new { role = "system", content = request.Prompt }, new { role = "user", content = request.Input } }, temperature = 0 });
         using var response = await client.SendAsync(message, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();

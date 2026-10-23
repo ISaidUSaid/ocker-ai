@@ -7,6 +7,7 @@
 /* Hosts may override the -ocker-* variables on ChronologyView or a parent. */
 .ocker-chronology .ocker-card { -fx-background-color: -ocker-card; -fx-border-color: -ocker-border; -fx-border-radius: 14; -fx-background-radius: 14; -fx-effect: dropshadow(gaussian, rgba(20,48,64,.1), 16, .1, 0, 5); }
 .ocker-chronology .ocker-date { -fx-text-fill: #417482; -fx-font-weight: bold; -fx-font-size: 11; }
+.ocker-chronology .ocker-common-ground { -fx-background-color: #d9f5e5; -fx-text-fill: #17613f; -fx-background-radius: 999; -fx-padding: 3 8; -fx-font-size: 11; -fx-font-weight: bold; }
 .ocker-chronology .ocker-note { -fx-background-color: linear-gradient(to bottom right, #fff2aa, #eddb8a); -fx-background-radius: 3 3 24 3; -fx-effect: dropshadow(gaussian, rgba(90,75,20,.22), 10, .1, 2, 5); }
 .ocker-chronology .ocker-note .label { -fx-text-fill: #4b421e; }
 .ocker-chronology .ocker-pin { -fx-background-color: transparent; -fx-text-fill: #bb332d; -fx-font-size: 20; -fx-padding: 0; }

@@ -21,7 +21,7 @@ test('server does not proxy a provider outside its allowlist', async () => {
   assert.match(response.body.error, /not allowed/);
 });
 
-test('uploads a real text PDF and preserves canonical sources through mocked build and relate calls', async () => {
+test('uploads a real text PDF and builds relationships before returning the chronology', async () => {
   const calls = [];
   const provider = createServer(async (req, res) => {
     const body = await new Promise(resolve => { let text = ''; req.on('data', chunk => text += chunk); req.on('end', () => resolve(JSON.parse(text))); });
@@ -49,8 +49,32 @@ test('uploads a real text PDF and preserves canonical sources through mocked bui
     assert.equal(built.body.record.events.length, 2);
     assert.equal(built.body.record.events[0].sources[0].documentId, imported.body.document.id);
     assert.equal(built.text.includes(providerConfig.apiKey), false);
-    const related = await request(app).post('/api/relationships').send({ record: built.body.record, provider: providerConfig }).expect(200);
-    assert.equal(related.body.record.relationships[0].type, 'contradicts');
+    assert.equal(built.body.record.relationships[0].type, 'contradicts');
     assert.deepEqual(calls.map(call => call.authorization), ['Bearer test-key-not-for-output', 'Bearer test-key-not-for-output']);
   } finally { await new Promise(resolve => provider.close(resolve)); }
+});
+
+test('accepts a plain-text document through the bounded upload route', async () => {
+  const app = createApp();
+  const imported = await request(app)
+    .post('/api/documents')
+    .field('kind', 'report')
+    .attach('file', Buffer.from('On 3 March 2026, the parties exchanged the requested documents.\n\nThe response arrived the following day.', 'utf8'), { filename: 'case-note.txt', contentType: 'text/plain' })
+    .expect(200);
+  assert.equal(imported.body.format, 'ocker-document');
+  assert.equal(imported.body.document.kind, 'report');
+  assert.equal(imported.body.document.paragraphs.length, 2);
+});
+
+test('accepts HTML uploads while excluding script text from chronology paragraphs', async () => {
+  const app = createApp();
+  const html = '<h1>Evidence note</h1><p>Documents were exchanged on 3 March 2026.</p><script>not evidence</script><style>.hidden{display:none}</style>';
+  const imported = await request(app)
+    .post('/api/documents')
+    .field('kind', 'report')
+    .attach('file', Buffer.from(html, 'utf8'), { filename: 'note.html', contentType: 'text/html' })
+    .expect(200);
+  const text = imported.body.document.paragraphs.map(paragraph => paragraph.text).join(' ');
+  assert.match(text, /Documents were exchanged/);
+  assert.doesNotMatch(text, /not evidence/);
 });

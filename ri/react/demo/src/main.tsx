@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
 import { createRoot } from 'react-dom/client';
-import { useRef, useState } from 'react';
-import { buildChronology, createOpenAICompatibleAdapter, createRecord, findRelationships, parsePdf, parseRecord } from '@ocker-ai/core';
+import { useEffect, useRef, useState, type ClipboardEvent as ReactClipboardEvent } from 'react';
+import { buildChronology, createProviderAdapter, createRecord, findRelationships, parseDocument, parseRecord, parseRichText, parseText, type Intermediate, type OckerRecord } from '@ocker-ai/core';
+import { mountCodeDisclosure } from '@ocker-ai/core/demo/code';
+import { mountRecordEditor } from '@ocker-ai/core/demo/editor';
+import { mountProviderShortcuts } from '@ocker-ai/core/demo/providers';
+import { confirmPdfDocuments } from '@ocker-ai/core/demo/documents';
 import { OckerChronology } from '@ocker-ai/react';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import './style.css';
@@ -11,18 +15,46 @@ function App() {
   const [record, setRecord] = useState(createRecord('React chronology'));
   const [theme, setTheme] = useState<'glass' | 'none'>('glass');
   const [documents, setDocuments] = useState<any[]>([]);
-  const [kind, setKind] = useState<'affidavit'|'order'|'report'>('affidavit');
-  const [provider, setProvider] = useState({ endpoint:'', model:'', apiKey:'' });
-  const [consent, setConsent] = useState(false);
-  const [progress, setProgress] = useState('Choose PDFs or load the fictional example.');
+  const [provider, setProvider] = useState<{protocol:'openai'|'anthropic';endpoint:string;model:string;apiKey:string}>({ protocol:'openai', endpoint:'', model:'', apiKey:'' });
+  const [progress, setProgress] = useState('Add your own documents, then provide your compatible LLM details below.');
   const [working, setWorking] = useState(false);
   const controller = useRef<AbortController | null>(null);
-  async function upload(files: FileList | null) { if (!files?.length) return; setWorking(true); const next = [...documents]; try { for (const file of Array.from(files)) { setProgress(`Reading ${file.name}…`); next.push(await parsePdf(file, { workerSrc, kind, signal: controller.current?.signal, onProgress: item => setProgress(item.detail) })); } setDocuments(next); setProgress(`${next.length} document${next.length === 1 ? '' : 's'} ready to build.`); } catch (error) { setProgress(error instanceof Error ? error.message : 'Import failed.'); } finally { setWorking(false); } }
-  function adapter() { if (!consent) throw new Error('Confirm before sending selected text to your provider.'); return createOpenAICompatibleAdapter(provider); }
-  async function build() { controller.current = new AbortController(); setWorking(true); try { const next = await buildChronology(documents, { llm:adapter(), title:record.title, signal:controller.current.signal, onProgress:item => setProgress(item.detail) }); setRecord(next); setProgress('Chronology built.'); } catch (error) { setProgress(error instanceof Error ? error.message : 'Build failed.'); } finally { setWorking(false); } }
-  async function relate() { controller.current = new AbortController(); setWorking(true); try { setRecord(await findRelationships(record, { llm:adapter(), signal:controller.current.signal, onProgress:item => setProgress(item.detail) })); setProgress('Relationships found.'); } catch (error) { setProgress(error instanceof Error ? error.message : 'Relationship check failed.'); } finally { setWorking(false); } }
-  function importRecord(file: File | undefined) { if (!file) return; file.text().then(text => { setRecord(parseRecord(text)); setProgress('OCKER record imported.'); }).catch(error => setProgress(error.message)); }
-  async function loadExample() { setRecord(parseRecord(await (await fetch('/assets/examples/joe-jill.ocker.json')).text())); setProgress('Loaded the shared fictional example.'); }
-  return <main className={`demo demo--${theme}`}><header className="demo__hero"><p className="demo__eyebrow">Reusable chronology</p><h1>OCKER / React</h1><p>Build a clear path through competing accounts.</p></header><section className="demo__controls" aria-label="Chronology controls"><label>Theme <select value={theme} onChange={event => setTheme(event.target.value as 'glass' | 'none')}><option value="glass">Glass</option><option value="none">Plain</option></select></label><label>Document kind <select value={kind} onChange={event => setKind(event.target.value as typeof kind)}><option value="affidavit">Affidavit</option><option value="order">Order</option><option value="report">Report</option></select></label><label>Queue text PDFs <input type="file" multiple accept="application/pdf" onChange={e => upload(e.target.files)}/></label><label>Import OCKER <input type="file" accept="application/json,.ocker.json" onChange={e => importRecord(e.target.files?.[0])}/></label><button type="button" onClick={loadExample}>Load Joe &amp; Jill example</button></section><section className="demo__provider"><label>Endpoint <input value={provider.endpoint} onChange={e => setProvider({...provider,endpoint:e.target.value})} placeholder="https://provider.example/v1/chat/completions"/></label><label>Model <input value={provider.model} onChange={e => setProvider({...provider,model:e.target.value})}/></label><label>API key <input type="password" value={provider.apiKey} onChange={e => setProvider({...provider,apiKey:e.target.value})}/></label><label className="demo__consent"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)}/> I approve sending selected document text to this provider.</label><div><button type="button" disabled={!documents.length||working} onClick={build}>Build chronology</button><button type="button" disabled={record.events.length < 2 || working} onClick={relate}>Find relationships</button><button type="button" disabled={!working} onClick={() => controller.current?.abort()}>Cancel</button></div></section><p className="demo__status" aria-live="polite">{progress}</p><OckerChronology record={record} onChange={setRecord} theme={theme}/></main>;
+  const pasteBox = useRef<HTMLDivElement>(null);
+  const editorHost = useRef<HTMLDivElement>(null);
+  const providerHost = useRef<HTMLDivElement>(null);
+  const recordRef = useRef<OckerRecord>(record);
+  const richPaste = useRef('');
+  const codeHost = useRef<HTMLDivElement>(null);
+  const codeDisclosure = useRef<ReturnType<typeof mountCodeDisclosure> | null>(null);
+  const recordEditor = useRef<ReturnType<typeof mountRecordEditor> | null>(null);
+  const providerShortcuts = useRef<ReturnType<typeof mountProviderShortcuts> | null>(null);
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+  recordRef.current = record;
+  useEffect(() => {
+    if (!codeHost.current) return;
+    codeDisclosure.current = mountCodeDisclosure(codeHost.current, { language: 'react', theme: () => themeRef.current });
+    return () => codeDisclosure.current?.destroy();
+  }, []);
+  useEffect(() => {
+    if (!editorHost.current || !providerHost.current) return;
+    recordEditor.current = mountRecordEditor(editorHost.current, { getRecord: () => recordRef.current, onApply: next => { recordRef.current=next; setRecord(next); setDocuments(intermediatesFor(next)); setProgress('Edited OCKER record applied.'); }, theme: () => themeRef.current });
+    providerShortcuts.current = mountProviderShortcuts(providerHost.current, { onSelect: preset => setProvider(current => ({ ...current, protocol:preset.protocol, endpoint:preset.endpoint, apiKey:'' })) });
+    return () => { recordEditor.current?.destroy(); providerShortcuts.current?.destroy(); };
+  }, []);
+  useEffect(() => { codeDisclosure.current?.refresh(); }, [theme]);
+  async function upload(files: FileList | null) { if (files) await queueDocuments(files); }
+  async function queueDocuments(files: FileList | File[]) { if (!files.length) return; const confirmed = await confirmPdfDocuments(files, { theme }); if (!confirmed) return; setWorking(true); const next = [...documents]; try { for (const { file, kind } of confirmed) { setProgress(`Reading ${file.name}…`); next.push(await parseDocument(file, { workerSrc, kind, signal: controller.current?.signal, onProgress: item => setProgress(item.detail) })); } setDocuments(next); setProgress(`${next.length} document${next.length === 1 ? '' : 's'} ready to build.`); } catch (error) { setProgress(error instanceof Error ? error.message : 'Import failed.'); } finally { setWorking(false); } }
+  function capturePaste(event: ReactClipboardEvent<HTMLDivElement>) { event.preventDefault(); richPaste.current=event.clipboardData.getData('text/html'); event.currentTarget.textContent=(event.currentTarget.textContent ?? '')+event.clipboardData.getData('text/plain'); }
+  async function addPasted() { const text=pasteBox.current?.textContent?.trim(); if (!text) return; setWorking(true); try { const item=richPaste.current ? await parseRichText(richPaste.current, {title:'Pasted rich text.html',kind:'report'}) : await parseText(text, {title:'Pasted text.txt',kind:'report'}); setDocuments(current => [...current,item]); if (pasteBox.current) pasteBox.current.textContent=''; richPaste.current=''; setProgress('Pasted text is ready to build.'); } catch (error) { setProgress(error instanceof Error ? error.message : 'Paste failed.'); } finally { setWorking(false); } }
+  function adapter() { return createProviderAdapter(provider); }
+  async function build() { controller.current = new AbortController(); setWorking(true); try { const extracted = await buildChronology(documents, { llm:adapter(), title:record.title, signal:controller.current.signal, onProgress:item => setProgress(item.detail) }); setProgress('Finding relationships…'); const next = await findRelationships(extracted, { llm:adapter(), signal:controller.current.signal, onProgress:item => setProgress(item.detail) }); recordRef.current=next; setRecord(next); setProgress('Chronology built with relationships.'); } catch (error) { setProgress(error instanceof Error ? error.message : 'Build failed.'); } finally { setWorking(false); } }
+  function importRecord(file: File | undefined) { if (!file) return; file.text().then(text => { const next=parseRecord(text); recordRef.current=next; setRecord(next); setDocuments(intermediatesFor(next)); setProgress('OCKER record imported.'); }).catch(error => setProgress(error.message)); }
+  async function loadExample() { const next=parseRecord(await (await fetch('/assets/examples/joe-jill.ocker.json')).text()); recordRef.current=next; setRecord(next); setDocuments(intermediatesFor(next)); setProgress('Loaded the shared fictional example.'); }
+  return <main className={`demo demo--${theme}`}><header className="demo__hero"><p className="demo__eyebrow">Open Chronology, Knowledge and Evidence Record</p><h1>OCKER / React</h1><p>Bring your documents and your own compatible LLM key to build a chronology you can inspect.</p></header><section className="demo__controls" aria-label="Chronology controls"><label>Theme <select value={theme} onChange={event => setTheme(event.target.value as 'glass' | 'none')}><option value="glass">Glass</option><option value="none">Plain</option></select></label><label>Add documents <input type="file" multiple accept=".pdf,.docx,.rtf,.txt,.html,.htm,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/rtf,text/rtf,text/plain,text/html" onChange={e => upload(e.target.files)}/></label><label className="demo__paste">Paste rich text <div ref={pasteBox} className="demo__pastebox" contentEditable role="textbox" aria-multiline="true" aria-label="Paste notes or a document excerpt" onPaste={capturePaste} onInput={() => { richPaste.current=''; }}/></label><button type="button" onClick={addPasted}>Add pasted text</button></section><section className="demo__records"><label>Import OCKER file <input type="file" accept="application/json,.ocker.json" onChange={e => importRecord(e.target.files?.[0])}/></label><div ref={editorHost}/><div className="demo__code" ref={codeHost}/></section><p className="demo__example">Just want to see an example? <button className="demo__sample" type="button" onClick={loadExample}>Load Joe and Jill Blogs Example Chronology</button></p><section className="demo__provider"><div ref={providerHost}/><label>Model <input value={provider.model} onChange={e => setProvider({...provider,model:e.target.value})}/></label><label>API key <input type="password" value={provider.apiKey} onChange={e => setProvider({...provider,apiKey:e.target.value})}/></label><details className="demo__advanced"><summary>Advanced provider settings</summary><label>Protocol <select value={provider.protocol} onChange={e => setProvider({...provider,protocol:e.target.value as 'openai'|'anthropic'})}><option value="openai">OpenAI-compatible</option><option value="anthropic">Anthropic</option></select></label><label>Endpoint <input value={provider.endpoint} onChange={e => setProvider({...provider,endpoint:e.target.value})} placeholder="https://provider.example/v1/chat/completions"/></label></details><p className="demo__provider-notice">{isLoopback(provider.endpoint) ? 'Build chronology sends document text to your selected provider on this machine.' : 'Build chronology sends document text to your selected provider.'}</p><div><button type="button" disabled={!documents.length||working} onClick={build}>Build chronology</button><button type="button" disabled={!working} onClick={() => controller.current?.abort()}>Cancel</button></div></section><p className="demo__status" aria-live="polite">{progress}</p><OckerChronology record={record} onChange={next => { recordRef.current=next; setRecord(next); }} theme={theme}/></main>;
 }
 createRoot(document.getElementById('root')!).render(<App/>);
+
+function isLoopback(endpoint: string) { return /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::|\/|$)/i.test(endpoint); }
+
+function intermediatesFor(record: OckerRecord): Intermediate[] { return record.documents.map(document => { const asset=record.assets.find(item => item.id===document.assetId); return { format:'ocker-document', version:'0.1.0', document, ...(asset ? {asset} : {}) }; }); }

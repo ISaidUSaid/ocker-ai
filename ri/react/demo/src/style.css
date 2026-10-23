@@ -1,0 +1,22 @@
+/* SPDX-License-Identifier: Apache-2.0
+ * Author: Jenko <adam@isaidusaid.com> */
+:root { color:#f8fbff; background:#11152b; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+* { box-sizing:border-box; }
+body { margin:0; min-width:320px; }
+.demo { min-height:100vh; padding:clamp(1rem,4vw,4rem); background:radial-gradient(circle at 10% 10%,#9747ff55,transparent 30%),radial-gradient(circle at 90% 0,#21d4fd44,transparent 33%),#11152b; }
+.demo--none { background:#f4f5f8; color:#182033; }
+.demo__hero { max-width:62rem; margin:auto; padding:1.2rem 0; }
+.demo__hero h1 { margin:.1rem 0; font-size:clamp(2.1rem,7vw,5rem); letter-spacing:-.07em; }
+.demo__hero p { max-width:35rem; font-size:1.1rem; }
+.demo__eyebrow { color:#9de6ff; font-size:.75rem!important; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+.demo__controls,.demo__provider { display:flex; flex-wrap:wrap; gap:.75rem; align-items:end; max-width:70rem; margin:1.5rem auto; padding:1rem; border:1px solid #ffffff2b; border-radius:1.2rem; background:#ffffff16; backdrop-filter:blur(18px); }
+.demo--none .demo__controls,.demo--none .demo__provider { border-color:#ccd1da; background:#fff; backdrop-filter:none; }
+.demo__controls label,.demo__provider label { display:grid; gap:.35rem; font-size:.82rem; font-weight:700; }
+.demo__consent { min-width:18rem; }
+.demo__provider div { display:flex; gap:.65rem; flex-wrap:wrap; }
+.demo__controls input,.demo__controls select,.demo__controls button,.demo__provider input,.demo__provider button { min-height:2.65rem; padding:.45rem .7rem; border:1px solid #ffffff55; border-radius:.65rem; background:#151b36cc; color:inherit; font:inherit; }
+.demo--none .demo__controls input,.demo--none .demo__controls select,.demo--none .demo__controls button,.demo--none .demo__provider input,.demo--none .demo__provider button { border-color:#b9c0cb; background:#fff; }
+.demo__controls button,.demo__provider button { cursor:pointer; font-weight:800; background:linear-gradient(115deg,#9747ff,#21d4fd); color:#11152b; border:0; }
+.demo__provider button:disabled { opacity:.5; cursor:not-allowed; }
+.demo__status { max-width:70rem; margin:-.8rem auto 1rem; color:#bcecff; }
+@media (max-width:600px) { .demo { padding:1rem; } .demo__controls { align-items:stretch; } .demo__controls label,.demo__controls button { width:100%; } }

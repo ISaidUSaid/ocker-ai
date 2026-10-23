@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>WinExe</OutputType><AssemblyName>Ocker.Desktop</AssemblyName></PropertyGroup><ItemGroup><ProjectReference Include="../Ocker.Avalonia/Ocker.Avalonia.csproj" /><PackageReference Include="Avalonia.Desktop" Version="11.3.0" /><PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" /></ItemGroup></Project>

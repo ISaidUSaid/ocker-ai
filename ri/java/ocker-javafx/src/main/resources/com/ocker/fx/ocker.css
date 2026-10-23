@@ -1,0 +1,22 @@
+/* SPDX-License-Identifier: Apache-2.0
+ * Author: Jenko <adam@isaidusaid.com> */
+.ocker-chronology { -ocker-card: #ffffff; -ocker-border: #cbd5e1; -ocker-note: #7c3aed; -ocker-accent: #7c3aed; -ocker-surface: #f8fafc; -fx-background-color: -ocker-surface; }
+.ocker-chronology.ocker-glass { -ocker-card: rgba(255,255,255,0.68); -ocker-border: rgba(255,255,255,0.72); -ocker-surface: linear-gradient(to bottom right, #dbeafe, #f5f3ff 55%, #fdf2f8); }
+.ocker-chronology.ocker-plain { -ocker-card: #ffffff; -ocker-border: #cbd5e1; -ocker-surface: #f8fafc; }
+.ocker-chronology .ocker-event-title { -fx-font-size: 16px; -fx-font-weight: bold; }
+/* Hosts may override the -ocker-* variables on ChronologyView or a parent. */
+.ocker-chronology .ocker-card { -fx-background-color: -ocker-card; -fx-border-color: -ocker-border; -fx-border-radius: 14; -fx-background-radius: 14; -fx-effect: dropshadow(gaussian, rgba(20,48,64,.1), 16, .1, 0, 5); }
+.ocker-chronology .ocker-date { -fx-text-fill: #417482; -fx-font-weight: bold; -fx-font-size: 11; }
+.ocker-chronology .ocker-note { -fx-background-color: linear-gradient(to bottom right, #fff2aa, #eddb8a); -fx-background-radius: 3 3 24 3; -fx-effect: dropshadow(gaussian, rgba(90,75,20,.22), 10, .1, 2, 5); }
+.ocker-chronology .ocker-note .label { -fx-text-fill: #4b421e; }
+.ocker-chronology .ocker-pin { -fx-background-color: transparent; -fx-text-fill: #bb332d; -fx-font-size: 20; -fx-padding: 0; }
+.ocker-chronology .ocker-note-pad { -fx-background-color: #f7e595; -fx-text-fill: #4b421e; -fx-pref-width: 115; -fx-pref-height: 85; -fx-background-radius: 2 2 18 2; }
+.ocker-chronology .ocker-flag-pad { -fx-background-color: #b7d9e8; -fx-text-fill: #24434d; -fx-pref-width: 115; -fx-pref-height: 32; }
+.ocker-chronology .ocker-authority { -fx-background-radius: 3; -fx-text-fill: #24434d; -fx-font-size: 10; }
+.ocker-settings { -fx-background-color: linear-gradient(to bottom right, #e4eaf8, #f1e7f4 55%, #e2f3f5); -fx-border-color: #d0dde6; -fx-border-width: 0 0 1 0; }
+.ocker-settings .button, .ocker-settings .combo-box, .ocker-settings .text-field { -fx-background-radius: 8; -fx-padding: 8 10; }
+
+.ocker-settings .ocker-heading { -fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #143f49; }
+.ocker-settings .button { -fx-background-color: #185365; -fx-text-fill: white; -fx-border-color: transparent; -fx-font-weight: bold; }
+.ocker-settings .button:hover { -fx-background-color: #297286; }
+.ocker-settings .text-field, .ocker-settings .combo-box { -fx-background-color: rgba(255,255,255,.85); -fx-border-color: #c0d3db; -fx-border-radius: 8; }

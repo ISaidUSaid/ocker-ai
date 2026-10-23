@@ -1,0 +1,15 @@
+{
+  "format": "ocker",
+  "version": "0.1.0",
+  "id": "minimal-example",
+  "title": "Empty valid chronology",
+  "createdAt": "2026-10-23T00:00:00Z",
+  "updatedAt": "2026-10-23T00:00:00Z",
+  "actors": [],
+  "documents": [],
+  "events": [],
+  "relationships": [],
+  "notes": [],
+  "authorities": [],
+  "assets": []
+}

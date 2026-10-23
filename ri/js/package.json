@@ -1,0 +1,45 @@
+{
+  "name": "@ocker-ai/core",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "Jenko <adam@isaidusaid.com>",
+  "description": "Portable OCKER chronology model, text PDF/LLM adapters and reusable browser UI",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./styles.css": "./src/styles.css",
+    "./demo": "./demo/workbench.js"
+  },
+  "files": [
+    "src",
+    "demo/workbench.js",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build --config vite.library.config.js",
+    "demo:build": "vite build",
+    "test": "node --test test/*.test.js",
+    "predev": "node demo/prepare.js",
+    "predemo:build": "node demo/prepare.js"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "html-to-image": "1.11.13",
+    "jspdf": "4.2.1",
+    "pdfjs-dist": "6.4.299"
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

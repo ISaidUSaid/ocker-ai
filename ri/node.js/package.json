@@ -1,0 +1,6 @@
+{
+  "name":"@ocker-ai/node-demo", "version":"0.1.0", "private":true, "type":"module", "license":"Apache-2.0", "author":"Jenko <adam@isaidusaid.com>",
+  "scripts":{"start":"node src/server.js", "test":"node --test test/*.test.js", "typecheck":"node --check src/server.js && node --check src/validation.js", "build":"npm run typecheck && npm --prefix frontend run build"},
+  "dependencies":{"@ocker-ai/core":"^0.1.0", "cors":"^2.8.5", "express":"^5.0.0", "multer":"^2.0.0"},
+  "devDependencies":{"supertest":"^7.0.0"}
+}

@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: Apache-2.0
+// Author: Jenko <adam@isaidusaid.com>
+package com.ocker.core;
+import org.junit.jupiter.api.Test; import static org.junit.jupiter.api.Assertions.*; import static com.ocker.core.OckerTypes.*; import java.time.*; import java.util.*; import java.nio.file.*; import com.fasterxml.jackson.databind.JsonNode;
+class OckerTest {
+ @Test void successfulAdaptersUseTextOnlyAndDeduplicateRelationships() throws Exception {
+  var pdf=Ocker.parsePdf(Path.of("..","..","..","ri","js","demo","public","examples","JoeBlogsAffidavit.pdf"),"d","Joe","affidavit",OckerOptions.builder().build());
+  var first=pdf.document().paragraphs().getFirst();
+  CompletionAdapter extraction=(task,prompt,input,cancel)->{
+   assertFalse(input.has("asset"));assertFalse(input.has("data"));assertTrue(input.has("paragraphs"));
+   var out=Ocker.JSON.createObjectNode();var list=out.putArray("events");
+   for(int n=0;n<2;n++){var e=list.addObject();e.put("title","Account "+n);e.put("summary",first.text());e.put("assertedBy","Joe Blogs");e.putObject("date").put("precision","unknown");e.putArray("paragraphIds").add(first.id());}
+   return out;
+  };
+  var record=Ocker.buildChronology(Ocker.createRecord("Test"),pdf,OckerOptions.builder().llm(extraction).build());
+  assertEquals(2,record.events().size());assertEquals(first.text(),record.events().getFirst().sources().getFirst().quote());
+  CompletionAdapter relating=(task,prompt,input,cancel)->{
+   var out=Ocker.JSON.createObjectNode();var list=out.putArray("relationships");
+   for(int n=0;n<2;n++){var edge=list.addObject();edge.put("from",record.events().get(n).id());edge.put("to",record.events().get(1-n).id());edge.put("type","supports");edge.put("rationale","The same source account.");}
+   return out;
+  };
+  var related=Ocker.findRelationships(record,OckerOptions.builder().llm(relating).build());assertEquals(1,related.relationships().size());
+  assertNotNull(Ocker.parseRecord(Ocker.exportRecord(related)));
+ }
+ @Test void rawSchemaAndCalendarDatesAreEnforced() throws Exception {
+   String raw=Files.readString(Path.of("..","..","..","spec","examples","joe-jill.ocker.json"));
+   var missing=Ocker.JSON.readTree(raw); ((com.fasterxml.jackson.databind.node.ObjectNode)missing).remove("notes");
+   assertThrows(Ocker.ValidationException.class,()->Ocker.parseRecord(missing.toString()));
+   var invalid=Ocker.JSON.readTree(raw); var date=(com.fasterxml.jackson.databind.node.ObjectNode)invalid.path("events").get(0).path("date");
+   date.put("precision","day");date.put("value","2026-02-30");date.remove("end");
+   assertThrows(Ocker.ValidationException.class,()->Ocker.parseRecord(invalid.toString()));
+   var orphan=Ocker.JSON.readTree(raw); ((com.fasterxml.jackson.databind.node.ObjectNode)orphan.path("notes").get(0)).put("authorId","missing");
+   assertThrows(Ocker.ValidationException.class,()->Ocker.parseRecord(orphan.toString()));
+ }
+
+ @Test void exportRoundTripAndMutationsPreserveContract() throws Exception {OckerRecord r=Ocker.createRecord("Test");Event e=new Event("e","Event","summary",new DateValue("day","2026-01-01",null,null,null),null,List.of(),List.of(),null,null,null);r=new OckerRecord(r.format(),r.version(),r.id(),r.title(),r.createdAt(),r.updatedAt(),List.of(),List.of(),List.of(e),List.of(),List.of(),List.of(),List.of(),Map.of("vendor",Map.of("x",1)));r=Ocker.addNote(r,"e","a note",12,5,null);OckerRecord p=Ocker.parseRecord(Ocker.exportRecord(r));assertEquals("a note",p.notes().getFirst().body());assertEquals(12,p.notes().getFirst().position().x());assertEquals(1,p.extensions().size());}
+ @Test void rejectsMissingSourceEvidenceAndOtherRelationshipTypes(){OckerRecord r=Ocker.createRecord("T");Event e=new Event("e","E","s",new DateValue("day","2026",null,null,null),null,List.of(),List.of(new Source("missing",null,null,"quote",null,null)),null,null,null);OckerRecord bad=new OckerRecord(r.format(),r.version(),r.id(),r.title(),r.createdAt(),r.updatedAt(),List.of(),List.of(),List.of(e),List.of(),List.of(),List.of(),List.of(),null);assertThrows(Ocker.ValidationException.class,()->Ocker.validate(bad));}
+ @Test void strictImportRejectsInvalidDateAndUnknownDateValue() {String now="2026-01-01T00:00:00Z";String bad="{\"format\":\"ocker\",\"version\":\"0.1.0\",\"id\":\"r\",\"title\":\"R\",\"createdAt\":\""+now+"\",\"updatedAt\":\""+now+"\",\"actors\":[],\"documents\":[],\"events\":[{\"id\":\"e\",\"title\":\"E\",\"summary\":\"\",\"date\":{\"precision\":\"day\",\"value\":\"2026-2-1\"},\"sources\":[]}],\"relationships\":[],\"notes\":[],\"authorities\":[],\"assets\":[]}";assertThrows(Ocker.ValidationException.class,()->Ocker.parseRecord(bad));String unknown=bad.replace("\"precision\":\"day\",\"value\":\"2026-2-1\"","\"precision\":\"unknown\",\"value\":\"2026-01-01\"");assertThrows(Ocker.ValidationException.class,()->Ocker.parseRecord(unknown));}
+ @Test void crossRuntimeJoeJillFixtureRoundTripsAndPdfImports() throws Exception {Path root=Path.of("..","..","..","spec","examples");String raw=Files.readString(root.resolve("joe-jill.ocker.json"));OckerRecord record=Ocker.parseRecord(raw);assertEquals(12,record.events().size());assertEquals(2,record.assets().size());assertEquals(6,record.relationships().size());assertEquals(1,record.notes().size());assertEquals(1,record.authorities().size());JsonNode original=Ocker.JSON.readTree(raw), roundTrip=Ocker.JSON.readTree(Ocker.exportRecord(record));assertEquals(original.path("events"),roundTrip.path("events"));assertEquals(original.path("relationships"),roundTrip.path("relationships"));assertEquals(original.path("assets"),roundTrip.path("assets"));assertEquals(original.path("notes").get(0).path("body"),roundTrip.path("notes").get(0).path("body"));assertEquals(original.path("notes").get(0).path("position").path("x").asDouble(),roundTrip.path("notes").get(0).path("position").path("x").asDouble());assertNotNull(Ocker.parseIntermediate(Files.readString(root.resolve("joe-affidavit.document.json"))));assertNotNull(Ocker.parseIntermediate(Files.readString(root.resolve("jill-affidavit.document.json"))));Path pdfRoot=Path.of("..","..","..","ri","js","demo","public","examples");Intermediate joe=Ocker.parsePdf(pdfRoot.resolve("JoeBlogsAffidavit.pdf"),"parse-joe","Joe","affidavit",OckerOptions.builder().build());Intermediate jill=Ocker.parsePdf(pdfRoot.resolve("JillBlogsAffidavit.pdf"),"parse-jill","Jill","affidavit",OckerOptions.builder().build());assertEquals("ccbe957b9eaad82796bc53ad6173c751ed5cdd1137cf027e96f15d4cef69dea4",joe.asset().sha256());assertEquals("0a6387d3af497d5aca91b93860c2506bfe182b4e890483f57145ac00f2eb31a1",jill.asset().sha256());assertFalse(joe.document().paragraphs().isEmpty());assertFalse(jill.document().paragraphs().isEmpty());String corrupt=raw.replace("ccbe957b9eaad82796bc53ad6173c751ed5cdd1137cf027e96f15d4cef69dea4","ccbe957b9eaad82796bc53ad6173c751ed5cdd1137cf027e96f15d4cef69dea0");assertThrows(Ocker.ValidationException.class,()->Ocker.parseRecord(corrupt));}
+ @Test void adapterRejectsInvalidJsonUnknownSourceAndCancellation() throws Exception {Intermediate in=new Intermediate("ocker-document","0.1.0",new Document("d","D","report",null,null,List.of(new Paragraph("p",1,null,"Evidence"))),null);OckerRecord base=Ocker.createRecord("R");assertThrows(Ocker.ValidationException.class,()->Ocker.buildChronology(base,in,OckerOptions.builder().llm((a,b,c,d)->Ocker.JSON.createArrayNode()).build()));CompletionAdapter unknown=(a,b,c,d)->Ocker.JSON.readTree("{\"events\":[{\"title\":\"T\",\"summary\":\"S\",\"date\":{\"precision\":\"unknown\"},\"paragraphIds\":[\"nope\"]}]}");assertThrows(Ocker.ValidationException.class,()->Ocker.buildChronology(base,in,OckerOptions.builder().llm(unknown).build()));assertThrows(java.util.concurrent.CancellationException.class,()->Ocker.buildChronology(base,in,OckerOptions.builder().cancellation(()->true).llm((a,b,c,d)->fail("provider called")).build()));}
+}

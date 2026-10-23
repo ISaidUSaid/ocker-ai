@@ -1,0 +1,37 @@
+{
+  "name": "ocker-ai-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open Chronology, Knowledge and Evidence Record",
+  "author": "Jenko <adam@isaidusaid.com>",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "ri/js",
+    "ri/angular",
+    "ri/react",
+    "ri/node.js",
+    "ri/angular/demo",
+    "ri/react/demo",
+    "ri/node.js/frontend"
+  ],
+  "engines": {
+    "node": ">=22.22.3"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace=@ocker-ai/core",
+    "test": "npm run test --workspace=@ocker-ai/core",
+    "build": "npm run build --workspace=@ocker-ai/core",
+    "demo:build": "npm run demo:build --workspace=@ocker-ai/core",
+    "check:spec": "node spec/tools/check-spec.js"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "@playwright/test": "^1.58.0"
+  },
+  "overrides": {
+    "vite": "8.3.5",
+    "@babel/core@^7.0.0": "7.29.7"
+  }
+}

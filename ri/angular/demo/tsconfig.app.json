@@ -1,0 +1,1 @@
+{ "extends":"../tsconfig.lib.json", "compilerOptions":{"baseUrl":".","outDir":"./out-tsc/app","paths":{"@ocker-ai/angular":["../src/public-api.ts"],"@ocker-ai/core":["../../js/src/index.d.ts"]}}, "include":["src/**/*.ts"] }

@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: Apache-2.0
+// Author: Jenko <adam@isaidusaid.com>
+package com.ocker.fx;
+import com.ocker.core.OckerRecord; import com.ocker.core.OckerOptions; import java.util.function.*;
+/** Host-owned UI behavior. CSS variables can be supplied by the host stylesheet. */
+public final class ChronologyViewOptions {
+ public enum Theme { GLASS, NONE }
+ public final boolean readOnly,showToolbar,animate; public final Theme theme; public final String locale,authorId; public final Consumer<OckerRecord> onChange; public final Consumer<OckerOptions.Progress> onProgress; public final Consumer<Throwable> onError; public final Consumer<com.ocker.core.OckerTypes.Event> onEventClick; public final Consumer<com.ocker.core.OckerTypes.Source> onSourceClick;
+ private ChronologyViewOptions(Builder b){readOnly=b.readOnly;showToolbar=b.showToolbar;animate=b.animate;theme=b.theme;locale=b.locale;authorId=b.authorId;onChange=b.change;onProgress=b.progress;onError=b.error;onEventClick=b.event;onSourceClick=b.source;}
+ public static Builder builder(){return new Builder();} public static final class Builder {boolean readOnly,showToolbar=true,animate=true;Theme theme=Theme.GLASS;String locale,authorId;Consumer<OckerRecord>change=x->{};Consumer<OckerOptions.Progress>progress=x->{};Consumer<Throwable>error=x->{};Consumer<com.ocker.core.OckerTypes.Event>event=x->{};Consumer<com.ocker.core.OckerTypes.Source>source=x->{}; public Builder readOnly(boolean x){readOnly=x;return this;}public Builder showToolbar(boolean x){showToolbar=x;return this;}public Builder animate(boolean x){animate=x;return this;}public Builder theme(Theme x){theme=java.util.Objects.requireNonNull(x);return this;}public Builder locale(String x){locale=x;return this;}public Builder onProgress(Consumer<OckerOptions.Progress>x){progress=x;return this;}public Builder authorId(String x){authorId=x;return this;}public Builder onChange(Consumer<OckerRecord>x){change=x;return this;}public Builder onError(Consumer<Throwable>x){error=x;return this;}public Builder onEventClick(Consumer<com.ocker.core.OckerTypes.Event>x){event=x;return this;}public Builder onSourceClick(Consumer<com.ocker.core.OckerTypes.Source>x){source=x;return this;}public ChronologyViewOptions build(){return new ChronologyViewOptions(this);}}
+}

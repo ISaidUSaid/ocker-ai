@@ -1,0 +1,40 @@
+{
+  "name": "@ocker-ai/react",
+  "version": "0.1.0",
+  "description": "React integration for the OCKER chronology",
+  "license": "Apache-2.0",
+  "author": "Jenko <adam@isaidusaid.com>",
+  "type": "module",
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "peerDependencies": {
+    "@ocker-ai/core": "^0.1.0",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.0",
+    "vite": "8.3.5",
+    "vite-plugin-dts": "^4.5.0"
+  },
+  "scripts": {
+    "build": "vite build && tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "demo": "npm run dev --workspace=@ocker-ai/react-demo"
+  }
+}

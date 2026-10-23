@@ -25,11 +25,11 @@ The repository remains private until Adam chooses to publish it. Only this check
 - [x] Java library and reusable JavaFX component/application.
 - [x] C# library and reusable desktop component/application.
 - [x] Validate all supported builds and workflows, inspect desktop/mobile UI and audit IP boundary.
-- [ ] Push private repository.
+- [x] Push private repository.
 - [x] Prepare live example workflow; record private Pages hosting blocker.
 
 Do not mark a runtime verified if its toolchain or provider integration has not actually been exercised. Record any remaining gaps here.
 
 Hosting: GitHub Pages is blocked by the private-repository account plan. Keep the repo private. Deployment workflow is ready; no paid upgrade authorised.
 
-Validation evidence and platform limits are recorded in VALIDATION.md. The private push remains the final delivery step.
+Validation evidence and platform limits are recorded in VALIDATION.md. Implementation commit dcd5aed is pushed to private origin/main. GitHub CI is running; Java and C# jobs have passed.

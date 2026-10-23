@@ -46,8 +46,9 @@ public final class ExampleApp extends Application {
         view = new ChronologyView(record, options());
         endpoint.setPromptText("https://your-provider.example/v1/chat/completions"); model.setPromptText("Your selected model"); key.setPromptText("API key — memory only; optional for local Ollama");
         theme.getItems().setAll(ChronologyViewOptions.Theme.GLASS, ChronologyViewOptions.Theme.NONE); theme.setValue(ChronologyViewOptions.Theme.GLASS); theme.setOnAction(e -> { view.setOptions(options()); updateCode(); });
+        Button build = action("Build chronology", this::build); build.getStyleClass().add("ocker-build-button");
         commands.getChildren().addAll(action("Import OCKER file", () -> open(stage)), action("Load Joe and Jill Blogs Example Chronology", this::loadExample), action("Save OCKER", () -> save(stage)), action("PNG", () -> export(stage, true)), action("PDF", () -> export(stage, false)),
-            action("Add documents", () -> importDocuments(stage)), action("Build chronology", this::build), showCode, action("Edit OCKER file", () -> editRecord(stage)));
+            action("Add documents", () -> importDocuments(stage)), build, showCode, action("Edit OCKER file", () -> editRecord(stage)));
         configureCodePane();
         Button cancel = new Button("Cancel"); cancel.setOnAction(e -> cancelled.set(true));
         FlowPane provider=new FlowPane(12,10);
@@ -57,17 +58,22 @@ public final class ExampleApp extends Application {
         presets.getChildren().addAll(new Label("Provider presets"), providerPreset("OpenAI", "https://api.openai.com/v1/chat/completions"), providerPreset("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"), providerPreset("Mistral", "https://api.mistral.ai/v1/chat/completions"), providerPreset("Groq", "https://api.groq.com/openai/v1/chat/completions"), providerPreset("OpenRouter", "https://openrouter.ai/api/v1/chat/completions"), providerPreset("Ollama", "http://localhost:11434/v1/chat/completions"));
         TitledPane advanced = new TitledPane("Advanced settings", field("Provider endpoint",endpoint)); advanced.setExpanded(false);
         Label providerNotice = new Label("Build chronology sends document text to your chosen provider. Local Ollama stays on this device."); providerNotice.setWrapText(true);
-        VBox settings = new VBox(12, heading(), provider, presets, advanced, providerNotice, commands, codePane, new HBox(10, cancel, status)); settings.setPadding(new Insets(18)); settings.getStyleClass().add("ocker-settings");
-        BorderPane root = new BorderPane(view); root.setTop(settings);
-        Scene scene = new Scene(root, 1200, 820); scene.getStylesheets().add(getClass().getResource("/com/ocker/fx/ocker.css").toExternalForm());
+        Label subheading = new Label("Start with a portable record, add documents, then build an attributed chronology."); subheading.getStyleClass().add("ocker-subheading");
+        VBox recordsStep = step("1", "Open or start a chronology", commands);
+        VBox providerStep = step("2", "Choose a provider", provider, presets, advanced, providerNotice);
+        VBox settings = new VBox(10, heading(), subheading, recordsStep, providerStep, codePane, new HBox(10, cancel, status)); settings.setPadding(new Insets(16)); settings.getStyleClass().add("ocker-settings");
+        BorderPane root = new BorderPane(view); root.setFocusTraversable(true); root.setTop(settings);
+        Scene scene = new Scene(root, namedSize("width", 1200), namedSize("height", 820)); scene.getStylesheets().add(getClass().getResource("/com/ocker/fx/ocker.css").toExternalForm());
         provider.prefWrapLengthProperty().bind(scene.widthProperty().subtract(36));
         presets.prefWrapLengthProperty().bind(scene.widthProperty().subtract(36));
-        stage.setScene(scene); stage.setTitle("OCKER — Open Chronology, Knowledge and Evidence Record"); stage.show();
+        stage.setScene(scene); stage.setTitle("OCKER — Open Chronology, Knowledge and Evidence Record"); stage.show(); Platform.runLater(root::requestFocus);
         String snapshot = getParameters().getNamed().get("snapshot");
-        if (snapshot != null) { javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2)); pause.setOnFinished(e -> { try { root.applyCss(); root.layout(); javax.imageio.ImageIO.write(javafx.embed.swing.SwingFXUtils.fromFXImage(root.snapshot(new javafx.scene.SnapshotParameters(), null), null), "png", Path.of(snapshot).toFile()); } catch (Exception error) { error.printStackTrace(); } String prefix=getParameters().getNamed().get("export-prefix");if(prefix!=null)try{view.exportPng(Path.of(prefix+".png"));view.exportPdf(Path.of(prefix+".pdf"));}catch(Exception error){error.printStackTrace();}Platform.exit(); }); pause.play(); }
+        if (snapshot != null) { javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2)); pause.setOnFinished(e -> { try { root.applyCss(); root.layout(); String position = getParameters().getNamed().get("scroll"); if (position != null) view.scrollTo(Double.parseDouble(position)); root.layout(); javax.imageio.ImageIO.write(javafx.embed.swing.SwingFXUtils.fromFXImage(root.snapshot(new javafx.scene.SnapshotParameters(), null), null), "png", Path.of(snapshot).toFile()); } catch (Exception error) { error.printStackTrace(); } String prefix=getParameters().getNamed().get("export-prefix");if(prefix!=null)try{view.exportPng(Path.of(prefix+".png"));view.exportPdf(Path.of(prefix+".pdf"));}catch(Exception error){error.printStackTrace();}Platform.exit(); }); pause.play(); }
     }
     private VBox field(String label, javafx.scene.Node control) { return new VBox(5,new Label(label),control); }
-    private Label heading() { Label label=new Label("OCKER  /  Open Chronology, Knowledge and Evidence Record");label.getStyleClass().add("ocker-heading");return label; }
+    private Label heading() { Label label=new Label("OCKER  /  Open Chronology, Knowledge and Evidence Record"); label.setWrapText(true); label.setMaxWidth(Double.MAX_VALUE); label.getStyleClass().add("ocker-heading"); return label; }
+    private VBox step(String number, String title, Node... content) { Label badge = new Label(number); badge.getStyleClass().add("ocker-step-number"); Label heading = new Label(title); heading.setStyle("-fx-font-weight: bold;"); HBox label = new HBox(8, badge, heading); label.setAlignment(javafx.geometry.Pos.CENTER_LEFT); VBox step = new VBox(8); step.getStyleClass().add("ocker-step"); step.getChildren().add(label); step.getChildren().addAll(content); return step; }
+    private double namedSize(String name, double fallback) { try { return Math.max(360, Double.parseDouble(getParameters().getNamed().getOrDefault(name, Double.toString(fallback)))); } catch (NumberFormatException error) { return fallback; } }
     private ChronologyViewOptions options() { return ChronologyViewOptions.builder().theme(theme.getValue() == null ? ChronologyViewOptions.Theme.GLASS : theme.getValue()).onChange(next -> record = next).onError(error -> status.setText(error.getMessage())).build(); }
     private void configureCodePane() {
         code.setEditable(false);

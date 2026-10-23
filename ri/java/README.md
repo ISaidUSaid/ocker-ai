@@ -12,7 +12,7 @@ mvn -f ri/java/ocker-example/pom.xml javafx:run
 mvn -f ri/java/pom.xml test
 ```
 
-Open a saved OCKER file, or queue PDF, plain text, RTF and DOCX documents with their document kind. Enter a provider endpoint, model and key, then approve sending text before building. Settings stay in memory. A failed or cancelled operation leaves the displayed record unchanged. The application supports source excerpts/original downloads, filters, zoom, note pins, outside-edge coloured authorities, a related-account web and PNG/PDF export.
+Open a saved OCKER file, or queue PDF, plain text, RTF and DOCX documents with their document kind. Enter a provider endpoint, model and key, then choose **Build chronology** to extract events and compare accounts together. The provider notice explains where document text is sent. Settings stay in memory. A failed or cancelled operation leaves the displayed record unchanged. The application supports source excerpts/original downloads, filters, zoom, note pins, outside-edge coloured authorities, a related-account web and PNG/PDF export.
 
 ```java
 var options = OckerOptions.builder()
@@ -35,6 +35,8 @@ var view = new ChronologyView(record, ChronologyViewOptions.builder()
 `CompletionAdapter` is replaceable. PDF import uses ordinary PDFBox text extraction without OCR; plain text, RTF and DOCX imports preserve the original asset with extracted reviewable paragraphs. JSON import/export checks the shared schema, references and embedded byte hashes. `parseIntermediate` / `exportIntermediate` preserve the document paragraphs and source asset. Sources and attributed accounts are separate from legal findings.
 
 Style `ChronologyView` with JavaFX stylesheets and its `-ocker-*` looked-up colours. Compact layout follows control width; all cards remain mounted. JavaFX UI work belongs on the application thread; the example runs parsing/provider operations on a worker.
+
+The default presentation follows the [shared browser/native design](../../spec/PRESENTATION.md): paired desktop cards, compact single-column layout, pinned paper notes and outside precedent flags. Desktop related-card dialogs include the same draggable dispensers. Drop the note's red pin inside a card; dropping elsewhere cancels.
 
 For a reproducible native smoke test, the example accepts `--record=/absolute/file.ocker.json`, `--snapshot=/absolute/preview.png` and optional `--export-prefix=/absolute/export`. Pass these through the Maven plugin's `-Djavafx.args` property. No key is needed for reading the sample.
 

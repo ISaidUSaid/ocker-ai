@@ -16,8 +16,11 @@ import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.graphics.image.*;
@@ -30,12 +33,14 @@ import java.util.*;
 public final class ChronologyView extends BorderPane {
     private OckerRecord record;
     private ChronologyViewOptions options;
-    private final VBox cards = new VBox(30);
+    private final VBox cards = new VBox(28);
+    private ScrollPane scroll;
     private final TextField search = new TextField();
     private final ComboBox<String> filter = new ComboBox<>();
     private final ComboBox<String> documentFilter = new ComboBox<>();
     private final StackPane stage = new StackPane();
     private final VBox dispensers = new VBox(12);
+    private Runnable relatedRefresh;
     private double zoom = 1;
     private boolean mobile;
 
@@ -62,6 +67,8 @@ public final class ChronologyView extends BorderPane {
     public OckerRecord getRecord() { return record; }
     public void setRecord(OckerRecord next) { Ocker.validateStrict(next); record = next; render(); }
     public void setOptions(ChronologyViewOptions next) { options = Objects.requireNonNull(next); build(); render(); }
+    /** Allows a host to frame a deterministic, non-interactive snapshot. */
+    public void scrollTo(double position) { if (scroll != null) scroll.setVvalue(Math.max(0, Math.min(1, position))); }
     private Button action(String text, Runnable run) {
         Button button = new Button(text);
         button.setOnAction(e -> { try { run.run(); } catch (Exception error) { options.onError.accept(error); } });
@@ -70,63 +77,101 @@ public final class ChronologyView extends BorderPane {
     private void build() {
         getStyleClass().removeAll("ocker-glass", "ocker-plain");
         getStyleClass().add(options.theme == ChronologyViewOptions.Theme.GLASS ? "ocker-glass" : "ocker-plain");
-        ScrollPane scroll = new ScrollPane(cards); scroll.setFitToWidth(true); scroll.setPannable(true);
-        cards.setPadding(new Insets(35, 130, 190, 130));
+        scroll = new ScrollPane(cards); scroll.setFitToWidth(true); scroll.setPannable(true);
+        cards.getStyleClass().setAll("ocker-timeline");
+        cards.setPadding(new Insets(28, 80, 190, 80));
         stage.getChildren().setAll(scroll, dispensers);
         StackPane.setAlignment(dispensers, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(dispensers, new Insets(20));
         dispensers.setMaxSize(120, 145);
         Button authority = action("Add precedent", () -> {}), note = action("Add note", () -> {});
         authority.getStyleClass().add("ocker-flag-pad"); note.getStyleClass().add("ocker-note-pad");
-        dragSource(authority, "ocker:new-authority", 60, 15);
-        dragSource(note, "ocker:new-note", 60, 12);
+        dragSource(authority, "ocker:new-authority", 70, 17);
+        dragSource(note, "ocker:new-note", 120, 14);
         dispensers.getChildren().setAll(authority, note);
         setCenter(stage);
         if (options.showToolbar) {
             FlowPane toolbar = new FlowPane(8, 8, search, filter, documentFilter,
                 action("−", () -> { zoom = Math.max(.5, zoom - .1); render(); }),
                 action("+", () -> { zoom = Math.min(1.5, zoom + .1); render(); }));
-            toolbar.setPadding(new Insets(12)); setTop(toolbar);
+            toolbar.getStyleClass().add("ocker-toolbar"); toolbar.setPadding(new Insets(12)); setTop(toolbar);
         } else setTop(null);
     }
     private void render() {
         if (record == null) return;
         dispensers.setVisible(!mobile && !options.readOnly); dispensers.setManaged(!mobile && !options.readOnly);
-        cards.setPadding(mobile ? new Insets(15) : new Insets(35, 130, 190, 130));
+        getStyleClass().remove("ocker-mobile"); if (mobile) getStyleClass().add("ocker-mobile");
+        cards.setPadding(mobile ? new Insets(15, 12, 80, 12) : new Insets(28, 80, 190, 80));
         String selectedDoc = documentFilter.getValue();
         List<String> documentNames = new ArrayList<>(List.of("All documents"));
         record.documents().forEach(d -> documentNames.add(d.title()));
         if (!documentFilter.getItems().equals(documentNames)) { documentFilter.getItems().setAll(documentNames); documentFilter.setValue(documentNames.contains(selectedDoc) ? selectedDoc : "All documents"); }
         String query = Objects.toString(search.getText(), "").toLowerCase(Locale.ROOT);
         cards.getChildren().clear();
-        Label brand=new Label("OCKER · "+record.title());brand.getStyleClass().add("ocker-event-title");cards.getChildren().add(brand);
-        record.events().stream().filter(e -> matches(e, query)).sorted(Comparator.comparing(e -> Objects.toString(e.date().value(), "9999"))).forEach(e -> cards.getChildren().add(card(e)));
+        List<Event> events = record.events().stream().filter(e -> matches(e, query)).sorted(Comparator.comparing(e -> Objects.toString(e.date().value(), "9999"))).toList();
+        Label eyebrow = new Label("OCKER · OPEN CHRONOLOGY, KNOWLEDGE AND EVIDENCE RECORD"); eyebrow.getStyleClass().add("ocker-eyebrow");
+        Label title = new Label(record.title()); title.getStyleClass().add("ocker-board-title");
+        Label count = new Label(events.size() + " events · " + record.relationships().size() + " related assessments"); count.getStyleClass().add("ocker-count");
+        VBox heading = new VBox(5, eyebrow, title, count); heading.getStyleClass().add("ocker-board-heading"); heading.setAlignment(Pos.CENTER);
+        cards.getChildren().add(heading);
+        for (int index = 0; index < events.size(); index += 2) cards.getChildren().add(timelineRow(events.get(index), index + 1 < events.size() ? events.get(index + 1) : null));
     }
+    private Node timelineRow(Event leftEvent, Event rightEvent) {
+        if (mobile) {
+            VBox column = new VBox(14, card(leftEvent, true));
+            if (rightEvent != null) column.getChildren().add(card(rightEvent, false));
+            return column;
+        }
+        GridPane row = new GridPane(); row.getStyleClass().add("ocker-timeline-row");
+        ColumnConstraints side = new ColumnConstraints(); side.setPercentWidth(46); side.setHgrow(Priority.ALWAYS);
+        ColumnConstraints centre = new ColumnConstraints(80); centre.setHalignment(HPos.CENTER);
+        ColumnConstraints otherSide = new ColumnConstraints(); otherSide.setPercentWidth(46); otherSide.setHgrow(Priority.ALWAYS);
+        row.getColumnConstraints().addAll(side, centre, otherSide);
+        Pane leftCard = card(leftEvent, true); leftCard.setMaxWidth(530); GridPane.setHgrow(leftCard, Priority.ALWAYS);
+        VBox leftSlot = new VBox(leftCard); leftSlot.getStyleClass().addAll("ocker-card-slot", "ocker-card-slot-left"); leftSlot.setAlignment(Pos.TOP_RIGHT);
+        VBox rightSlot = new VBox(); rightSlot.getStyleClass().addAll("ocker-card-slot", "ocker-card-slot-right"); rightSlot.setAlignment(Pos.TOP_LEFT);
+        if (rightEvent != null) { Pane rightCard = card(rightEvent, false); rightCard.setMaxWidth(530); GridPane.setHgrow(rightCard, Priority.ALWAYS); rightSlot.getChildren().add(rightCard); }
+        Region firstSpine = new Region(); firstSpine.getStyleClass().add("ocker-spine-segment"); firstSpine.setMaxWidth(2); firstSpine.setPrefHeight(72);
+        Region remainingSpine = new Region(); remainingSpine.getStyleClass().add("ocker-spine-segment"); remainingSpine.setMaxWidth(2); VBox.setVgrow(remainingSpine, Priority.ALWAYS);
+        Label firstDate = new Label(markerDate(leftEvent)); firstDate.getStyleClass().add("ocker-marker-date"); Circle firstDot = new Circle(7); firstDot.getStyleClass().add("ocker-marker-dot");
+        VBox marker = new VBox(firstDate, firstDot, firstSpine); marker.getStyleClass().add("ocker-marker-column"); marker.setAlignment(Pos.TOP_CENTER); marker.setFillWidth(false);
+        if (rightEvent != null) { Label secondDate = new Label(markerDate(rightEvent)); secondDate.getStyleClass().add("ocker-marker-date"); Circle secondDot = new Circle(7); secondDot.getStyleClass().add("ocker-marker-dot"); marker.getChildren().addAll(secondDate, secondDot); }
+        marker.getChildren().add(remainingSpine);
+        row.add(marker, 1, 0);
+        row.add(leftSlot, 0, 0); row.add(rightSlot, 2, 0);
+        return row;
+    }
+    private String markerDate(Event event) { String date = event.date().value(); return date == null || date.isBlank() ? "UNDATED" : date.replace('-', '.'); }
     private boolean matches(Event event, String query) {
         boolean status = filter.getValue() == null || "All".equals(filter.getValue()) || filter.getValue().equals(event.status());
         String doc = documentFilter.getValue();
         boolean document = doc == null || "All documents".equals(doc) || event.sources().stream().anyMatch(s -> record.documents().stream().anyMatch(d -> d.id().equals(s.documentId()) && d.title().equals(doc)));
         return status && document && (event.title() + " " + event.summary() + " " + event.narrative()).toLowerCase(Locale.ROOT).contains(query);
     }
-    private Pane card(Event event) {
+    private Pane card(Event event, boolean left) { return card(event, left, mobile); }
+    private Pane card(Event event, boolean left, boolean compact) {
         StackPane outer = new StackPane(); outer.setUserData(event.id()); outer.getStyleClass().add("ocker-card");
-        VBox body = new VBox(9); body.setPadding(new Insets(20));
+        VBox body = new VBox(9); body.getStyleClass().add("ocker-card-body"); body.setPadding(new Insets(22));
         Label date = new Label(event.date().value() == null ? "Undated" : event.date().value()); date.getStyleClass().add("ocker-date");
         Label title = new Label(event.title()); title.setWrapText(true); title.getStyleClass().add("ocker-event-title");
-        Label summary = new Label(event.summary()); summary.setWrapText(true);
-        body.getChildren().addAll(date, title, new Label(Objects.toString(event.assertedBy(), "")), summary);
-        if ("agreed".equals(event.status())) { Label commonGround = new Label("Common ground"); commonGround.getStyleClass().add("ocker-common-ground"); body.getChildren().add(commonGround); }
+        Label account = new Label(Objects.toString(event.assertedBy(), "")); account.getStyleClass().add("ocker-meta");
+        Label summary = new Label(event.summary()); summary.setWrapText(true); summary.getStyleClass().add("ocker-summary");
+        body.getChildren().addAll(date, title, account);
+        if (event.status() != null && !event.status().isBlank()) { Label status = new Label("agreed".equals(event.status()) ? "Common ground" : event.status()); status.getStyleClass().addAll("ocker-status", "ocker-status-" + event.status()); body.getChildren().add(status); }
+        body.getChildren().add(summary);
         FlowPane actions = new FlowPane(6, 6);
-        for (Source source : event.sources()) actions.getChildren().add(action("Source evidence", () -> { options.onSourceClick.accept(source); sourceViewer(source); }));
-        if (record.relationships().stream().anyMatch(r -> r.from().equals(event.id()) || r.to().equals(event.id()))) actions.getChildren().add(action("Related", () -> relatedWeb(event)));
-        if (mobile && !options.readOnly) actions.getChildren().addAll(action("Add precedent", () -> authorityEditor(event, null)), action("Add note", () -> noteEditor(event, null, 40, 80)));
+        actions.getStyleClass().add("ocker-actions");
+        for (Source source : event.sources()) { Button sourceButton = action("⌁ Source evidence", () -> { options.onSourceClick.accept(source); sourceViewer(source); }); sourceButton.getStyleClass().add("ocker-source-action"); actions.getChildren().add(sourceButton); }
+        long relatedCount = record.relationships().stream().filter(r -> r.from().equals(event.id()) || r.to().equals(event.id())).count();
+        if (relatedCount > 0) actions.getChildren().add(action("↗ Related (" + relatedCount + ")", () -> relatedWeb(event)));
+        if (compact && !options.readOnly) actions.getChildren().addAll(action("Add precedent", () -> authorityEditor(event, null)), action("Add note", () -> noteEditor(event, null, 40, 80)));
         body.getChildren().add(actions);
-        Pane overlay = new Pane(); overlay.setPickOnBounds(false);
+        Pane overlay = new Pane(); overlay.setPickOnBounds(false); overlay.setMinSize(0, 0); overlay.setPrefSize(0, 0);
         List<Note> notes = record.notes().stream().filter(n -> n.eventId().equals(event.id())).toList();
-        if (mobile && !notes.isEmpty()) body.getChildren().add(action("▱ " + notes.size() + " notes", () -> notesDialog(event)));
-        if (!mobile) for (Note note : notes) { Node paper = note(event, note); paper.relocate(note.position().x() - 120, note.position().y() - 14); overlay.getChildren().add(paper); }
+        if (compact && !notes.isEmpty()) body.getChildren().add(action("▱ " + notes.size() + " notes", () -> notesDialog(event)));
+        if (!compact) for (Note note : notes) { Node paper = note(event, note); paper.relocate(note.position().x() - 120, note.position().y() - 14); overlay.getChildren().add(paper); }
         outer.getChildren().addAll(body, overlay);
-        outer.setOnMouseClicked(e -> { options.onEventClick.accept(event); overlay.setOpacity(.2); });
+        outer.setOnMouseClicked(e -> { if (!(e.getTarget() instanceof Button)) { options.onEventClick.accept(event); overlay.setOpacity(.2); } });
         outer.setOnMouseExited(e -> overlay.setOpacity(1));
         outer.setOnDragOver(e -> { if (outer.getLayoutBounds().contains(outer.sceneToLocal(e.getSceneX(),e.getSceneY())) && !options.readOnly && e.getDragboard().hasString() && e.getDragboard().getString().startsWith("ocker:")) e.acceptTransferModes(TransferMode.MOVE); e.consume(); });
         outer.setOnDragDropped(e -> {
@@ -142,29 +187,43 @@ public final class ChronologyView extends BorderPane {
             } catch (Exception error) { options.onError.accept(error); e.setDropCompleted(false); }
             e.consume();
         });
-        BorderPane wrap = new BorderPane(outer);
-        VBox flags = new VBox(7);
+        StackPane wrap = new StackPane(outer);
+        VBox flags = new VBox(7); flags.getStyleClass().add(left ? "ocker-authorities-left" : "ocker-authorities-right");
         for (Authority authority : record.authorities().stream().filter(a -> a.eventId().equals(event.id())).toList()) {
             Button flag = action(authority.citation(), () -> authorityReader(event, authority)); flag.setMaxWidth(120); flag.setWrapText(false);
             flag.getStyleClass().add("ocker-authority"); flag.setStyle("-fx-background-color: " + color(authority.color()) + ";"); flags.getChildren().add(flag);
         }
-        boolean left = record.events().indexOf(event) % 2 == 0;
-        if (!flags.getChildren().isEmpty()) { if (left || mobile) wrap.setLeft(flags); else wrap.setRight(flags); }
+        if (!flags.getChildren().isEmpty()) { StackPane.setAlignment(flags, left || compact ? Pos.TOP_LEFT : Pos.TOP_RIGHT); flags.setTranslateX(compact ? 0 : left ? -114 : 114); wrap.getChildren().add(flags); }
         wrap.setScaleX(zoom); wrap.setScaleY(zoom);
-        if (options.animate && !mobile) { FadeTransition fade = new FadeTransition(Duration.millis(180), wrap); fade.setFromValue(0); fade.setToValue(1); TranslateTransition move = new TranslateTransition(Duration.millis(180), wrap); move.setFromX(left ? -16 : 16); move.setToX(0); new ParallelTransition(fade, move).play(); }
+        if (options.animate && !compact) { FadeTransition fade = new FadeTransition(Duration.millis(180), wrap); fade.setFromValue(0); fade.setToValue(1); TranslateTransition move = new TranslateTransition(Duration.millis(180), wrap); move.setFromX(left ? -16 : 16); move.setToX(0); new ParallelTransition(fade, move).play(); }
         return wrap;
     }
     private Node note(Event event, Note note) {
-        Pane paper = new Pane(); paper.setPrefSize(240, 180); paper.getStyleClass().add("ocker-note");
-        Label text = new Label(note.body()); text.setWrapText(true); text.setPrefWidth(200); text.relocate(20, 43);
-        Button pin = action("●", () -> {}); pin.relocate(106, 0); pin.getStyleClass().add("ocker-pin");
-        if (!options.readOnly) dragSource(pin, "ocker:note:" + note.id(), 14, 14);
-        paper.getChildren().addAll(text, pin);
-        if (!options.readOnly) { Button edit = action("✎", () -> noteEditor(event, note, note.position().x(), note.position().y())); edit.relocate(20, 8); edit.setAccessibleText("Edit note"); Button remove = action("×", () -> changed(Ocker.deleteNote(record, note.id()))); remove.relocate(195, 8); remove.setAccessibleText("Delete note"); paper.getChildren().addAll(edit, remove); }
+        Pane paper = new Pane(); paper.getStyleClass().add("ocker-note");
+        Label text = new Label(note.body()); text.setWrapText(true); text.setPrefWidth(200); text.setMinHeight(Region.USE_PREF_SIZE); text.relocate(20, 43);
+        double paperHeight = Math.max(195, text.prefHeight(200) + 68); paper.setPrefSize(240, paperHeight);
+        Button pin = action("", () -> {}); pin.setGraphic(new Circle(10, Color.web("#ba342d"))); pin.setMinSize(28, 28); pin.setPrefSize(28, 28); pin.setMaxSize(28, 28); pin.relocate(106, 0); pin.getStyleClass().add("ocker-pin");
+        if (!options.readOnly) dragSource(pin, "ocker:note:" + note.id(), 120, 14);
+        Region fold = new Region(); fold.getStyleClass().add("ocker-note-fold"); fold.relocate(216, paperHeight - 24); fold.setMouseTransparent(true);
+        paper.getChildren().addAll(text, pin, fold);
+        if (!options.readOnly) { Button edit = action("✎", () -> noteEditor(event, note, note.position().x(), note.position().y())); edit.relocate(20, 8); edit.setAccessibleText("Edit note"); edit.getStyleClass().add("ocker-note-tool"); Button remove = action("×", () -> changed(Ocker.deleteNote(record, note.id()))); remove.relocate(195, 8); remove.setAccessibleText("Delete note"); remove.getStyleClass().add("ocker-note-tool"); paper.getChildren().addAll(edit, remove); }
         return paper;
     }
     private void dragSource(Node node, String value, double x, double y) {
-        node.setOnDragDetected(event -> { if (options.readOnly || mobile) return; Dragboard drag = node.startDragAndDrop(TransferMode.MOVE); ClipboardContent content = new ClipboardContent(); content.putString(value); drag.setContent(content); drag.setDragView(node.snapshot(new SnapshotParameters(), null), x, y); event.consume(); });
+        node.addEventFilter(MouseEvent.DRAG_DETECTED, event -> { if (options.readOnly || mobile) return; Dragboard drag = node.startDragAndDrop(TransferMode.MOVE); ClipboardContent content = new ClipboardContent(); content.putString(value); drag.setContent(content); Node preview = dragPreview(value); drag.setDragView(preview.snapshot(new SnapshotParameters(), null), x, y); event.consume(); });
+    }
+    private Node dragPreview(String value) {
+        if (value.contains("note")) {
+            String body = value.startsWith("ocker:note:") ? record.notes().stream().filter(note -> note.id().equals(value.substring(11))).map(Note::body).findFirst().orElse("Note") : "New note";
+            Label text = new Label(body); text.setWrapText(true); text.setPrefWidth(196); text.setStyle("-fx-text-fill: #4d461f; -fx-font-size: 12;"); text.relocate(22, 44);
+            double height = Math.max(195, text.prefHeight(196) + 70);
+            Pane paper = new Pane(text); paper.setPrefSize(240, height); paper.setStyle("-fx-background-color: linear-gradient(to bottom right, #fff2aa, #f3df83); -fx-background-radius: 2 2 28 3; -fx-opacity: .76;");
+            Circle pin = new Circle(10, Color.web("#ba342d")); pin.relocate(110, 4); paper.getChildren().add(pin);
+            return paper;
+        }
+        Label text = new Label("Add precedent"); text.setStyle("-fx-text-fill: #24434d; -fx-font-size: 10; -fx-font-weight: bold;"); text.relocate(12, 10);
+        Pane flag = new Pane(text); flag.setPrefSize(140, 36); flag.setStyle("-fx-background-color: #b7d9e8; -fx-background-radius: 3; -fx-opacity: .76;");
+        return flag;
     }
     private void notesDialog(Event event) {
         Dialog<Void> dialog = new Dialog<>(); dialog.setTitle("Notes"); VBox list = new VBox(10);
@@ -201,21 +260,44 @@ public final class ChronologyView extends BorderPane {
     }
     private void relatedWeb(Event selected) {
         List<Relationship> links = record.relationships().stream().filter(r -> r.from().equals(selected.id()) || r.to().equals(selected.id())).toList(); Set<String> ids = new HashSet<>(List.of(selected.id())); links.forEach(r -> { ids.add(r.from()); ids.add(r.to()); });
-        List<Event> events = record.events().stream().filter(e -> ids.contains(e.id())).toList(); Pane graph = new Pane(); graph.setPrefSize(680, 420); Map<String, Point2D> points = new HashMap<>();
-        for (int i = 0; i < events.size(); i++) { double angle = 2 * Math.PI * i / Math.max(1, events.size()); points.put(events.get(i).id(), new Point2D(320 + 210 * Math.cos(angle), 180 + 125 * Math.sin(angle))); }
-        for (Relationship relation : links) { Point2D a = points.get(relation.from()), b = points.get(relation.to()); Line line = new Line(a.getX(), a.getY(), b.getX(), b.getY()); line.setStyle("-fx-stroke: " + (relation.type().equals("contradicts") ? "#b65462" : "#3e8b7d") + "; -fx-stroke-width: 2;"); if (relation.type().equals("contradicts")) line.getStrokeDashArray().addAll(7d, 5d); Tooltip.install(line, new Tooltip(relation.rationale())); graph.getChildren().add(line); }
-        for (Event event : events) { Point2D point = points.get(event.id()); VBox node = new VBox(5); node.setPrefWidth(155); node.getStyleClass().add("ocker-card"); Label title = new Label(event.title()), summary = new Label(event.summary()); title.setWrapText(true); summary.setWrapText(true); node.getChildren().addAll(title, summary, action("Source", () -> { if (!event.sources().isEmpty()) sourceViewer(event.sources().get(0)); })); if (!options.readOnly) node.getChildren().addAll(action("Note", () -> noteEditor(event, null, 40, 60)), action("Precedent", () -> authorityEditor(event, null))); node.relocate(point.getX() - 77, point.getY() - 40); graph.getChildren().add(node); }
-        Dialog<Void> dialog = new Dialog<>(); dialog.setTitle("Related to " + selected.title()); dialog.getDialogPane().setContent(new ScrollPane(graph)); dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE); showModal(dialog);
+        List<Event> events = record.events().stream().filter(e -> ids.contains(e.id())).sorted(Comparator.comparing(e -> Objects.toString(e.date().value(), "9999"))).toList();
+        Window owner = getScene() == null ? null : getScene().getWindow(); double ownerWidth = owner == null ? 1100 : owner.getWidth(), ownerHeight = owner == null ? 760 : owner.getHeight();
+        boolean compact = ownerWidth < 740; double dialogWidth = Math.min(1160, Math.max(compact ? 360 : 720, ownerWidth - 48)); double dialogHeight = Math.min(760, Math.max(430, ownerHeight - 56));
+        double graphWidth = dialogWidth - 96;
+        double cardWidth = compact ? graphWidth - 52 : (graphWidth - 132) / 2; double rowHeight = compact ? 280 : 360;
+        Pane lines = new Pane(); Pane board = new Pane(); Map<String, Point2D> points = new HashMap<>();
+        for (int index = 0; index < events.size(); index++) { boolean left = compact || index % 2 == 0; int row = compact ? index : index / 2; double x = compact ? 26 : (left ? 26 : 26 + cardWidth + 80), y = 24 + row * rowHeight + (!compact && !left ? 80 : 0); points.put(events.get(index).id(), new Point2D(x + cardWidth / 2, y + 105)); }
+        populateRelatedCards(board, events, compact, cardWidth, rowHeight);
+        double graphHeight = Math.max(340, (compact ? events.size() : (events.size() + 1) / 2) * rowHeight + 80); lines.setPrefSize(graphWidth, graphHeight); board.setPrefSize(graphWidth, graphHeight);
+        for (Relationship relation : links) { Point2D a = points.get(relation.from()), b = points.get(relation.to()); if (a == null || b == null) continue; Line line = new Line(a.getX(), a.getY(), b.getX(), b.getY()); line.setStyle("-fx-stroke: " + (relation.type().equals("contradicts") ? "#b65462" : "#3e8b7d") + "; -fx-stroke-width: 2;"); if (relation.type().equals("contradicts")) line.getStrokeDashArray().addAll(7d, 5d); Tooltip.install(line, new Tooltip(relation.rationale())); lines.getChildren().add(line); }
+        board.applyCss(); board.layout();
+        Pane graph = new Pane(lines, board); graph.setMinSize(graphWidth, graphHeight); graph.setPrefSize(graphWidth, graphHeight);
+        if (!compact && !options.readOnly) { VBox pads = relatedPads(); pads.relocate(graphWidth - 116, graphHeight - 140); graph.getChildren().add(pads); }
+        ScrollPane viewport = new ScrollPane(graph); viewport.setFitToWidth(true); viewport.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); viewport.setPannable(true); viewport.getStyleClass().add("ocker-related-board");
+        Dialog<Void> dialog = new Dialog<>(); dialog.setTitle("Related to " + selected.title()); dialog.getDialogPane().setContent(viewport); dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE); dialog.getDialogPane().setPrefSize(dialogWidth, dialogHeight); dialog.getDialogPane().setMaxSize(dialogWidth, dialogHeight);
+        Runnable refresh = () -> { populateRelatedCards(board, events, compact, cardWidth, rowHeight); board.applyCss(); board.layout(); }; relatedRefresh = refresh; dialog.setOnHidden(event -> { if (relatedRefresh == refresh) relatedRefresh = null; }); showModal(dialog);
+    }
+    private void populateRelatedCards(Pane board, List<Event> events, boolean compact, double cardWidth, double rowHeight) {
+        board.getChildren().clear();
+        for (int index = 0; index < events.size(); index++) { boolean left = compact || index % 2 == 0; int row = compact ? index : index / 2; double x = compact ? 26 : (left ? 26 : 26 + cardWidth + 80), y = 24 + row * rowHeight + (!compact && !left ? 80 : 0); Pane eventCard = card(events.get(index), left, compact); eventCard.setPrefWidth(cardWidth); eventCard.setMaxWidth(cardWidth); eventCard.relocate(x, y); board.getChildren().add(eventCard); }
+    }
+    private VBox relatedPads() {
+        Button authority = action("Add precedent", () -> {}), note = action("Add note", () -> {}); authority.getStyleClass().add("ocker-flag-pad"); note.getStyleClass().add("ocker-note-pad"); dragSource(authority, "ocker:new-authority", 70, 17); dragSource(note, "ocker:new-note", 120, 14); return new VBox(12, authority, note);
     }
     private <T> Optional<T> showModal(Dialog<T> dialog) {
         if (getScene() != null) dialog.initOwner(getScene().getWindow());
-        dialog.getDialogPane().setMaxSize(850, 650);
+        var stylesheet = getClass().getResource("/com/ocker/fx/ocker.css");
+        if (stylesheet != null && !dialog.getDialogPane().getStylesheets().contains(stylesheet.toExternalForm())) dialog.getDialogPane().getStylesheets().add(stylesheet.toExternalForm());
+        dialog.getDialogPane().getStyleClass().add("ocker-chronology");
+        dialog.getDialogPane().getStyleClass().add(options.theme == ChronologyViewOptions.Theme.GLASS ? "ocker-glass" : "ocker-plain");
+        dialog.getDialogPane().applyCss(); dialog.getDialogPane().layout();
+        if (dialog.getDialogPane().getMaxWidth() == Region.USE_COMPUTED_SIZE) dialog.getDialogPane().setMaxSize(850, 650);
         if (options.theme == ChronologyViewOptions.Theme.NONE) return dialog.showAndWait();
         dialog.getDialogPane().getStyleClass().add("ocker-glass-dialog"); dialog.getDialogPane().setStyle("-fx-background-color: rgba(248,251,253,.92); -fx-border-color: rgba(255,255,255,.65); -fx-border-width: 8; -fx-background-radius: 16; -fx-border-radius: 16;");
         Node owner = getScene() == null ? null : getScene().getRoot(); Effect previous = owner == null ? null : owner.getEffect();
         if (owner != null) owner.setEffect(new GaussianBlur(8)); try { return dialog.showAndWait(); } finally { if (owner != null) owner.setEffect(previous); }
     }
-    private void changed(OckerRecord next) { try { Ocker.validateStrict(next); record = next; options.onChange.accept(next); render(); } catch(Exception error) {options.onError.accept(error);} }
+    private void changed(OckerRecord next) { try { Ocker.validateStrict(next); record = next; options.onChange.accept(next); render(); if (relatedRefresh != null) relatedRefresh.run(); } catch(Exception error) {options.onError.accept(error);} }
     private WritableImage visual() { cards.applyCss(); cards.layout(); return cards.snapshot(new SnapshotParameters(), null); }
     public void exportPng(Path target) throws IOException { ImageIO.write(SwingFXUtils.fromFXImage(visual(), null), "png", target.toFile()); }
     public void exportPdf(Path target) throws IOException {

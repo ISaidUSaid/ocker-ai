@@ -26,16 +26,16 @@ public sealed class MainWindow : Window
     public MainWindow()
     {
         Title = "OCKER"; Width = 1040; Height = 760; MinWidth = 420; MinHeight = 500;
-        var args=Environment.GetCommandLineArgs();var recordArg=args.FirstOrDefault(a=>a.StartsWith("--record="));
+        var args=Environment.GetCommandLineArgs(); if (args.Contains("--compact")) { Width = 620; Height = 760; }var recordArg=args.FirstOrDefault(a=>a.StartsWith("--record="));
         if(recordArg is not null)_record=global::Ocker.Ocker.ParseRecord(File.ReadAllText(recordArg[9..]));
         Opened+=async(_,_)=>{var path=args.FirstOrDefault(a=>a.StartsWith("--snapshot="));if(path is not null){await Task.Delay(1400);using var bitmap=new RenderTargetBitmap(new PixelSize((int)Bounds.Width,(int)Bounds.Height));bitmap.Render(this);bitmap.Save(path[11..]);
           var export=args.FirstOrDefault(a=>a.StartsWith("--export-prefix="));if(export is not null){await using var png=File.Create(export[16..]+".png");await ChronologyExport.SavePngAsync(_view,png);await using var pdf=File.Create(export[16..]+".pdf");await ChronologyExport.SavePdfAsync(_view,pdf);}Close();}};
         Background=new LinearGradientBrush {StartPoint=new RelativePoint(0,0,RelativeUnit.Relative),EndPoint=new RelativePoint(1,1,RelativeUnit.Relative),GradientStops={new GradientStop(Color.Parse("#e5f2f1"),0),new GradientStop(Color.Parse("#ede9f5"),1)}};
-        _view.Record = _record; _view.Options = new ChronologyViewOptions { OnChange = r => { _record = r; _status.Text = "Edited"; }, OnError = e => _status.Text = e.Message };
+        _view.Record = _record; _view.Options = ViewOptions();
         SizeChanged += (_, _) => _view.Options = ViewOptions();
         var open = new Button { Content = "Add documents" }; open.Click += async (_, _) => await OpenAsync(false);
         var import = new Button { Content = "Import OCKER file" }; import.Click += async (_, _) => await OpenAsync(true);
-        var example = new Button { Content = "Load Joe and Jill Blogs Example Chronology" }; example.Click += (_, _) => LoadExample();
+        var example = new Button { Content = "Load Joe & Jill example" }; example.Click += (_, _) => LoadExample();
         var save = new Button { Content = "Save JSON" }; save.Click += async (_, _) => await SaveAsync();
         var extract = new Button { Content = "Build chronology" }; extract.Click += async (_, _) => await BuildChronologyAsync();
         var cancel = new Button { Content = "Cancel" }; cancel.Click += (_, _) => _operation?.Cancel();
@@ -45,12 +45,31 @@ public sealed class MainWindow : Window
         var showCode = new Button { Content = "Show code" }; showCode.Click += async (_, _) => { _codePane.IsVisible = !_codePane.IsVisible; showCode.Content = _codePane.IsVisible ? "Hide code" : "Show code"; if (_codePane.IsVisible) UpdateCode(); await Task.CompletedTask; };
         var copyCode = new Button { Content = "Copy" }; copyCode.Click += async (_, _) => { var top = TopLevel.GetTopLevel(this); if (top?.Clipboard is not null) await top.Clipboard.SetTextAsync(_code.Text); };
         _codePane.Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "C# integration", FontWeight = FontWeight.Bold }, _code, copyCode } };
-        var bar = new WrapPanel { Margin = new global::Avalonia.Thickness(10), Children = { open, import, example, save, extract, cancel, export, settings, showCode, editJson, _status } };
-        var notice = new TextBlock { Text = "Build sends selected document text to the configured provider. Ollama uses your local machine.", Foreground = Brushes.DarkSlateGray, Margin = new Thickness(18, 0, 18, 8), TextWrapping = TextWrapping.Wrap };
-        var heading=new TextBlock {Text="Open Chronology, Knowledge and Evidence Record · Every account. In its place.",FontSize=24,FontWeight=FontWeight.Bold,Foreground=Brushes.DarkSlateGray,Margin=new Thickness(18,14)};
-        var settingsArea=new StackPanel {Children={heading,notice,bar,_codePane}};
+        foreach (var button in new[] { open, import, example, save, extract, cancel, export, settings, showCode, editJson, copyCode }) StyleAction(button);
+        settings.Content = "Configure provider";
+        var documents = new WrapPanel { Children = { open, import, example } };
+        var build = new WrapPanel { Children = { settings, extract, cancel } };
+        var record = new WrapPanel { Children = { save, export, showCode, editJson } };
+        var steps = new WrapPanel { Margin = new Thickness(18, 0, 18, 10), Children = { StepCard("1", "Start with documents", "Add PDFs, text documents or an example chronology.", documents), StepCard("2", "Choose a provider", "Configure endpoint, model and in-memory key.", build), StepCard("3", "Review and share", "Edit the record or save an image, PDF or JSON.", record) } };
+        var notice = new TextBlock { Text = "Build sends selected document text to the configured provider. Ollama uses your local machine.", Foreground = new SolidColorBrush(Color.Parse("#617985")), Margin = new Thickness(18, 0, 18, 8), TextWrapping = TextWrapping.Wrap };
+        var heading=new TextBlock {Text="Open Chronology, Knowledge and Evidence Record",FontFamily=new FontFamily("Georgia"),FontSize=28,FontWeight=FontWeight.SemiBold,Foreground=new SolidColorBrush(Color.Parse("#194d61")),Margin=new Thickness(18,14,18,2),TextWrapping=TextWrapping.Wrap};
+        var subheading = new TextBlock { Text="Every account. In its place.", Foreground=new SolidColorBrush(Color.Parse("#617985")), Margin=new Thickness(18,0,18,10) };
+        var settingsContent=new StackPanel {Children={heading,subheading,notice,steps,_codePane}};
+        var settingsArea=new ScrollViewer { Content=settingsContent, MaxHeight=270, HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled, VerticalScrollBarVisibility=ScrollBarVisibility.Auto };
         Content = new DockPanel { Children = { settingsArea, _view } }; DockPanel.SetDock(settingsArea, Dock.Top);
     }
+    private static void StyleAction(Button button)
+    {
+        button.Background = Brushes.White; button.Foreground = new SolidColorBrush(Color.Parse("#194d61"));
+        button.BorderBrush = new SolidColorBrush(Color.Parse("#d6e1e7")); button.BorderThickness = new Thickness(1);
+        button.CornerRadius = new CornerRadius(7); button.Margin = new Thickness(0, 0, 6, 5); button.Padding = new Thickness(9, 6);
+    }
+    private static Border StepCard(string number, string title, string detail, Control actions) => new()
+    {
+        Width = 310, Margin = new Thickness(0,0,10,8), Padding = new Thickness(13), CornerRadius = new CornerRadius(13),
+        Background = Brushes.White, BorderBrush = new SolidColorBrush(Color.Parse("#d6e1e7")), BorderThickness = new Thickness(1),
+        Child = new StackPanel { Spacing = 5, Children = { new TextBlock { Text = number, Width = 21, Height = 21, TextAlignment = TextAlignment.Center, Background = new SolidColorBrush(Color.Parse("#d7a85d")), Foreground = Brushes.White, FontWeight = FontWeight.Bold }, new TextBlock { Text = title, FontFamily = new FontFamily("Georgia"), FontSize = 17, FontWeight = FontWeight.SemiBold, Foreground = new SolidColorBrush(Color.Parse("#194d61")) }, new TextBlock { Text = detail, Foreground = new SolidColorBrush(Color.Parse("#617985")), TextWrapping = TextWrapping.Wrap, FontSize = 12 }, actions } }
+    };
     private async Task OpenAsync(bool jsonOnly)
     {
         var types = jsonOnly ? new[] { new FilePickerFileType("OCKER JSON") { Patterns = ["*.json"] } } : new[] { new FilePickerFileType("PDF") { Patterns = ["*.pdf"] }, new FilePickerFileType("Text documents") { Patterns = ["*.txt", "*.rtf", "*.docx"] } };

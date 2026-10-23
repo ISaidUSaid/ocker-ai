@@ -54,3 +54,14 @@ Adam confirmed that OCKER stays as the working title after the ChronoMate availa
 - [x] Keep the repository private, Apache-2.0 licensed and authored by Jenko.
 
 The private draft implementation is complete. The outstanding live-example hosting decision, real-provider acceptance with a supplied key and cross-platform native GUI acceptance are explicitly separate from the completed automated build/test baseline. No account upgrade, public visibility change or package publication has been authorised or performed.
+
+## Native visual parity — 24 October 2026
+
+Adam requires the native RIs to share the web RI's visual design and drag/drop experience. The earlier native build/startup checks did not establish that parity; the first screenshots showed conventional desktop controls and a single-column board. This supersedes the visual-completion assumption in the handoff above.
+
+- [x] Record the common design and interaction contract in `spec/PRESENTATION.md`.
+- [x] Align JavaFX chronology, annotations, dialogs and example workspace with the web RI.
+- [x] Align Avalonia chronology, annotations, dialogs and example workspace with the web RI.
+- [x] Review new desktop/compact screenshots, exercise annotation dragging and verify builds/exports.
+
+Java and C# workers completed their separate native implementations; the parent reviewed screenshots, corrected final dialog/layout/hit-test issues and exercised real native input on macOS. Both main boards and related-card modals accepted a pad drop, saved entered text and rendered the note. C# also passed a final invalid-drop check. Both native PNG/PDF exporters ran successfully after the changes. Java's full reactor install and eight tests passed; the .NET solution/core checks passed with zero warnings/errors. See VALIDATION.md for the precise scope. Browser RI code and original ISaidUSaid.com repositories were left unchanged. No workers remain active.

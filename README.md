@@ -72,6 +72,8 @@ Host applications own authentication, persistence, tenant boundaries, provider p
 
 See [integration](spec/INTEGRATION.md), [security](spec/SECURITY.md) and each RI README. Package manifests include Apache-2.0 and Jenko authorship. Packages are buildable locally; publishing to npm, Maven Central or NuGet is a separate release action and has not been done.
 
+The [shared presentation contract](spec/PRESENTATION.md) defines the default chronology design and drag/drop behaviour across browser, JavaFX and Avalonia implementations. Native window chrome can differ; the chronology should remain the same recognisable interface.
+
 The Pages workflow builds the JavaScript example. Deployment is manual and requires GitHub Pages to be enabled for this repository. The repository remains private unless Adam changes its visibility.
 
 ## Validation

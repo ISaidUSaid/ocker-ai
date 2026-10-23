@@ -14,6 +14,8 @@ dotnet run --project 'ri/c#/tests/Ocker.Core.Tests'
 
 Open a saved record or queue PDF, DOCX, RTF and plain-text documents. The example has in-memory provider settings, document kinds, progress/cancellation, source excerpts and original evidence download, editable notes, outside-edge coloured precedents, related-event cards and PNG/PDF export. Compact mode follows window width; the reusable view can also receive explicit `Mobile` state. All cards remain mounted.
 
+The default presentation follows the [shared browser/native design](../../spec/PRESENTATION.md): paired desktop cards, compact single-column layout, pinned paper notes and outside precedent flags. Main and related-card boards each have their own drag target context. Drop the red pin inside a visible card; empty-space drops cancel. Compact cards offer explicit annotation actions.
+
 ```csharp
 var work = new OckerOptions {
     CompletionAdapter = new OpenAiCompatibleAdapter(httpClient, endpoint, model, key),

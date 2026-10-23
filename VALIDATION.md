@@ -22,6 +22,8 @@ This is a private draft 0.1.0. These checks establish the RI baseline; they are 
 
 The shared fixture has 12 events, 2 embedded original PDFs, 6 support/contradiction links, a note and a coloured fictional precedent. The source PDFs were generated specifically for this repository. A separate example embeds an original synthetic video and a derived frame with hashes and selectors. There is no customer evidence in the examples.
 
+Final implementation commit `2a8676a` passed [all GitHub CI jobs](https://github.com/ISaidUSaid/ocker-ai/actions/runs/39957378878): web, Java and C#.
+
 ## Reproduce
 
 From the repository root with Node 22.22.3+, Java 21/Maven and .NET 8:

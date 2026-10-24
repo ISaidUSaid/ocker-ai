@@ -16,7 +16,7 @@ This is the default RI presentation contract, not a restriction on the portable 
 | Primary / text / muted | `#194d61` / `#213b48` / `#617985` |
 | Borders / accent | `#d6e1e7` / `#d7a85d` |
 | Typography | Georgia or a comparable serif for chronology headings; system sans-serif for controls and body |
-| Cards | White, 16px corners, thin border, subtle shadow, approximately 24px internal padding |
+| Cards | Opaque white reading surface, 16px corners, subtle shadow, approximately 24px internal padding; Glass adds an 8–9px frosted highlighted rim; None retains a thin plain border |
 | Card reading order | Date, title, account author, status pill, summary, actions |
 | Common ground pill | `#e4f0e9` background, `#306747` text |
 | Disputed pill | `#f9e7e7` background, `#9a3d42` text |
@@ -29,6 +29,8 @@ This is the default RI presentation contract, not a restriction on the portable 
 | Dialog themes | `glass`: translucent rim and blurred owner/backdrop; `none`: opaque, plain dialog |
 
 Long titles and summaries wrap inside their column. Content length must not move the spine or change the opposing column's width. Status colour belongs to the status pill, not a large saturated card background. The primary card action is **Source evidence**; **Related (count)** is explicit when links exist.
+
+Glass card rims apply on the main chronology, compact cards and the related-event web. Paint them within the existing outer rectangle, retaining an opaque reading surface, overflowing annotations and stable pin/drop coordinates. A web rim must not introduce a stacking context on the whole card that would trap a note behind neighbouring cards. Browser hosts can override `--ocker-glass-rim` through CSS or theme variables.
 
 ## Shared interaction
 

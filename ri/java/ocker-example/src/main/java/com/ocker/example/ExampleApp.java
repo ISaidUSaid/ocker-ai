@@ -47,7 +47,7 @@ public final class ExampleApp extends Application {
         if (recordPath != null) try { record = Ocker.importRecord(Files.readString(Path.of(recordPath))); } catch (Exception error) { status.setText(error.getMessage()); }
         view = new ChronologyView(record, options());
         endpoint.setPromptText("https://your-provider.example/v1/chat/completions"); model.setPromptText("Your selected model"); key.setPromptText("API key — memory only; optional for local Ollama");
-        theme.getItems().setAll(ChronologyViewOptions.Theme.GLASS, ChronologyViewOptions.Theme.NONE); theme.setValue(ChronologyViewOptions.Theme.GLASS); theme.setOnAction(e -> { view.setOptions(options()); updateCode(); });
+        theme.getItems().setAll(ChronologyViewOptions.Theme.GLASS, ChronologyViewOptions.Theme.NONE); theme.setValue("none".equalsIgnoreCase(getParameters().getNamed().get("theme")) ? ChronologyViewOptions.Theme.NONE : ChronologyViewOptions.Theme.GLASS); theme.setOnAction(e -> { view.setOptions(options()); updateCode(); }); view.setOptions(options());
         FlowPane provider=new FlowPane(12,10);
         FlowPane presets=new FlowPane(8,8);
         endpoint.setPrefWidth(450);model.setPrefWidth(190);key.setPrefWidth(190);

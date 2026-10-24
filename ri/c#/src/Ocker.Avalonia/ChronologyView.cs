@@ -109,7 +109,19 @@ public sealed class ChronologyView : UserControl
         var canvas = new Canvas { IsHitTestVisible = true, ClipToBounds = false }; if(!_options.Mobile) foreach (var note in _record!.Notes.Where(n => n.EventId == evt.Id)) canvas.Children.Add(NotePin(note, dragContext));
         else { var notes=_record!.Notes.Where(n=>n.EventId==evt.Id).ToList();if(notes.Count>0){ var marker=new Button {Content=$"▱ {notes.Count} notes"};marker.Click+=(_,_)=>ShowNotes(evt);body.Children.Add(marker); } }
         var overlay = new Grid { ClipToBounds = false, Children = { body, canvas } };
-        var card = new Border { MaxWidth = _options.Mobile ? double.PositiveInfinity : 390, HorizontalAlignment = _options.Mobile ? HorizontalAlignment.Stretch : HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top, BorderBrush = new SolidColorBrush(Color.Parse("#d6e1e7")), Background = _options.Palette?.CardBackground ?? Brushes.White, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(15), BoxShadow = new BoxShadows(new BoxShadow { Blur = 12, OffsetY = 3, Color = Color.FromArgb(22, 25, 77, 97) }), Child = overlay, Margin = new Thickness(0), Padding = new Thickness(2) };
+        // The glass rim is layered over the unchanged card surface. It never consumes layout,
+        // so hit testing and persisted note coordinates remain relative to the same outer card.
+        var cardVisual = new Grid { ClipToBounds = false, Children = { overlay } };
+        if (_options.Theme == "glass")
+        {
+            cardVisual.Children.Insert(0,new Border
+            {
+                IsHitTestVisible = false, CornerRadius = new CornerRadius(15), BorderThickness = new Thickness(9),
+                BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0,0,RelativeUnit.Relative), EndPoint = new RelativePoint(1,1,RelativeUnit.Relative), GradientStops = { new GradientStop(Color.FromArgb(205,255,255,255),0), new GradientStop(Color.FromArgb(115,212,228,235),.55), new GradientStop(Color.FromArgb(175,255,255,255),1) } },
+                BoxShadow = new BoxShadows(new BoxShadow { Blur = 10, Spread = 1, Color = Color.FromArgb(40,255,255,255) })
+            });
+        }
+        var card = new Border { MaxWidth = _options.Mobile ? double.PositiveInfinity : 390, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top, BorderBrush = new SolidColorBrush(Color.Parse("#d6e1e7")), Background = _options.Palette?.CardBackground ?? Brushes.White, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(15), BoxShadow = new BoxShadows(new BoxShadow { Blur = 12, OffsetY = 3, Color = Color.FromArgb(22, 25, 77, 97) }), Child = cardVisual, Margin = new Thickness(0), Padding = new Thickness(2) };
         DragDrop.SetAllowDrop(card,true);
         card.AddHandler(DragDrop.DragOverEvent,(_,e)=>{e.DragEffects=_dragKind is null||!new Rect(card.Bounds.Size).Contains(e.GetPosition(card))?DragDropEffects.None:DragDropEffects.Copy;e.Handled=true;});
         card.AddHandler(DragDrop.DropEvent,(_,e)=>{if(_dragKind is null||_options.ReadOnly)return;var point=e.GetPosition(card);if(!new Rect(card.Bounds.Size).Contains(point))return;var position=new PinPosition(point.X/_zoom,point.Y/_zoom);

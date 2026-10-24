@@ -76,3 +76,11 @@ Adam selected Avalonia's design for all six RIs, superseding the earlier web-fir
 - [x] Verify affected builds and interactions; prepare the private repository push.
 
 The Java, C# and web workers finished. Parent review corrected the framework stylesheet imports, compacted the browser document controls, moved import/example paths to Start, and added shared Review save/export controls. All changes remain inside this checkout. The existing private-hosting and cross-platform GUI acceptance limits remain unchanged; no approval is pending for this local/private implementation.
+
+## Glass chronology cards — 24 October 2026
+
+- [x] Apply the selected Glass theme to chronology cards in all six RIs, including compact cards and related-event dialogs.
+- [x] Preserve opaque reading surfaces, overflowing annotations and existing card/pin geometry; None retains its plain border.
+- [x] Verify native builds/tests, all browser builds, 12 shared interaction tests and three framework smoke tests, including theme and rendered pin checks.
+
+Java and C# workers completed their bounded styling changes. Parent reviewed the native layouts, retained unchanged layout insets and note stacking, and checked the browser Glass view. No workers remain active; no new approval or hosting change is required.

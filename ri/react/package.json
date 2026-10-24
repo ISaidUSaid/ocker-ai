@@ -38,5 +38,14 @@
     "demo": "npm run dev --workspace=@ocker-ai/react-demo",
     "prebuild": "node ../../prompt-library/prepare.mjs",
     "pretypecheck": "node ../../prompt-library/prepare.mjs"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ISaidUSaid/ocker-ai.git",
+    "directory": "ri/react"
+  },
+  "bugs": {
+    "url": "https://github.com/ISaidUSaid/ocker-ai/issues"
+  },
+  "homepage": "https://github.com/ISaidUSaid/ocker-ai#readme"
 }

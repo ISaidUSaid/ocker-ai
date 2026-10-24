@@ -41,3 +41,53 @@ var view = new ChronologyView {
 The desktop example accepts `--record=/absolute/file.ocker.json`, `--snapshot=/absolute/preview.png`, and optional `--export-prefix=/absolute/export` for native smoke tests without a provider.
 
 Builds produce local NuGet packages (`Ocker.AI.Core`, `Ocker.AI.Avalonia`), version 0.1.0. They are not published automatically.
+
+## Headless SDK
+
+`OckerGraph` is an independent validated snapshot for direct (non-transitive) relationship navigation and exact source resolution. It returns absent values for unknown entity IDs, rejects unknown event queries, and never fetches external asset URIs.
+
+```csharp
+using Ocker;
+using OckerApi = Ocker.Ocker;
+
+var graph = new OckerGraph(OckerApi.ParseRecord(json));
+var related = graph.GetRelatedEvents(eventId, "supports");
+var evidence = graph.GetEvidence(eventId); // source, document, optional paragraph and asset
+
+var next = new OckerRecordBuilder("Matter chronology")
+    .AddIntermediate(intermediate)
+    .AddEvent(anEvent)
+    .Build(); // complete schema/reference/hash validation, no provider call
+```
+
+The builder copies its input and returns an independent record. It accepts actors, assets, documents, events, relationships, notes, authorities and intermediate documents in any order.
+
+Private-feed installation requires .NET 8.0 or later; the UI package additionally requires Avalonia 11.x:
+
+```sh
+dotnet nuget add source /path/to/ocker-nuget --name ocker-private
+dotnet add package Ocker.AI.Core --version 0.1.0
+dotnet add package Ocker.AI.Avalonia --version 0.1.0
+```
+
+Build packages locally with `dotnet pack 'ri/c#/Ocker.sln' -o .work/ocker-nuget`. Run `tools/consumer-tests/dotnet/run.sh` for an isolated package-consumer check: it creates `.work/ocker-nuget/` and `.work/consumer-nuget-packages/`, restores only from that local feed plus NuGet.org for public transitives, and validates the fixture, graph, builder, packaged prompts, and Avalonia compilation. Keep distribution private; no command in this repository publishes to a public registry. The packages include the schemas and public extraction/relationship prompt resources used for validation and adapters.
+
+## Complete provider-free annotation function
+
+```csharp
+using Ocker;
+using OckerApi = Ocker.Ocker;
+
+static string AddReviewNote(string json)
+{
+    var record = OckerApi.ParseRecord(json);
+    var evt = record.Events.FirstOrDefault() ?? throw new InvalidOperationException("No events.");
+    var stamp = DateTimeOffset.UtcNow.ToString("O");
+    var note = new Note(Guid.NewGuid().ToString("N"), evt.Id, "Check the original account.",
+        new PinPosition(40, 80), stamp, stamp);
+    var next = new OckerRecordBuilder(record).AddNote(note).Build();
+    return OckerApi.ExportRecord(next);
+}
+```
+
+This function uses only Core. Add `Ocker.AI.Avalonia` and put `ChronologyView` in an Avalonia host when a UI is needed. Build source packages with normal NuGet.org access for their public dependencies; the package consumer check restricts `Ocker.AI.*` to the freshly built local feed using source mapping. See [distribution instructions](../../DISTRIBUTION.md) for shared-project installation and the current compatibility/acceptance matrix.

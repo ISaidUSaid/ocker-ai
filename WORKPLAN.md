@@ -84,3 +84,15 @@ The Java, C# and web workers finished. Parent review corrected the framework sty
 - [x] Verify native builds/tests, all browser builds, 12 shared interaction tests and three framework smoke tests, including theme and rendered pin checks.
 
 Java and C# workers completed their bounded styling changes. Parent reviewed the native layouts, retained unchanged layout insets and note stacking, and checked the browser Glass view. No workers remain active; no new approval or hosting change is required.
+
+## External SDK integration — 24 October 2026
+
+Adam authorised graph/navigation helpers, fluent record builders, standalone package-consumer tests, clearer integration documentation and distribution preparation. All work remains in Ocker; public registry publishing and repository visibility remain separate.
+
+- [x] Define shared SDK graph/builder semantics without changing the 0.1.0 wire model.
+- [x] Implement JavaScript/headless, Java and .NET helpers and focused validation/immutability coverage.
+- [x] Verify actual npm/Maven/NuGet artifacts from isolated consumer projects, including web UI rendering and native UI compilation.
+- [x] Complete install/compatibility guides and private distribution/CI workflows.
+- [x] Generate and verify checksummed SDK distribution; private repository push is the final handoff step.
+
+The Java, C# and web-consumer workers completed their bounded assignments. Parent review added portable toolchain selection, installed-package resolution guards, a self-contained .NET consumer, complete private installation examples, package licenses and a Release solution configuration correction. Graph/builders, 21 JS tests, 16 spec checks, 11 Java tests, .NET conformance checks, all installed-artifact consumers, 12 browser interactions and three framework tests pass. The archive includes versioned npm/Maven/NuGet artifacts, source/Javadoc JARs, public prompts, licensing and SHA-256 checksums. No public registry publication, provider call or ISaidUSaid.com write was made. No workers remain active; public publication and any additional native OS/provider acceptance are separate next steps.

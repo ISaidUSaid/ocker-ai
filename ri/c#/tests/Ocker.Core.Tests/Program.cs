@@ -24,6 +24,17 @@ try { Ocker.Ocker.ValidateRecord(chronology with { Notes = [chronology.Notes[0] 
 try { Ocker.Ocker.ValidateRecord(chronology with { Relationships = [new Relationship("relationship", "event-1", "event-1", "supports", "bad", new Provenance("bad", "not-a-date"))] }); throw new Exception("Bad provenance was accepted."); } catch (OckerValidationException) { }
 try { Ocker.Ocker.ValidateRecord(chronology with { Events = [eventOne with { Date = new DateValue("day", "2026-99-99") }] }); throw new Exception("Invalid date was accepted."); } catch (OckerValidationException) { }
 try { Ocker.Ocker.ValidateRecord(chronology with { Assets = [new Asset("asset", "x", "text/plain", new string('A', 64), 1, "eA==")] }); throw new Exception("Invalid hash was accepted."); } catch (OckerValidationException) { }
+var eventTwo = eventOne with { Id = "event-2", Title = "Related event" };
+var relation = new Relationship("relationship-1", eventOne.Id, eventTwo.Id, "supports", "Direct support", new Provenance("human", DateTimeOffset.UtcNow.ToString("O")));
+var graphRecord = chronology with { Events = [eventOne, eventTwo], Relationships = [relation] };
+var graph = new OckerGraph(graphRecord);
+if (graph.GetEvent("missing") is not null || graph.GetRelatedEvents(eventOne.Id).Single().Id != eventTwo.Id) throw new Exception("Graph lookup or direct traversal failed.");
+try { graph.GetNotes("missing"); throw new Exception("Unknown graph event was accepted."); } catch (OckerException) { }
+var graphCopy = graph.GetRecord(); graphCopy.Events.Clear(); if (graph.GetRecord().Events.Count != 2) throw new Exception("Graph exposed mutable state.");
+var built = new OckerRecordBuilder("Builder record").AddDocument(document).AddEvent(eventOne).AddNote(chronology.Notes.Single()).AddAuthority(chronology.Authorities.Single()).Build();
+if (built.Events.Count != 1 || built.Notes.Count != 1) throw new Exception("Builder failed to construct a valid record.");
+try { new OckerRecordBuilder("Bad").AddDocument(document).AddEvent(eventOne with { Sources = [new Source("missing")] }).Build(); throw new Exception("Builder accepted unresolved source."); } catch (OckerValidationException) { }
+SdkChecks.Run();
 var intermediate = new Intermediate("ocker-document", "0.1.0", document);
 var extracted = await Ocker.Ocker.BuildChronologyAsync(intermediate, new OckerOptions { CompletionAdapter = new FixedAdapter("{\"events\":[{\"title\":\"From PDF text\",\"summary\":\"Synthetic extraction\",\"date\":{\"precision\":\"day\",\"value\":\"2026-10-23\"},\"paragraphIds\":[\"p1\"]}]} ") });
 if (extracted.Single().Sources.Single().Quote != "A synthetic source excerpt.") throw new Exception("Extraction did not retain an exact source excerpt.");

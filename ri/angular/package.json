@@ -5,10 +5,10 @@
   "license": "Apache-2.0",
   "author": "Jenko <adam@isaidusaid.com>",
   "peerDependencies": {
-    "@angular/animations": ">=22.0.0",
-    "@angular/cdk": ">=22.0.0",
-    "@angular/common": ">=22.0.0",
-    "@angular/core": ">=22.0.0",
+    "@angular/animations": "^22.0.0",
+    "@angular/cdk": "^22.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
     "@ocker-ai/core": "^0.1.0"
   },
   "dependencies": {
@@ -30,5 +30,14 @@
     "typecheck": "tsc -p tsconfig.lib.json --noEmit",
     "prebuild": "node ../../prompt-library/prepare.mjs",
     "pretypecheck": "node ../../prompt-library/prepare.mjs"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ISaidUSaid/ocker-ai.git",
+    "directory": "ri/angular"
+  },
+  "bugs": {
+    "url": "https://github.com/ISaidUSaid/ocker-ai/issues"
+  },
+  "homepage": "https://github.com/ISaidUSaid/ocker-ai#readme"
 }

@@ -2,6 +2,30 @@
 
 The intended integration is a reusable chronology surface inside an existing legal application. LEAP, Clio, Smokeball and other hosts can import/export the same record without adopting an RI application's storage, authentication or provider choice.
 
+For exact private package installation and compatibility, start with [Installing the SDK](../DISTRIBUTION.md). The [SDK contract](SDK.md) defines graph, builder and consumer acceptance semantics. The libraries need no provider to import, navigate, annotate or display an existing file.
+
+## Headless object model
+
+Node and browser application logic can import `@ocker-ai/core/headless`, which excludes the UI renderer. Java uses `com.ocker:ocker-core`; .NET uses `Ocker.AI.Core`. UI packages are optional.
+
+```js
+import {parseRecord, createGraph, recordBuilder, exportRecord} from '@ocker-ai/core/headless';
+
+export function inspectAndExtend(json, actor) {
+  const record = parseRecord(json);
+  const graph = createGraph(record);
+  const first = record.events[0];
+  const related = first ? graph.getRelatedEvents(first.id) : [];
+  const evidence = first ? graph.getEvidence(first.id) : [];
+  const next = recordBuilder(record).addActor(actor).build();
+  return {related, evidence, json: exportRecord(next)};
+}
+```
+
+The graph indexes an independent validated snapshot. Lookups return model copies, not mutable graph internals. Relationships are direct and bidirectional; an optional `supports`/`contradicts` filter is available. Evidence helpers resolve a source's document, optional paragraph and asset, including document-asset fallback. They never fetch external URIs. Rebuild a graph after changing a record. Plain entity lookups return an absent result; event-scoped queries reject missing event IDs.
+
+Builders accept the existing model types in any order and validate the complete record, including references and embedded byte hashes, at `build`. Java exposes `OckerRecordBuilder` / `Ocker.recordBuilder`; .NET exposes `OckerRecordBuilder`. A builder does not mutate its starting record or call a provider. See the per-language guides for code.
+
 ## JavaScript
 
 ```js
@@ -51,7 +75,7 @@ Java separates `ocker-core`, `ocker-javafx` and `ocker-example`. C# separates `O
 
 ## Styling
 
-Default dialog theme is `glass`; `none` disables the translucent border and backdrop blur. Palette overrides are separate. Browser classes are prefixed `ocker-`; CSS variables start `--ocker-`. Framework components do not require Material/MDC. A host may replace the CSS completely.
+Default theme is `glass`; chronology cards have a frosted rim and dialogs have a translucent border and backdrop blur. `none` uses plain opaque surfaces. Palette overrides are separate. Browser classes are prefixed `ocker-`; CSS variables start `--ocker-`. Framework components do not require Material/MDC. A host may replace the CSS completely.
 
 Notes use pin-relative coordinates and preserve those through zoom. Precedents derive the outside card edge, so importers do not have to reproduce a source viewport. Mobile devices use compact note markers and explicit annotation buttons. The RIs intentionally render every event card; they do not include the product's sliding-window machinery.
 

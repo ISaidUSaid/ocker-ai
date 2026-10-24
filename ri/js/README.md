@@ -4,6 +4,37 @@ Author: Jenko <adam@isaidusaid.com> · Apache-2.0
 
 `@ocker-ai/core` is an ESM package with TypeScript declarations and plain browser CSS. It has no application-server dependency.
 
+Install the core tarball from the [private SDK distribution](../../DISTRIBUTION.md). Public registry publication has not occurred. Node 22.22.3+ is the current SDK baseline. Browser hosts need a modern ESM bundler; UI mounting belongs on the client, while the headless entry point can run on a server.
+
+## Headless records, graph and builder
+
+```js
+import {parseText, recordBuilder, createGraph, saveNote, exportRecord} from '@ocker-ai/core/headless';
+
+export async function makeChronology() {
+  const document = await parseText('The parties met on 1 June 2024.', {
+    title: 'An account.txt', kind: 'affidavit'
+  });
+  const paragraph = document.document.paragraphs[0];
+  const record = recordBuilder('Matter chronology')
+    .addIntermediate(document)
+    .addEvent({id: 'meeting', title: 'The parties met', summary: paragraph.text,
+      date: {precision: 'day', value: '2024-06-01'},
+      sources: [{documentId: document.document.id, paragraphId: paragraph.id, page: paragraph.page, quote: paragraph.text}]})
+    .build();
+  const graph = createGraph(record);
+  const evidence = graph.getEvidence('meeting');
+  const annotated = saveNote(record, {eventId: 'meeting', body: 'Check the original account.', position: {x: 40, y: 80}});
+  return {evidence, json: exportRecord(annotated)};
+}
+```
+
+This needs no DOM, LLM or key. The graph indexes a validated snapshot and returns independent copies. It exposes event/document/actor/asset lookups, direct bidirectional related events, relationship filters, annotations and resolved evidence. Missing entity lookups return `undefined`; queries scoped to a missing event throw. External evidence URIs are never fetched by navigation. Rebuild the graph after changing its source record.
+
+`recordBuilder(titleOrRecord)` / `RecordBuilder` accept actors, documents, assets, events, relationships, notes, authorities and complete intermediates. Add in any order; `build()` validates the whole record and embedded hashes. Its input entities and returned records are copied. The wire format remains 0.1.0.
+
+## Browser UI
+
 ```js
 import {parseRecord, mountChronology, parsePdf, buildChronology,
   findRelationships, createOpenAICompatibleAdapter} from '@ocker-ai/core';
@@ -38,7 +69,7 @@ The core's optional standard PDF.js worker fallback is versioned jsDelivr. Host 
 
 The returned handle has `getRecord`, `setRecord`, `setOptions` and `destroy`. Destroy the handle when its host unmounts. Notes are pin-anchored and authority flags use the target's outside edge. Responsive state comes from a component option or ResizeObserver; Angular wrappers supply BreakpointObserver state. All cards are rendered. Keys are not stored by the component.
 
-The complete optional demo workbench is exported as `@ocker-ai/core/demo` (`mountWorkbench`). It includes file inputs, intermediate download, provider settings and deliberate send consent. It uses the same public SDK as the wrappers.
+The optional demo workbench is exported as `@ocker-ai/core/demo` (`mountWorkbench`). It includes file inputs, intermediate download, provider settings and a provider notice; choosing Build deliberately starts transmission. It uses the same public SDK as the wrappers. The reusable chronology renderer has no branded header or provider form.
 
 ## Run/build/package
 

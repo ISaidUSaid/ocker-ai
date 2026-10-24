@@ -27,6 +27,7 @@ jobs:
       - run: npm run build --workspace=@ocker-ai/angular-demo && npm run build --workspace=@ocker-ai/react-demo
       - run: npm run test --workspace=@ocker-ai/node-demo && npm run build --workspace=@ocker-ai/node-demo
       - run: node node_modules/@playwright/test/cli.js test -c ri/js/framework.playwright.config.js
+      - run: npm run test:consumers:web
   java:
     runs-on: ubuntu-latest
     steps:
@@ -37,6 +38,7 @@ jobs:
           java-version: '21'
           cache: maven
       - run: mvn --batch-mode -f ri/java/pom.xml verify
+      - run: sh tools/consumer-tests/java/run.sh
   csharp:
     runs-on: ubuntu-latest
     steps:
@@ -46,3 +48,4 @@ jobs:
           dotnet-version: '8.0.x'
       - run: dotnet build 'ri/c#/Ocker.sln'
       - run: dotnet run --project 'ri/c#/tests/Ocker.Core.Tests/Ocker.Core.Tests.csproj' --no-build
+      - run: bash tools/consumer-tests/dotnet/run.sh

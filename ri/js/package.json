@@ -27,6 +27,10 @@
     "./demo/providers": {
       "types": "./demo/provider-shortcuts.d.ts",
       "import": "./demo/provider-shortcuts.js"
+    },
+    "./headless": {
+      "types": "./src/headless.d.ts",
+      "import": "./src/headless.js"
     }
   },
   "files": [
@@ -71,6 +75,18 @@
     "vite": "8.3.5"
   },
   "engines": {
-    "node": ">=22.13.0"
-  }
+    "node": ">=22.22.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ISaidUSaid/ocker-ai.git",
+    "directory": "ri/js"
+  },
+  "bugs": {
+    "url": "https://github.com/ISaidUSaid/ocker-ai/issues"
+  },
+  "homepage": "https://github.com/ISaidUSaid/ocker-ai#readme",
+  "sideEffects": [
+    "**/*.css"
+  ]
 }

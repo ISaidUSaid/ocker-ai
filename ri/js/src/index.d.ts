@@ -13,6 +13,36 @@ export interface Asset {id:string;name:string;mediaType:string;sha256:string;byt
 export interface Record {format:'ocker';version:'0.1.0';id:string;title:string;createdAt:string;updatedAt:string;actors:{id:string;name:string;role?:string;extensions?:object}[];documents:Document[];events:Event[];relationships:Relationship[];notes:Note[];authorities:Authority[];assets:Asset[];extensions?:object}
 export type OckerRecord=Record;
 export interface Intermediate {format:'ocker-document';version:'0.1.0';document:Document;asset?:Asset}
+export type Actor=Record['actors'][number];
+export type RelationshipType=Relationship['type'];
+export interface ResolvedEvidence {source:Source;document:Document;paragraph?:Paragraph;asset?:Asset}
+export class ChronologyGraph {
+  constructor(record:Record);
+  getRecord():Record;
+  getEvent(id:string):Event|undefined;
+  getDocument(id:string):Document|undefined;
+  getActor(id:string):Actor|undefined;
+  getAsset(id:string):Asset|undefined;
+  getRelationships(eventId:string,type?:RelationshipType):Relationship[];
+  getRelatedEvents(eventId:string,type?:RelationshipType):Event[];
+  getNotes(eventId:string):Note[];
+  getAuthorities(eventId:string):Authority[];
+  getEvidence(eventId:string):ResolvedEvidence[];
+}
+export function createGraph(record:Record):ChronologyGraph;
+export class RecordBuilder {
+  constructor(input?:string|Record);
+  addActor(value:Actor):this;
+  addAsset(value:Asset):this;
+  addDocument(value:Document):this;
+  addEvent(value:Event):this;
+  addRelationship(value:Relationship):this;
+  addNote(value:Note):this;
+  addAuthority(value:Authority):this;
+  addIntermediate(value:Intermediate):this;
+  build():Record;
+}
+export function recordBuilder(input?:string|Record):RecordBuilder;
 export interface Progress {stage:string;detail:string;current?:number;total?:number}
 export type LlmAdapter=(request:{task:'extract'|'relate';prompt:string;input:unknown;signal?:AbortSignal})=>Promise<object|string>;
 export interface PipelineOptions {llm?:LlmAdapter;onProgress?:(progress:Progress)=>void;signal?:AbortSignal;title?:string;authorId?:string;maxDocumentCharacters?:number;maxRelationshipCharacters?:number;maxEventsPerDocument?:number}

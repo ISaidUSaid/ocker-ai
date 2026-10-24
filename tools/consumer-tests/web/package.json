@@ -1,0 +1,6 @@
+{
+  "name": "ocker-sdk-consumer-acceptance",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node run.mjs" }
+}

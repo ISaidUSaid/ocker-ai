@@ -23,7 +23,12 @@
     "test": "npm run test --workspace=@ocker-ai/core",
     "build": "npm run build --workspace=@ocker-ai/core",
     "demo:build": "npm run demo:build --workspace=@ocker-ai/core",
-    "check:spec": "node spec/tools/check-spec.js"
+    "check:spec": "node spec/tools/check-spec.js",
+    "sdk:distribution": "node tools/build-distribution.mjs",
+    "sdk:distribution:web": "node tools/build-distribution.mjs --web-only",
+    "test:consumers:web": "npm --prefix tools/consumer-tests/web test",
+    "test:consumers:java": "sh tools/consumer-tests/java/run.sh",
+    "test:consumers:dotnet": "bash tools/consumer-tests/dotnet/run.sh"
   },
   "devDependencies": {
     "ajv": "8.20.0",

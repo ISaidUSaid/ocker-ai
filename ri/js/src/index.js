@@ -5,3 +5,5 @@ export * from './pipeline.js';
 export * from './pdf.js';
 export * from './ui.js';
 export * from './documents.js';
+export * from './graph.js';
+export * from './builder.js';

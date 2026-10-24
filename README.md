@@ -8,6 +8,12 @@ Portable legal chronologies, embedded source evidence, notes, precedents and a s
 
 This repository is private while the first release is being developed. Making it public is a separate decision. Nothing here changes the ISaidUSaid.com product or adds its OCKER exporter.
 
+## Use it in your own application
+
+Start with [Installing the SDK](DISTRIBUTION.md) for private npm/Maven/NuGet artifacts and the compatibility matrix, then [Embedding OCKER](spec/INTEGRATION.md) for headless and UI integration. The [SDK contract](spec/SDK.md) defines graph navigation and fluent record building. JavaScript/Node, Java and C# can navigate and construct validated records without a UI or provider; JavaScript, Angular, React, JavaFX and Avalonia can embed the chronology control independently of the demo app.
+
+`npm run sdk:distribution` prepares a checksummed private SDK bundle. `test:consumers:web`, `test:consumers:java` and `test:consumers:dotnet` verify actual installed package artifacts in separate consumer projects. Public registry publishing is not enabled.
+
 ## Start with the browser example
 
 Node 22.22.3+ is required.

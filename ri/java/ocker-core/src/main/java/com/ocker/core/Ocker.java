@@ -13,6 +13,9 @@ import static com.ocker.core.OckerTypes.*;
 public final class Ocker {
  private Ocker(){} public static final ObjectMapper JSON=new ObjectMapper().findAndRegisterModules();
  public static OckerRecord createRecord(String title){String now=Instant.now().toString();return new OckerRecord("ocker","0.1.0",id(),title,now,now,List.of(),List.of(),List.of(),List.of(),List.of(),List.of(),List.of(),null);}
+ public static OckerGraph graph(OckerRecord record){return OckerGraph.from(record);}
+ public static OckerRecordBuilder recordBuilder(String title){return OckerRecordBuilder.create(title);}
+ public static OckerRecordBuilder recordBuilder(OckerRecord record){return OckerRecordBuilder.from(record);}
  public static OckerRecord parseRecord(String json) throws IOException { JsonNode raw=JSON.readTree(json); SchemaValidation.record(raw); OckerRecord r=JSON.treeToValue(raw,OckerRecord.class); validateStrict(r); return r; }
  public static OckerRecord importRecord(String json) throws IOException { return parseRecord(json); }
  public static String exportRecord(OckerRecord r) throws IOException { validateStrict(r); return JSON.writerWithDefaultPrettyPrinter().writeValueAsString(r); }

@@ -112,7 +112,7 @@ public final class ChronologyView extends BorderPane {
         Label eyebrow = new Label("OCKER · OPEN CHRONOLOGY, KNOWLEDGE AND EVIDENCE RECORD"); eyebrow.getStyleClass().add("ocker-eyebrow");
         Label title = new Label(record.title()); title.getStyleClass().add("ocker-board-title");
         Label count = new Label(events.size() + " events · " + record.relationships().size() + " related assessments"); count.getStyleClass().add("ocker-count");
-        VBox heading = new VBox(5, eyebrow, title, count); heading.getStyleClass().add("ocker-board-heading"); heading.setAlignment(Pos.CENTER);
+        VBox heading = new VBox(5, eyebrow, title, count); heading.getStyleClass().add("ocker-board-heading"); heading.setAlignment(Pos.CENTER_LEFT);
         cards.getChildren().add(heading);
         for (int index = 0; index < events.size(); index += 2) cards.getChildren().add(timelineRow(events.get(index), index + 1 < events.size() ? events.get(index + 1) : null));
     }
@@ -133,15 +133,15 @@ public final class ChronologyView extends BorderPane {
         if (rightEvent != null) { Pane rightCard = card(rightEvent, false); rightCard.setMaxWidth(530); GridPane.setHgrow(rightCard, Priority.ALWAYS); rightSlot.getChildren().add(rightCard); }
         Region firstSpine = new Region(); firstSpine.getStyleClass().add("ocker-spine-segment"); firstSpine.setMaxWidth(2); firstSpine.setPrefHeight(72);
         Region remainingSpine = new Region(); remainingSpine.getStyleClass().add("ocker-spine-segment"); remainingSpine.setMaxWidth(2); VBox.setVgrow(remainingSpine, Priority.ALWAYS);
-        Label firstDate = new Label(markerDate(leftEvent)); firstDate.getStyleClass().add("ocker-marker-date"); Circle firstDot = new Circle(7); firstDot.getStyleClass().add("ocker-marker-dot");
-        VBox marker = new VBox(firstDate, firstDot, firstSpine); marker.getStyleClass().add("ocker-marker-column"); marker.setAlignment(Pos.TOP_CENTER); marker.setFillWidth(false);
-        if (rightEvent != null) { Label secondDate = new Label(markerDate(rightEvent)); secondDate.getStyleClass().add("ocker-marker-date"); Circle secondDot = new Circle(7); secondDot.getStyleClass().add("ocker-marker-dot"); marker.getChildren().addAll(secondDate, secondDot); }
+        StackPane firstDot = markerDot();
+        VBox marker = new VBox(firstDot, firstSpine); marker.getStyleClass().add("ocker-marker-column"); marker.setAlignment(Pos.TOP_CENTER); marker.setFillWidth(false);
+        if (rightEvent != null) marker.getChildren().add(markerDot());
         marker.getChildren().add(remainingSpine);
         row.add(marker, 1, 0);
         row.add(leftSlot, 0, 0); row.add(rightSlot, 2, 0);
         return row;
     }
-    private String markerDate(Event event) { String date = event.date().value(); return date == null || date.isBlank() ? "UNDATED" : date.replace('-', '.'); }
+    private StackPane markerDot() { Circle ring = new Circle(12, Color.web("#194d61")); Circle gap = new Circle(8, Color.WHITE); Circle core = new Circle(5, Color.web("#d7a85d")); StackPane marker = new StackPane(ring, gap, core); marker.getStyleClass().add("ocker-marker-dot"); marker.setMinSize(24, 24); marker.setPrefSize(24, 24); marker.setMaxSize(24, 24); return marker; }
     private boolean matches(Event event, String query) {
         boolean status = filter.getValue() == null || "All".equals(filter.getValue()) || filter.getValue().equals(event.status());
         String doc = documentFilter.getValue();
@@ -154,10 +154,10 @@ public final class ChronologyView extends BorderPane {
         VBox body = new VBox(9); body.getStyleClass().add("ocker-card-body"); body.setPadding(new Insets(22));
         Label date = new Label(event.date().value() == null ? "Undated" : event.date().value()); date.getStyleClass().add("ocker-date");
         Label title = new Label(event.title()); title.setWrapText(true); title.getStyleClass().add("ocker-event-title");
-        Label account = new Label(Objects.toString(event.assertedBy(), "")); account.getStyleClass().add("ocker-meta");
+        String assertedBy = Objects.toString(event.assertedBy(), ""); Label account = new Label(assertedBy.isBlank() ? "" : "Account by " + assertedBy); account.getStyleClass().add("ocker-meta");
         Label summary = new Label(event.summary()); summary.setWrapText(true); summary.getStyleClass().add("ocker-summary");
         body.getChildren().addAll(date, title, account);
-        if (event.status() != null && !event.status().isBlank()) { Label status = new Label("agreed".equals(event.status()) ? "Common ground" : event.status()); status.getStyleClass().addAll("ocker-status", "ocker-status-" + event.status()); body.getChildren().add(status); }
+        if (event.status() != null && !event.status().isBlank()) { Label status = new Label("agreed".equals(event.status()) ? "COMMON GROUND" : event.status().toUpperCase(Locale.ROOT)); status.getStyleClass().addAll("ocker-status", "ocker-status-" + event.status()); body.getChildren().add(status); }
         body.getChildren().add(summary);
         FlowPane actions = new FlowPane(6, 6);
         actions.getStyleClass().add("ocker-actions");

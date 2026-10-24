@@ -4,6 +4,8 @@ Author: Jenko <adam@isaidusaid.com> · Apache-2.0
 
 The reference applications should look like the same application, whether they run in a browser, JavaFX or Avalonia. The chronology, paper notes, outside-edge precedent flags and direct manipulation are part of OCKER's identity. A native port must not replace them with a generic list or data grid.
 
+Adam selected the Avalonia application as the visual reference on 24 October 2026. Its compact three-panel document/provider/review workspace is the default for all six RIs. The demo wordmark reads **Ocker**, with a brown cork hat worn by the O and five hanging corks. Its canonical transparent asset is `assets/ocker-wordmark.png`; reusable components leave branding to the embedding application.
+
 This is the default RI presentation contract, not a restriction on the portable file format. Integrators can replace styling through CSS, native stylesheets, palettes and options. Platform window chrome, font rasterisation and file pickers may differ; the chronology's layout and interaction model should remain recognisable.
 
 ## Shared defaults
@@ -18,8 +20,8 @@ This is the default RI presentation contract, not a restriction on the portable 
 | Card reading order | Date, title, account author, status pill, summary, actions |
 | Common ground pill | `#e4f0e9` background, `#306747` text |
 | Disputed pill | `#f9e7e7` background, `#9a3d42` text |
-| Other status pills | Quiet neutral fill and muted text |
-| Desktop layout | Two equal columns, an approximately 80px central gutter, a continuous spine and per-card markers; right column staggered |
+| Unresolved pill | Warm cream fill and muted gold text |
+| Desktop layout | Two equal columns, an approximately 80px central gutter, a continuous spine and teal-ring/gold-core markers; right column staggered; dates appear on cards |
 | Compact layout | One column, wrapping titles/actions, compact annotation markers; no desktop dispensers |
 | Paper notes | Yellow paper, visible red pin, folded corner, body margins and small edit/delete controls |
 | Precedent flags | Blue `#b7d9e8`, lavender `#d6c9e5`, mint `#c3dfcf`, peach `#ecd0bb`, slate `#c5d1d7` |
@@ -43,6 +45,8 @@ Long titles and summaries wrap inside their column. Content length must not move
 ## Example application flow
 
 Keep the same document-first hierarchy: add or paste documents; connect a provider with a user-selected model/key; build chronology and compare accounts together. Saved-file import and the Joe/Jill example are separate paths. Provider configuration must not crowd the chronology or turn the application into a row of equally prominent buttons.
+
+The application shell has a soft mint-to-lavender introduction, the full **Open Chronology, Knowledge and Evidence Record** heading in bold teal Georgia and the tagline **Every account. In its place.** Three rounded white panels have small gold number badges: **Start with documents**, **Choose a provider**, and **Review and share**. Compact outlined controls retain readable hover/focus states. At narrow widths these panels stack and preserve usable chronology space. The chronology title is left aligned and bold, with a quiet acronym eyebrow above it.
 
 Every example includes theme selection, provider disclosure, progress/cancellation, **Show code** and **Edit OCKER file**. Host-specific integrations can move these controls, but should retain their names and purpose.
 

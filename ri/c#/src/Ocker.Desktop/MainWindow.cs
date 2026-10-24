@@ -52,11 +52,19 @@ public sealed class MainWindow : Window
         var record = new WrapPanel { Children = { save, export, showCode, editJson } };
         var steps = new WrapPanel { Margin = new Thickness(18, 0, 18, 10), Children = { StepCard("1", "Start with documents", "Add PDFs, text documents or an example chronology.", documents), StepCard("2", "Choose a provider", "Configure endpoint, model and in-memory key.", build), StepCard("3", "Review and share", "Edit the record or save an image, PDF or JSON.", record) } };
         var notice = new TextBlock { Text = "Build sends selected document text to the configured provider. Ollama uses your local machine.", Foreground = new SolidColorBrush(Color.Parse("#617985")), Margin = new Thickness(18, 0, 18, 8), TextWrapping = TextWrapping.Wrap };
-        var heading=new TextBlock {Text="Open Chronology, Knowledge and Evidence Record",FontFamily=new FontFamily("Georgia"),FontSize=28,FontWeight=FontWeight.SemiBold,Foreground=new SolidColorBrush(Color.Parse("#194d61")),Margin=new Thickness(18,14,18,2),TextWrapping=TextWrapping.Wrap};
-        var subheading = new TextBlock { Text="Every account. In its place.", Foreground=new SolidColorBrush(Color.Parse("#617985")), Margin=new Thickness(18,0,18,10) };
-        var settingsContent=new StackPanel {Children={heading,subheading,notice,steps,_codePane}};
+        var heading=new TextBlock {Text="Open Chronology, Knowledge and Evidence Record",FontFamily=new FontFamily("Georgia"),FontSize=28,FontWeight=FontWeight.SemiBold,Foreground=new SolidColorBrush(Color.Parse("#194d61")),TextWrapping=TextWrapping.Wrap};
+        var subheading = new TextBlock { Text="Every account. In its place.", Foreground=new SolidColorBrush(Color.Parse("#617985")), Margin=new Thickness(0,2,0,4) };
+        var brand = new Image { Source = LoadWordmark(), Width = 160, Height = 64, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0,0,12,0) };
+        var intro = new Grid { Margin = new Thickness(18,14,18,2), ColumnDefinitions = new ColumnDefinitions("Auto,*") };
+        intro.Children.Add(brand); var introText = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { heading, subheading } }; Grid.SetColumn(introText,1); intro.Children.Add(introText);
+        var settingsContent=new StackPanel {Children={intro,notice,steps,_codePane}};
         var settingsArea=new ScrollViewer { Content=settingsContent, MaxHeight=270, HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled, VerticalScrollBarVisibility=ScrollBarVisibility.Auto };
         Content = new DockPanel { Children = { settingsArea, _view } }; DockPanel.SetDock(settingsArea, Dock.Top);
+    }
+    private static Bitmap LoadWordmark()
+    {
+        using var stream = typeof(MainWindow).Assembly.GetManifestResourceStream("Ocker.Desktop.Branding.ocker-wordmark.png") ?? throw new OckerException("Embedded OCKER wordmark is missing.");
+        return new Bitmap(stream);
     }
     private static void StyleAction(Button button)
     {

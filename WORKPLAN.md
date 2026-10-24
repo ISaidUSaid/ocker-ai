@@ -65,3 +65,14 @@ Adam requires the native RIs to share the web RI's visual design and drag/drop e
 - [x] Review new desktop/compact screenshots, exercise annotation dragging and verify builds/exports.
 
 Java and C# workers completed their separate native implementations; the parent reviewed screenshots, corrected final dialog/layout/hit-test issues and exercised real native input on macOS. Both main boards and related-card modals accepted a pad drop, saved entered text and rendered the note. C# also passed a final invalid-drop check. Both native PNG/PDF exporters ran successfully after the changes. Java's full reactor install and eight tests passed; the .NET solution/core checks passed with zero warnings/errors. See VALIDATION.md for the precise scope. Browser RI code and original ISaidUSaid.com repositories were left unchanged. No workers remain active.
+
+## Avalonia as the visual reference — 24 October 2026
+
+Adam selected Avalonia's design for all six RIs, superseding the earlier web-first visual direction. Use the three numbered document/provider/review panels, teal serif headings, quiet paper surfaces and the same chronology interaction. The canonical transparent Ocker wordmark has lowercase `cker`, a brown hat worn by the O and five corks, including one in the middle. Branding belongs to demo shells, leaving reusable components host-controlled.
+
+- [x] Generate and save the revised cork-hat wordmark with its prompt provenance.
+- [x] Update the shared presentation contract to name Avalonia as the visual reference.
+- [x] Complete all browser/native integrations and compare desktop/compact views.
+- [x] Verify affected builds and interactions; prepare the private repository push.
+
+The Java, C# and web workers finished. Parent review corrected the framework stylesheet imports, compacted the browser document controls, moved import/example paths to Start, and added shared Review save/export controls. All changes remain inside this checkout. The existing private-hosting and cross-platform GUI acceptance limits remain unchanged; no approval is pending for this local/private implementation.

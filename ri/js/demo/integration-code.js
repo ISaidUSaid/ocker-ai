@@ -1,5 +1,32 @@
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
+import {exportRecord} from '../src/model.js';
+import {exportVisual} from '../src/ui.js';
+
+export function mountReviewActions(container,{getRecord}) {
+  const actions=document.createElement('div');actions.className='ocker-review-actions';
+  const status=document.createElement('p');status.setAttribute('role','status');status.hidden=true;
+  for(const [label,format]of [['Save JSON','json'],['Export PNG','png'],['Export PDF','pdf']]) {
+    const button=document.createElement('button');button.type='button';button.textContent=label;
+    button.addEventListener('click',async()=>{
+      button.disabled=true;status.hidden=true;
+      try {
+        const record=getRecord();
+        if(format==='json') {
+          const url=URL.createObjectURL(new Blob([exportRecord(record)],{type:'application/vnd.ocker+json'}));
+          const link=document.createElement('a');link.href=url;link.download='chronology.ocker.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+        } else {
+          const stage=container.closest('.demo, .ocker-workbench')?.querySelector('.ocker-stage');
+          if(!stage)throw new Error('Open a chronology before exporting.');
+          await exportVisual(stage,format,record.title);
+        }
+      } catch(error) { status.textContent=error.message;status.hidden=false; }
+      finally { button.disabled=false; }
+    });actions.append(button);
+  }
+  actions.append(status);container.prepend(actions);
+  return {destroy(){actions.remove();}};
+}
 const languages={js:'JavaScript',angular:'Angular',react:'React',node:'Node + Angular',java:'Java / JavaFX',csharp:'C# / Avalonia'};
 export function integrationCode(language='js',theme='glass') {
   theme=theme==='none'?'none':'glass';

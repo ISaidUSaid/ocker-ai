@@ -72,12 +72,12 @@ Host applications own authentication, persistence, tenant boundaries, provider p
 
 See [integration](spec/INTEGRATION.md), [security](spec/SECURITY.md) and each RI README. Package manifests include Apache-2.0 and Jenko authorship. Packages are buildable locally; publishing to npm, Maven Central or NuGet is a separate release action and has not been done.
 
-The [shared presentation contract](spec/PRESENTATION.md) defines the default chronology design and drag/drop behaviour across browser, JavaFX and Avalonia implementations. Native window chrome can differ; the chronology should remain the same recognisable interface.
+The [shared presentation contract](spec/PRESENTATION.md) defines the default chronology design and drag/drop behaviour across browser, JavaFX and Avalonia implementations. All six example applications follow the Avalonia workspace design, with the [Ocker cork-hat wordmark](assets/ocker-wordmark.png), three numbered panels, teal serif headings and paper annotations. Native window chrome can differ. Embedding applications retain control of branding and styling.
 
 The Pages workflow builds the JavaScript example. Deployment is manual and requires GitHub Pages to be enabled for this repository. The repository remains private unless Adam changes its visibility.
 
 ## Validation
 
-Shared fictional PDFs and the authoritative `spec/examples/joe-jill.ocker.json` exercise 12 events, two embedded assets, six relationships, a note and a precedent. Browser and native tests use this same record rather than divergent examples. Test details and any remaining manual verification limits are recorded in [VALIDATION.md](VALIDATION.md).
+The shared conformance fixture exercises 12 events, two embedded assets, six relationships, a note and a precedent. The separate `spec/examples/joe-jill.ocker.json` demonstration contains the 46-event Joe/Jill chronology described above. Browser and native examples use that same demonstration. Test details and remaining manual verification limits are recorded in [VALIDATION.md](VALIDATION.md).
 
 The JSON schemas follow [Draft 2020-12](https://json-schema.org/draft/2020-12); the browser text importer uses the standard [PDF.js API](https://mozilla.github.io/pdf.js/examples/). Third-party dependencies retain their own licences. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

@@ -25,7 +25,7 @@ public sealed class MainWindow : Window
     private readonly Border _codePane = new() { IsVisible = false, Margin = new Thickness(18, 0, 18, 10), Padding = new Thickness(10), BorderBrush = Brushes.LightSlateGray, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
     public MainWindow()
     {
-        Title = "OCKER"; Width = 1040; Height = 760; MinWidth = 420; MinHeight = 500;
+        Title = "OCKER"; Icon = LoadIcon(); Width = 1040; Height = 760; MinWidth = 420; MinHeight = 500;
         var args=Environment.GetCommandLineArgs(); if (args.Contains("--compact")) { Width = 620; Height = 760; }var recordArg=args.FirstOrDefault(a=>a.StartsWith("--record="));
         if(recordArg is not null)_record=global::Ocker.Ocker.ParseRecord(File.ReadAllText(recordArg[9..]));
         Opened+=async(_,_)=>{var path=args.FirstOrDefault(a=>a.StartsWith("--snapshot="));if(path is not null){await Task.Delay(1400);using var bitmap=new RenderTargetBitmap(new PixelSize((int)Bounds.Width,(int)Bounds.Height));bitmap.Render(this);bitmap.Save(path[11..]);
@@ -34,8 +34,8 @@ public sealed class MainWindow : Window
         _view.Record = _record; _view.Options = ViewOptions();
         SizeChanged += (_, _) => _view.Options = ViewOptions();
         var open = new Button { Content = "Add documents" }; open.Click += async (_, _) => await OpenAsync(false);
-        var import = new Button { Content = "Import OCKER file" }; import.Click += async (_, _) => await OpenAsync(true);
-        var example = new Button { Content = "Load Joe & Jill example" }; example.Click += (_, _) => LoadExample();
+        var import = new Button { Content = "Open saved chronology" }; import.Click += async (_, _) => await OpenAsync(true);
+        var example = new Button { Content = "Try example" }; example.Click += (_, _) => LoadExample();
         var save = new Button { Content = "Save JSON" }; save.Click += async (_, _) => await SaveAsync();
         var extract = new Button { Content = "Build chronology" }; extract.Click += async (_, _) => await BuildChronologyAsync();
         var cancel = new Button { Content = "Cancel" }; cancel.Click += (_, _) => _operation?.Cancel();
@@ -50,16 +50,21 @@ public sealed class MainWindow : Window
         var documents = new WrapPanel { Children = { open, import, example } };
         var build = new WrapPanel { Children = { settings, extract, cancel } };
         var record = new WrapPanel { Children = { save, export, showCode, editJson } };
-        var steps = new WrapPanel { Margin = new Thickness(18, 0, 18, 10), Children = { StepCard("1", "Start with documents", "Add PDFs, text documents or an example chronology.", documents), StepCard("2", "Choose a provider", "Configure endpoint, model and in-memory key.", build), StepCard("3", "Review and share", "Edit the record or save an image, PDF or JSON.", record) } };
+        var steps = new WrapPanel { Margin = new Thickness(18, 0, 18, 10), Children = { StepCard("1", "Start here", "Try the example, open a saved chronology, or add your own documents.", documents), StepCard("2", "Build from documents", "Set up a provider only when you are ready to build a chronology.", build), StepCard("3", "Review and save", "Inspect evidence, add notes, then save an image, PDF or chronology file.", record) } };
         var notice = new TextBlock { Text = "Build sends selected document text to the configured provider. Ollama uses your local machine.", Foreground = new SolidColorBrush(Color.Parse("#617985")), Margin = new Thickness(18, 0, 18, 8), TextWrapping = TextWrapping.Wrap };
         var heading=new TextBlock {Text="Open Chronology, Knowledge and Evidence Record",FontFamily=new FontFamily("Georgia"),FontSize=28,FontWeight=FontWeight.SemiBold,Foreground=new SolidColorBrush(Color.Parse("#194d61")),TextWrapping=TextWrapping.Wrap};
         var subheading = new TextBlock { Text="Every account. In its place.", Foreground=new SolidColorBrush(Color.Parse("#617985")), Margin=new Thickness(0,2,0,4) };
         var brand = new Image { Source = LoadWordmark(), Width = 160, Height = 64, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0,0,12,0) };
         var intro = new Grid { Margin = new Thickness(18,14,18,2), ColumnDefinitions = new ColumnDefinitions("Auto,*") };
         intro.Children.Add(brand); var introText = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { heading, subheading } }; Grid.SetColumn(introText,1); intro.Children.Add(introText);
-        var settingsContent=new StackPanel {Children={intro,notice,steps,_codePane}};
+        var settingsContent=new StackPanel {Children={intro,notice,steps,_status,_codePane}}; _status.Margin = new Thickness(18,0,18,6); _status.Foreground = new SolidColorBrush(Color.Parse("#617985")); _status.Text = "No provider is needed to try the example or open a saved chronology.";
         var settingsArea=new ScrollViewer { Content=settingsContent, MaxHeight=270, HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled, VerticalScrollBarVisibility=ScrollBarVisibility.Auto };
         Content = new DockPanel { Children = { settingsArea, _view } }; DockPanel.SetDock(settingsArea, Dock.Top);
+    }
+    private static WindowIcon LoadIcon()
+    {
+        using var stream = typeof(MainWindow).Assembly.GetManifestResourceStream("Ocker.Desktop.Branding.ocker-icon.png") ?? throw new OckerException("Embedded OCKER icon is missing.");
+        return new WindowIcon(stream);
     }
     private static Bitmap LoadWordmark()
     {

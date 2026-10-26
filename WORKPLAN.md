@@ -96,3 +96,12 @@ Adam authorised graph/navigation helpers, fluent record builders, standalone pac
 - [x] Generate and verify checksummed SDK distribution; private repository push is the final handoff step.
 
 The Java, C# and web-consumer workers completed their bounded assignments. Parent review added portable toolchain selection, installed-package resolution guards, a self-contained .NET consumer, complete private installation examples, package licenses and a Release solution configuration correction. Graph/builders, 21 JS tests, 16 spec checks, 11 Java tests, .NET conformance checks, all installed-artifact consumers, 12 browser interactions and three framework tests pass. The archive includes versioned npm/Maven/NuGet artifacts, source/Javadoc JARs, public prompts, licensing and SHA-256 checksums. No public registry publication, provider call or ISaidUSaid.com write was made. No workers remain active; public publication and any additional native OS/provider acceptance are separate next steps.
+
+## App icons and approachable setup — 26 October 2026
+
+- [x] Derive a compact transparent cork-hat icon from the accepted wordmark and document its provenance.
+- [x] Bundle it in JS, React, Angular, Node/Angular, JavaFX and Avalonia example apps; retain header wordmarks.
+- [x] Clarify document, example and saved-file starting paths, provider setup and progress guidance.
+- [x] Verify all browser builds, thirteen shared interactions, three framework runtimes and native resource/build checks.
+
+The Java, C# and framework workers completed their assignments. Parent fixed guidance after example/import loading, added removable JS build-queue entries and checked the real browser layout. No model settings, proprietary application source, public visibility or registry publication changed. No approval is pending; the next useful step is Adam trying the refreshed local demo, followed by a real-provider acceptance run with his chosen model/key.

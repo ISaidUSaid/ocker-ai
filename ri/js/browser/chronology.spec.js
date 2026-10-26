@@ -57,3 +57,15 @@ test('one build includes relationships and does not commit a failed comparison',
  await expect(page.getByRole('button',{name:'Find relationships',exact:true})).toHaveCount(0);await expect(page.locator('[data-option="consent"]')).toHaveCount(0);await page.getByRole('button',{name:'Build chronology',exact:true}).click();await expect(page.locator('.workbench-progress')).toContainText('unsupported relationship');await expect(page.locator('.ocker-card')).toHaveCount(0);
  fail=false;await page.getByRole('button',{name:'Build chronology',exact:true}).click();await expect(page.getByText('2 of 2 events',{exact:true})).toBeVisible();const record=await exported(page);expect(record.relationships).toHaveLength(1);expect(comparisons).toBe(2);
 });
+
+test('first run has a working icon and guides a removable build queue',async({page})=>{
+ await page.goto('/');
+ const iconPath=await page.locator('link[rel="icon"]').getAttribute('href');
+ const icon=await page.request.get(iconPath);expect(icon.ok()).toBe(true);expect((await icon.body()).subarray(1,4).toString()).toBe('PNG');
+ const build=page.getByRole('button',{name:'Build chronology',exact:true});await expect(build).toBeDisabled();
+ await page.locator('input[data-action="pdf"]').setInputFiles({name:'Order.txt',mimeType:'text/plain',buffer:Buffer.from('An order was made on 1 June 2024.')});
+ await page.getByRole('button',{name:'Add document',exact:true}).click();await expect(build).toBeEnabled();
+ await page.getByRole('button',{name:'Connect AI provider',exact:true}).click();await expect(page.locator('[data-option="model"]')).toBeVisible();
+ await page.locator('.document-queue button').click();await expect(build).toBeDisabled();await expect(page.locator('.document-queue li')).toHaveCount(0);
+ await page.getByRole('button',{name:'Joe and Jill Blogs Example Chronology',exact:true}).click();await expect(page.getByText('46 of 46 events',{exact:true})).toBeVisible();await expect(page.locator('.workbench-next')).toContainText('Review');await expect(page.getByRole('button',{name:'Connect AI provider',exact:true})).toBeHidden();
+});

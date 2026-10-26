@@ -13,7 +13,7 @@ npm run build --workspace=@ocker-ai/node-demo
 OCKER_ALLOWED_PROVIDER_ORIGINS=https://your-provider.example npm start --workspace=@ocker-ai/node-demo
 ```
 
-Open `http://127.0.0.1:3000`. Queue PDFs as affidavits/orders/reports, or open the shared example/your own OCKER record. Enter the full chat-completions endpoint, selected model and key; approve text transmission before building. Keys are per-operation inputs and are never written into OCKER JSON.
+Open `http://127.0.0.1:3000`. Start by adding documents, opening a saved OCKER record, or trying the shared example. Enter the full chat-completions endpoint, selected model and key; Build deliberately sends document text to the selected provider. Keys are per-operation inputs and are never written into OCKER JSON.
 
 - `POST /api/documents`: multipart `file` plus optional `kind`; returns intermediate JSON.
 - `POST /api/records/build`: `intermediates`, optional `title`, and `provider` (`endpoint`, `model`, `apiKey`).

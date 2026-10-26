@@ -21,6 +21,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.*;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
@@ -36,7 +37,7 @@ public final class ExampleApp extends Application {
     private final TextField endpoint = new TextField(), model = new TextField();
     private final PasswordField key = new PasswordField();
     private final ComboBox<ChronologyViewOptions.Theme> theme = new ComboBox<>();
-    private final Label status = new Label("Open a saved chronology or queue PDF, text, RTF or DOCX documents.");
+    private final Label status = new Label("Choose a starting point: try the example, open a saved chronology, or add documents.");
     private final FlowPane commands = new FlowPane(8, 8);
     private final TextArea code = new TextArea();
     private final VBox codePane = new VBox(8);
@@ -44,7 +45,7 @@ public final class ExampleApp extends Application {
     private boolean busy;
     public void start(Stage stage) {
         String recordPath = getParameters().getNamed().get("record");
-        if (recordPath != null) try { record = Ocker.importRecord(Files.readString(Path.of(recordPath))); } catch (Exception error) { status.setText(error.getMessage()); }
+        if (recordPath != null) try { record = Ocker.importRecord(Files.readString(Path.of(recordPath))); status.setText("Saved chronology opened and evidence verified."); } catch (Exception error) { showError("open the saved chronology", error); }
         view = new ChronologyView(record, options());
         endpoint.setPromptText("https://your-provider.example/v1/chat/completions"); model.setPromptText("Your selected model"); key.setPromptText("API key — memory only; optional for local Ollama");
         theme.getItems().setAll(ChronologyViewOptions.Theme.GLASS, ChronologyViewOptions.Theme.NONE); theme.setValue("none".equalsIgnoreCase(getParameters().getNamed().get("theme")) ? ChronologyViewOptions.Theme.NONE : ChronologyViewOptions.Theme.GLASS); theme.setOnAction(e -> { view.setOptions(options()); updateCode(); }); view.setOptions(options());
@@ -56,22 +57,25 @@ public final class ExampleApp extends Application {
         TitledPane advanced = new TitledPane("Advanced settings", field("Provider endpoint",endpoint)); advanced.setExpanded(false);
         Button build = action("Build chronology", this::build); build.getStyleClass().add("ocker-build-button");
         Button addDocuments = action("Add documents", () -> importDocuments(stage));
-        Button importRecord = action("Import OCKER file", () -> open(stage));
-        Button example = action("Load Joe & Jill example", this::loadExample);
+        Button importRecord = action("Open saved chronology", () -> open(stage));
+        Button example = action("Try example", this::loadExample);
+        addDocuments.setTooltip(new Tooltip("Add PDF, TXT, RTF or DOCX documents to build a chronology."));
+        importRecord.setTooltip(new Tooltip("Open an existing OCKER JSON chronology. No provider is needed."));
+        example.setTooltip(new Tooltip("Explore the bundled Joe and Jill chronology. No provider or API key is needed."));
         Button configure = action("Configure provider", () -> configureProvider(stage, provider, presets, advanced));
         Button save = action("Save JSON", () -> save(stage));
         Button exports = action("Export PNG / PDF", () -> exportChoice(stage));
         Button edit = action("Edit OCKER file", () -> editRecord(stage));
         FlowPane startActions = new FlowPane(7, 7, addDocuments, importRecord, example);
-        Button cancel = new Button("Cancel"); cancel.setOnAction(e -> cancelled.set(true));
+        Button cancel = new Button("Cancel"); cancel.setOnAction(e -> { cancelled.set(true); status.setText("Cancelling…"); });
         FlowPane providerActions = new FlowPane(7, 7, configure, build, cancel);
         FlowPane reviewActions = new FlowPane(7, 7, save, exports, showCode, edit);
         commands.getChildren().addAll(startActions, providerActions, reviewActions);
         configureCodePane();
-        Label providerNotice = new Label("Build chronology sends document text to your chosen provider. Local Ollama stays on this device."); providerNotice.setWrapText(true);
+        Label providerNotice = new Label("New here? Try the example first. To build from your documents, choose a provider, then enter a model and key. Local Ollama stays on this device."); providerNotice.setWrapText(true);
         Label subheading = new Label("Every account. In its place."); subheading.getStyleClass().add("ocker-subheading");
-        VBox recordsStep = step("1", "Start with documents", "Add PDFs, text documents or an example chronology.", startActions);
-        VBox providerStep = step("2", "Choose a provider", "Configure endpoint, model and in-memory key.", providerActions);
+        VBox recordsStep = step("1", "Start here", "Try the example, open a saved chronology, or add documents.", startActions);
+        VBox providerStep = step("2", "Set up a provider", "Choose one, then enter your model and in-memory key.", providerActions);
         VBox reviewStep = step("3", "Review and share", "Edit the record or save an image, PDF or JSON.", reviewActions);
         FlowPane steps = new FlowPane(10, 10, recordsStep, providerStep, reviewStep); steps.getStyleClass().add("ocker-steps");
         VBox settings = new VBox(8, heading(), subheading, providerNotice, steps, codePane, status); settings.setPadding(new Insets(18)); settings.getStyleClass().add("ocker-settings");
@@ -84,11 +88,12 @@ public final class ExampleApp extends Application {
         presets.prefWrapLengthProperty().bind(scene.widthProperty().subtract(80));
         layoutSteps(scene.getWidth(), recordsStep, providerStep, reviewStep, settingsViewport);
         scene.widthProperty().addListener((observable, before, after) -> layoutSteps(after.doubleValue(), recordsStep, providerStep, reviewStep, settingsViewport));
-        stage.setScene(scene); stage.setTitle("OCKER — Open Chronology, Knowledge and Evidence Record"); stage.show(); Platform.runLater(root::requestFocus);
+        stage.setScene(scene); stage.setTitle("OCKER — Open Chronology, Knowledge and Evidence Record"); Image icon = stageIcon(); if (icon != null) stage.getIcons().add(icon); stage.show(); Platform.runLater(root::requestFocus);
         String snapshot = getParameters().getNamed().get("snapshot");
         if (snapshot != null) { javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2)); pause.setOnFinished(e -> { try { root.applyCss(); root.layout(); String position = getParameters().getNamed().get("scroll"); if (position != null) view.scrollTo(Double.parseDouble(position)); root.layout(); javax.imageio.ImageIO.write(javafx.embed.swing.SwingFXUtils.fromFXImage(root.snapshot(new javafx.scene.SnapshotParameters(), null), null), "png", Path.of(snapshot).toFile()); } catch (Exception error) { error.printStackTrace(); } String prefix=getParameters().getNamed().get("export-prefix");if(prefix!=null)try{view.exportPng(Path.of(prefix+".png"));view.exportPdf(Path.of(prefix+".pdf"));}catch(Exception error){error.printStackTrace();}Platform.exit(); }); pause.play(); }
     }
     private VBox field(String label, javafx.scene.Node control) { return new VBox(5,new Label(label),control); }
+    private Image stageIcon() { URL icon = getClass().getResource("/ocker-icon.png"); if (icon == null) icon = getClass().getResource("/ocker-wordmark.png"); return icon == null ? null : new Image(icon.toExternalForm()); }
     private Node heading() { HBox heading = new HBox(10); heading.getStyleClass().add("ocker-heading"); heading.setAlignment(javafx.geometry.Pos.CENTER_LEFT); try (InputStream input = getClass().getResourceAsStream("/ocker-wordmark.png")) { if (input != null) { ImageView mark = new ImageView(new Image(input)); mark.setPreserveRatio(true); mark.setFitWidth(160); heading.getChildren().add(mark); } else heading.getChildren().add(new Label("OCKER /")); } catch (IOException ignored) { heading.getChildren().add(new Label("OCKER /")); } Label title = new Label("Open Chronology, Knowledge and Evidence Record"); title.setWrapText(true); title.setMaxWidth(Double.MAX_VALUE); title.getStyleClass().add("ocker-heading-title"); heading.getChildren().add(title); return heading; }
     private VBox step(String number, String title, String detail, Node... content) { Label badge = new Label(number); badge.getStyleClass().add("ocker-step-number"); Label heading = new Label(title); heading.getStyleClass().add("ocker-step-title"); Label detailLabel = new Label(detail); detailLabel.setWrapText(true); detailLabel.getStyleClass().add("ocker-step-detail"); VBox step = new VBox(6, badge, heading, detailLabel); step.getStyleClass().add("ocker-step"); step.getChildren().addAll(content); return step; }
     private void layoutSteps(double width, VBox first, VBox second, VBox third, ScrollPane viewport) { boolean compact = width < 740; double panelWidth = Math.max(280, compact ? width - 52 : (width - 120) / 3); for (VBox panel : List.of(first, second, third)) panel.setPrefWidth(panelWidth); viewport.setMaxHeight(330); viewport.setPrefViewportHeight(330); }
@@ -171,8 +176,9 @@ public final class ExampleApp extends Application {
     }
     private int nextNonWhitespace(String value, int start) { for (int index = start; index < value.length(); index++) if (!Character.isWhitespace(value.charAt(index))) return value.charAt(index); return -1; }
     private void appendJson(TextFlow preview, String value, String color) { if (!value.isEmpty()) { Text text = new Text(value); text.setStyle("-fx-fill: " + color + ";"); preview.getChildren().add(text); } }
-    private Button action(String label, Runnable action) { Button button = new Button(label); button.setOnAction(e -> { if (!busy) try { action.run(); } catch (Exception error) { status.setText(error.getMessage()); } }); return button; }
-    private Button providerPreset(String label, String providerEndpoint) { return action(label, () -> { endpoint.setText(providerEndpoint); key.clear(); status.setText(label + " selected. Choose a model and enter a key if required."); }); }
+    private Button action(String label, Runnable action) { Button button = new Button(label); button.setOnAction(e -> { if (!busy) try { action.run(); } catch (Exception error) { showError(label.toLowerCase(Locale.ROOT), error); } }); return button; }
+    private void showError(String action, Exception error) { String detail = error.getMessage(); status.setText("Couldn’t " + action + (detail == null || detail.isBlank() ? ". Try again." : ": " + detail)); }
+    private Button providerPreset(String label, String providerEndpoint) { return action(label, () -> { endpoint.setText(providerEndpoint); key.clear(); status.setText(label + " selected. Enter the model you use and a key if required."); }); }
     private void configureProvider(Stage owner, FlowPane provider, FlowPane presets, TitledPane advanced) {
         Dialog<Void> dialog = new Dialog<>(); dialog.setTitle("Choose a provider"); VBox body = new VBox(12, provider, presets, advanced); body.setPadding(new Insets(4)); dialog.getDialogPane().setContent(body); dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE); dialog.getDialogPane().setPrefWidth(640);
         try { showDocumentDialog(dialog, owner); } finally { body.getChildren().clear(); }
@@ -181,18 +187,18 @@ public final class ExampleApp extends Application {
         Dialog<Void> dialog = new Dialog<>(); dialog.setTitle("Export chronology"); Button png = new Button("Export PNG"), pdf = new Button("Export PDF"); png.setOnAction(event -> { dialog.close(); export(stage, true); }); pdf.setOnAction(event -> { dialog.close(); export(stage, false); }); dialog.getDialogPane().setContent(new VBox(10, new Label("Choose an export format."), new HBox(8, png, pdf))); dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE); showDocumentDialog(dialog, stage);
     }
     private FileChooser chooser(String title, String extension) { FileChooser chooser = new FileChooser(); chooser.setTitle(title); chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(extension.toUpperCase(), "*." + extension)); return chooser; }
-    private void open(Stage stage) { var file = chooser("Import OCKER file", "json").showOpenDialog(stage); if (file != null) try { OckerRecord next = Ocker.importRecord(Files.readString(file.toPath())); view.setRecord(next); record = next; queued.clear(); status.setText("Record loaded and evidence verified."); } catch (Exception error) { status.setText(error.getMessage()); } }
-    private void loadExample() { try (InputStream input = getClass().getResourceAsStream("/joe-jill.ocker.json")) { if (input == null) throw new IllegalStateException("Bundled Joe and Jill Blogs example is unavailable."); OckerRecord next = Ocker.importRecord(new String(input.readAllBytes(), StandardCharsets.UTF_8)); view.setRecord(next); record = next; queued.clear(); status.setText("Joe and Jill Blogs example loaded · " + record.events().size() + " events."); } catch (Exception error) { status.setText(error.getMessage()); } }
-    private void save(Stage stage) { var file = chooser("Save OCKER", "json").showSaveDialog(stage); if (file != null) try { Files.writeString(file.toPath(), Ocker.exportRecord(record)); status.setText("Saved."); } catch (Exception error) { status.setText(error.getMessage()); } }
-    private void export(Stage stage, boolean png) { var file = chooser("Export view", png ? "png" : "pdf").showSaveDialog(stage); if (file != null) try { if (png) view.exportPng(file.toPath()); else view.exportPdf(file.toPath()); } catch (Exception error) { status.setText(error.getMessage()); } }
+    private void open(Stage stage) { var file = chooser("Open saved chronology", "json").showOpenDialog(stage); if (file != null) try { OckerRecord next = Ocker.importRecord(Files.readString(file.toPath())); view.setRecord(next); record = next; queued.clear(); status.setText("Saved chronology opened and evidence verified."); } catch (Exception error) { showError("open the saved chronology", error); } }
+    private void loadExample() { try (InputStream input = getClass().getResourceAsStream("/joe-jill.ocker.json")) { if (input == null) throw new IllegalStateException("Bundled Joe and Jill Blogs example is unavailable."); OckerRecord next = Ocker.importRecord(new String(input.readAllBytes(), StandardCharsets.UTF_8)); view.setRecord(next); record = next; queued.clear(); status.setText("Example ready · " + record.events().size() + " events and " + record.relationships().size() + " related assessments. No provider was used."); } catch (Exception error) { showError("load the example", error); } }
+    private void save(Stage stage) { var file = chooser("Save OCKER", "json").showSaveDialog(stage); if (file != null) try { Files.writeString(file.toPath(), Ocker.exportRecord(record)); status.setText("Chronology saved as OCKER JSON."); } catch (Exception error) { showError("save the chronology", error); } }
+    private void export(Stage stage, boolean png) { var file = chooser("Export view", png ? "png" : "pdf").showSaveDialog(stage); if (file != null) try { if (png) view.exportPng(file.toPath()); else view.exportPdf(file.toPath()); status.setText("Export saved."); } catch (Exception error) { showError("export the chronology", error); } }
     private void importDocuments(Stage stage) {
-        FileChooser chooser = new FileChooser(); chooser.setTitle("Add PDF, text, RTF or DOCX"); chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Documents", "*.pdf", "*.txt", "*.rtf", "*.docx"));
+        FileChooser chooser = new FileChooser(); chooser.setTitle("Add documents"); chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF, text, RTF or DOCX", "*.pdf", "*.txt", "*.rtf", "*.docx"));
         var files = chooser.showOpenMultipleDialog(stage);
         if (files == null) return;
         List<DocumentChoice> selected = new ArrayList<>();
         for (var file : files) chooseDocumentType(stage, file).ifPresent(type -> selected.add(new DocumentChoice(file.toPath(), file.getName(), type)));
         List<DocumentChoice> choices = List.copyOf(selected);
-        if (!choices.isEmpty()) run(() -> { List<Intermediate> pending = new ArrayList<>(); for (DocumentChoice choice : choices) pending.add(Ocker.parseDocument(choice.path(), UUID.randomUUID().toString(), choice.name(), choice.type(), work(null))); queued.addAll(pending); return record; });
+        if (!choices.isEmpty()) { status.setText("Adding " + choices.size() + " document" + (choices.size() == 1 ? "…" : "s…")); run(() -> { List<Intermediate> pending = new ArrayList<>(); for (DocumentChoice choice : choices) pending.add(Ocker.parseDocument(choice.path(), UUID.randomUUID().toString(), choice.name(), choice.type(), work(null))); queued.addAll(pending); return record; }, () -> status.setText("Documents ready · " + queued.size() + " queued. Next, choose a provider and select Build chronology.")); }
     }
     private Optional<String> chooseDocumentType(Stage stage, java.io.File file) {
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -214,8 +220,9 @@ public final class ExampleApp extends Application {
     private CompletionAdapter adapter() { if (endpoint.getText().isBlank() || model.getText().isBlank()) throw new IllegalStateException("Enter endpoint and model."); if (key.getText().isBlank() && !loopbackEndpoint(endpoint.getText())) throw new IllegalStateException("Enter an API key unless using a local Ollama endpoint."); return new OpenAICompatibleAdapter(endpoint.getText(), model.getText(), key.getText()); }
     private boolean loopbackEndpoint(String value) { try { String host = java.net.URI.create(value).getHost(); return "localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host) || "::1".equals(host); } catch (IllegalArgumentException error) { return false; } }
     private OckerOptions work(CompletionAdapter adapter) { return OckerOptions.builder().llm(adapter).cancellation(cancelled::get).onProgress(progress -> Platform.runLater(() -> status.setText(progress.phase() + ": " + progress.message()))).build(); }
-    private void build() { if (queued.isEmpty()) throw new IllegalStateException("Queue at least one document."); CompletionAdapter adapter = adapter(); List<Intermediate> input = List.copyOf(queued); run(() -> { OckerRecord next = Ocker.createRecord("Imported document chronology"); for (Intermediate item : input) next = Ocker.buildChronology(next, item, work(adapter)); return Ocker.findRelationships(next, work(adapter)); }); }
-    private void run(Work work) { if (busy) return; busy = true; commands.setDisable(true); cancelled.set(false); Task<OckerRecord> task = new Task<>() { protected OckerRecord call() throws Exception { return work.get(); } }; task.setOnSucceeded(e -> { if (!cancelled.get()) { OckerRecord next = task.getValue(); view.setRecord(next); record = next; status.setText("Ready · " + record.events().size() + " events · " + record.relationships().size() + " relationships · " + queued.size() + " queued documents"); } done(); }); task.setOnFailed(e -> { status.setText(cancelled.get() ? "Cancelled. Record unchanged." : task.getException().getMessage()); done(); }); Thread worker = new Thread(task, "ocker-operation"); worker.setDaemon(true); worker.start(); }
+    private void build() { if (queued.isEmpty()) throw new IllegalStateException("Add at least one document, then choose a provider."); CompletionAdapter adapter = adapter(); List<Intermediate> input = List.copyOf(queued); status.setText("Building chronology: extracting accounts, then checking direct relationships…"); run(() -> { OckerRecord next = Ocker.createRecord("Imported document chronology"); for (Intermediate item : input) next = Ocker.buildChronology(next, item, work(adapter)); return Ocker.findRelationships(next, work(adapter)); }); }
+    private void run(Work work) { run(work, null); }
+    private void run(Work work, Runnable success) { if (busy) return; busy = true; commands.setDisable(true); cancelled.set(false); Task<OckerRecord> task = new Task<>() { protected OckerRecord call() throws Exception { return work.get(); } }; task.setOnSucceeded(e -> { if (!cancelled.get()) { OckerRecord next = task.getValue(); view.setRecord(next); record = next; if (success == null) status.setText("Ready · " + record.events().size() + " events · " + record.relationships().size() + " relationships · " + queued.size() + " queued documents"); else success.run(); } done(); }); task.setOnFailed(e -> { if (cancelled.get()) status.setText("Cancelled. The displayed chronology was not changed."); else showError("complete the operation", task.getException() instanceof Exception error ? error : new Exception(task.getException())); done(); }); Thread worker = new Thread(task, "ocker-operation"); worker.setDaemon(true); worker.start(); }
     private void done() { busy = false; commands.setDisable(false); }
     private record DocumentChoice(Path path, String name, String type) { }
     @FunctionalInterface private interface Work { OckerRecord get() throws Exception; }

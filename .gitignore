@@ -21,5 +21,6 @@ ri/js/demo/public/pdf.worker.min.mjs
 ri/js/src/prompts.generated.json
 # Prepared demo copies; the canonical wordmark lives at assets/ocker-wordmark.png.
 **/public/assets/ocker-wordmark.png
+**/public/assets/ocker-icon.png
 **/public/assets/examples/
 /public/

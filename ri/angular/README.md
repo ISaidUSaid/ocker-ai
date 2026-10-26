@@ -33,7 +33,7 @@ npm run build --workspace=@ocker-ai/angular-demo
 
 The demos explicitly mark asynchronous view changes for Angular change detection; the reusable renderer runs outside Angular and emits edits back through the change output. This keeps drag movement out of application change detection.
 
-The demo queues PDF, DOCX, RTF and plain-text documents, selects document kinds and an LLM provider, imports portable records and loads the fictional Joe/Jill example. A provider notice explains transmission before the user chooses Build; keys stay only in memory. It runs entirely client-side. The library build uses ng-packagr and produces an Angular package under `ri/angular/dist`; registry publication is separate.
+The demo starts with three clear paths: add documents, open a saved portable record, or try the fictional Joe/Jill example. It then guides the user to choose an LLM provider before Build. A provider notice explains transmission; keys stay only in memory. It runs entirely client-side. The library build uses ng-packagr and produces an Angular package under `ri/angular/dist`; registry publication is separate.
 
 ## Complete application boundary
 

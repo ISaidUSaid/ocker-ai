@@ -27,7 +27,7 @@ npm run build --workspace=@ocker-ai/react-demo
 npm pack --workspace=@ocker-ai/react
 ```
 
-The client-only example has the fictional Joe/Jill record, document import, provider settings and notices, build/relationship operations and cancellation. No backend is used. The chosen provider must permit browser CORS. Publishing the package is a separate action.
+The client-only example starts with document import, opening a saved OCKER record, or the fictional Joe/Jill example, then guides the user through provider settings, build/relationship operations and cancellation. No backend is used. The chosen provider must permit browser CORS. Publishing the package is a separate action.
 
 ## Complete component boundary
 

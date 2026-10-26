@@ -12,8 +12,8 @@ await mkdir(output,{recursive:true});
 for(const name of ['joe-jill.ocker.json'])await copyFile(new URL('../../../spec/examples/'+name,import.meta.url),join(output,name));
 for(const name of ['JoeBlogsAffidavit.pdf','JillBlogsAffidavit.pdf'])await copyFile(new URL('../../../spec/examples/source/'+name,import.meta.url),join(output,name));
 
-const wordmarkSource=new URL('../../../assets/ocker-wordmark.png',import.meta.url);
-const wordmarkTarget=process.argv[2]?join(dirname(typeof target==='string'?target:fileURLToPath(target)),'ocker-wordmark.png'):new URL('public/assets/ocker-wordmark.png',import.meta.url);
-if(typeof wordmarkTarget==='string') await mkdir(dirname(wordmarkTarget),{recursive:true});
-else await mkdir(dirname(fileURLToPath(wordmarkTarget)),{recursive:true});
-await copyFile(wordmarkSource,wordmarkTarget);
+const brandingDirectory=process.argv[2]?dirname(target):fileURLToPath(new URL('public/assets/',import.meta.url));
+await mkdir(brandingDirectory,{recursive:true});
+for(const name of ['ocker-wordmark.png','ocker-icon.png']) {
+  await copyFile(new URL('../../../assets/'+name,import.meta.url),join(brandingDirectory,name));
+}

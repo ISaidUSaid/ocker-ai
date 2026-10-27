@@ -31,7 +31,11 @@ const languages={js:'JavaScript',angular:'Angular',react:'React',node:'Node + An
 export function integrationCode(language='js',theme='glass') {
   theme=theme==='none'?'none':'glass';
   const examples={
-js:`import {parseRecord, mountChronology, parseDocument, buildChronology, findRelationships,
+js:`// Build setup, run in Node before the browser bundle:
+// import {prepareDoclingAssets} from '@ocker-ai/core/prepare-docling-assets';
+// await prepareDoclingAssets('public/assets/docling');
+
+import {parseRecord, mountChronology, parseDocument, buildChronology, findRelationships,
   createOpenAICompatibleAdapter} from '@ocker-ai/core';
 import '@ocker-ai/core/styles.css';
 
@@ -43,14 +47,18 @@ const view = mountChronology(container, record, {
 });
 
 // Building is optional. Supply your own provider settings at runtime.
-const document = await parseDocument(documentFile, {kind: 'affidavit'});
+const document = await parseDocument(documentFile, {
+  kind: 'affidavit', workerSrc: '/assets/pdf.worker.min.mjs',
+  docling: {assetBaseUrl: '/assets/docling/', ocrLanguage: 'en', tableStructure: true}
+});
 const llm = createOpenAICompatibleAdapter({endpoint, model, apiKey});
 const extracted = await buildChronology([document], {llm, signal});
 view.setRecord(await findRelationships(extracted, {llm, signal}));
 // When the host unmounts: view.destroy();`,
-angular:`import {Component} from '@angular/core';
+angular:`// Before the browser build: prepareDoclingAssets('public/assets/docling').
+import {Component} from '@angular/core';
 import {OckerChronologyComponent} from '@ocker-ai/angular';
-import {createRecord} from '@ocker-ai/core';
+import {createRecord, parseDocument} from '@ocker-ai/core';
 import '@ocker-ai/core/styles.css';
 
 @Component({
@@ -63,25 +71,38 @@ import '@ocker-ai/core/styles.css';
 export class MatterChronology {
   record = createRecord('Matter chronology');
   options = {theme: '${theme}' as const};
+  async importPdf(file: File) {
+    return parseDocument(file, {kind: 'affidavit', workerSrc: '/assets/pdf.worker.min.mjs',
+      docling: {assetBaseUrl: '/assets/docling/', ocrLanguage: 'en', tableStructure: true}});
+  }
 }
 // Enable Angular animations in the host application.
 // The component uses BreakpointObserver for its device view.`,
-react:`import {useState} from 'react';
+react:`// Before the browser build: prepareDoclingAssets('public/assets/docling').
+import {useState} from 'react';
 import {OckerChronology} from '@ocker-ai/react';
-import {createRecord} from '@ocker-ai/core';
+import {createRecord, parseDocument} from '@ocker-ai/core';
 import '@ocker-ai/core/styles.css';
 
 export function MatterChronology() {
   const [record, setRecord] = useState(() => createRecord('Matter chronology'));
+  const importPdf = file => parseDocument(file, {kind: 'affidavit',
+    workerSrc: '/assets/pdf.worker.min.mjs',
+    docling: {assetBaseUrl: '/assets/docling/', ocrLanguage: 'en', tableStructure: true}});
   return <OckerChronology record={record} onChange={setRecord}
     theme="${theme}" animate={true} />;
 }`,
-node:`// Node backend: use the RI's bounded PDF/build/relationship routes.
+node:`// Node backend: configure trusted Docling Serve settings before startup.
 import {createApp} from './ri/node.js/src/server.js';
-const app = createApp({providerOrigins: [providerOrigin]});
+process.env.DOCLING_SERVE_URL = 'http://localhost:5001';
+process.env.DOCLING_TIMEOUT_MS = '300000';
+const app = createApp({providerOrigins: new Set([providerOrigin])});
 app.listen(3000, '127.0.0.1');
 
-// Angular front end: provider keys belong to the operation, not the record.
+// The browser cannot choose a Docling URL. Test the configured service first.
+await fetch('http://127.0.0.1:3000/api/docling/health');
+// Upload PDFs to /api/documents; Node sends them to Docling Serve.
+// Provider keys belong to the chronology operation, not the record.
 const response = await fetch('/api/records/build', {
   method: 'POST',
   headers: {'Content-Type': 'application/json'},
@@ -92,7 +113,13 @@ const {record} = await response.json();
 // Embed with OckerChronologyComponent:
 // <ocker-chronology [record]="record" [options]="{theme: '${theme}'}"
 //   (recordChange)="record = $event" />`,
-java:`var view = new ChronologyView(record, ChronologyViewOptions.builder()
+java:`var docling = DoclingServeClient.builder()
+    .baseUrl("http://localhost:5001")
+    .requestTimeout(Duration.ofMinutes(5))
+    .build();
+docling.testConnection();
+
+var view = new ChronologyView(record, ChronologyViewOptions.builder()
     .theme(ChronologyViewOptions.Theme.${theme==='glass'?'GLASS':'NONE'})
     .onChange(next -> saveInYourApplication(next))
     .onError(error -> showError(error))
@@ -100,6 +127,7 @@ java:`var view = new ChronologyView(record, ChronologyViewOptions.builder()
 
 var options = OckerOptions.builder()
     .llm(new OpenAICompatibleAdapter(endpoint, model, key))
+    .doclingServe(docling)
     .onProgress(progress -> showProgress(progress))
     .cancellation(() -> cancelled.get())
     .build();
@@ -107,7 +135,13 @@ var document = Ocker.parseDocument(path, documentId, title, "affidavit", options
 var next = Ocker.buildChronology(Ocker.createRecord(title), document, options);
 // Set the record on the JavaFX application thread.
 Platform.runLater(() -> view.setRecord(next));`,
-csharp:`var view = new ChronologyView {
+csharp:`using var docling = new DoclingServeClient(new DoclingServeOptions {
+    BaseUrl = new Uri("http://localhost:5001"),
+    Timeout = TimeSpan.FromMinutes(5)
+});
+await docling.TestConnectionAsync(cancellationToken);
+
+var view = new ChronologyView {
     Record = record,
     Options = new ChronologyViewOptions {
         Theme = "${theme}",
@@ -118,6 +152,7 @@ csharp:`var view = new ChronologyView {
 
 var options = new OckerOptions {
     CompletionAdapter = new OpenAiCompatibleAdapter(httpClient, endpoint, model, apiKey),
+    DoclingServe = docling,
     OnProgress = progress => ShowProgress(progress)
 };
 var document = await Ocker.ParsePdfAsync(stream, documentId, title, "affidavit",

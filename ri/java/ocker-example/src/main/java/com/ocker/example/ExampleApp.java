@@ -34,7 +34,7 @@ public final class ExampleApp extends Application {
     private final List<Intermediate> queued = new ArrayList<>();
     private ChronologyView view;
     private final AtomicBoolean cancelled = new AtomicBoolean();
-    private final TextField endpoint = new TextField(), model = new TextField();
+    private final TextField endpoint = new TextField(), model = new TextField(), doclingEndpoint = new TextField(DoclingServeClient.DEFAULT_BASE_URL);
     private final PasswordField key = new PasswordField();
     private final ComboBox<ChronologyViewOptions.Theme> theme = new ComboBox<>();
     private final Label status = new Label("Choose a starting point: try the example, open a saved chronology, or add documents.");
@@ -47,16 +47,17 @@ public final class ExampleApp extends Application {
         String recordPath = getParameters().getNamed().get("record");
         if (recordPath != null) try { record = Ocker.importRecord(Files.readString(Path.of(recordPath))); status.setText("Saved chronology opened and evidence verified."); } catch (Exception error) { showError("open the saved chronology", error); }
         view = new ChronologyView(record, options());
-        endpoint.setPromptText("https://your-provider.example/v1/chat/completions"); model.setPromptText("Your selected model"); key.setPromptText("API key — memory only; optional for local Ollama");
+        endpoint.setPromptText("https://your-provider.example/v1/chat/completions"); model.setPromptText("Your selected model"); key.setPromptText("API key — memory only; optional for local Ollama"); doclingEndpoint.setPromptText(DoclingServeClient.DEFAULT_BASE_URL);
         theme.getItems().setAll(ChronologyViewOptions.Theme.GLASS, ChronologyViewOptions.Theme.NONE); theme.setValue("none".equalsIgnoreCase(getParameters().getNamed().get("theme")) ? ChronologyViewOptions.Theme.NONE : ChronologyViewOptions.Theme.GLASS); theme.setOnAction(e -> { view.setOptions(options()); updateCode(); }); view.setOptions(options());
         FlowPane provider=new FlowPane(12,10);
         FlowPane presets=new FlowPane(8,8);
-        endpoint.setPrefWidth(450);model.setPrefWidth(190);key.setPrefWidth(190);
+        endpoint.setPrefWidth(450);model.setPrefWidth(190);key.setPrefWidth(190);doclingEndpoint.setPrefWidth(300);
         provider.getChildren().addAll(field("Dialog theme",theme),field("Model",model),field("API key",key));
         presets.getChildren().addAll(new Label("Provider presets"), providerPreset("OpenAI", "https://api.openai.com/v1/chat/completions"), providerPreset("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"), providerPreset("Mistral", "https://api.mistral.ai/v1/chat/completions"), providerPreset("Groq", "https://api.groq.com/openai/v1/chat/completions"), providerPreset("OpenRouter", "https://openrouter.ai/api/v1/chat/completions"), providerPreset("Ollama", "http://localhost:11434/v1/chat/completions"));
         TitledPane advanced = new TitledPane("Advanced settings", field("Provider endpoint",endpoint)); advanced.setExpanded(false);
         Button build = action("Build chronology", this::build); build.getStyleClass().add("ocker-build-button");
         Button addDocuments = action("Add documents", () -> importDocuments(stage));
+        Button testDocling = action("Test connection", this::testDocling);
         Button importRecord = action("Open saved chronology", () -> open(stage));
         Button example = action("Try example", this::loadExample);
         addDocuments.setTooltip(new Tooltip("Add PDF, TXT, RTF or DOCX documents to build a chronology."));
@@ -67,14 +68,15 @@ public final class ExampleApp extends Application {
         Button exports = action("Export PNG / PDF", () -> exportChoice(stage));
         Button edit = action("Edit OCKER file", () -> editRecord(stage));
         FlowPane startActions = new FlowPane(7, 7, addDocuments, importRecord, example);
+        FlowPane doclingSettings = new FlowPane(8, 8, field("Docling Serve URL", doclingEndpoint), testDocling); doclingSettings.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);
         Button cancel = new Button("Cancel"); cancel.setOnAction(e -> { cancelled.set(true); status.setText("Cancelling…"); });
         FlowPane providerActions = new FlowPane(7, 7, configure, build, cancel);
         FlowPane reviewActions = new FlowPane(7, 7, save, exports, showCode, edit);
         commands.getChildren().addAll(startActions, providerActions, reviewActions);
         configureCodePane();
-        Label providerNotice = new Label("New here? Try the example first. To build from your documents, choose a provider, then enter a model and key. Local Ollama stays on this device."); providerNotice.setWrapText(true);
+        Label providerNotice = new Label("PDFs are converted by Docling Serve. Set its URL and test it before adding documents. Then choose a provider for chronology extraction; local Ollama stays on this device."); providerNotice.setWrapText(true);
         Label subheading = new Label("Every account. In its place."); subheading.getStyleClass().add("ocker-subheading");
-        VBox recordsStep = step("1", "Start here", "Try the example, open a saved chronology, or add documents.", startActions);
+        VBox recordsStep = step("1", "Start here", "Try the example, open a saved chronology, or add documents.", startActions, doclingSettings);
         VBox providerStep = step("2", "Set up a provider", "Choose one, then enter your model and in-memory key.", providerActions);
         VBox reviewStep = step("3", "Review and share", "Edit the record or save an image, PDF or JSON.", reviewActions);
         FlowPane steps = new FlowPane(10, 10, recordsStep, providerStep, reviewStep); steps.getStyleClass().add("ocker-steps");
@@ -85,6 +87,7 @@ public final class ExampleApp extends Application {
         settings.prefWidthProperty().bind(scene.widthProperty());
         steps.prefWrapLengthProperty().bind(scene.widthProperty().subtract(36));
         provider.prefWrapLengthProperty().bind(scene.widthProperty().subtract(80));
+        doclingSettings.prefWrapLengthProperty().bind(scene.widthProperty().subtract(80));
         presets.prefWrapLengthProperty().bind(scene.widthProperty().subtract(80));
         layoutSteps(scene.getWidth(), recordsStep, providerStep, reviewStep, settingsViewport);
         scene.widthProperty().addListener((observable, before, after) -> layoutSteps(after.doubleValue(), recordsStep, providerStep, reviewStep, settingsViewport));
@@ -127,8 +130,11 @@ public final class ExampleApp extends Application {
             String key = System.getenv("PROVIDER_API_KEY");
             CompletionAdapter llm = new OpenAICompatibleAdapter(endpoint, model, key);
 
+            DoclingServeClient docling = DoclingServeClient.builder()
+                .baseUrl("http://localhost:5001")
+                .build();
             Intermediate document = Ocker.parseDocument(documentPath, documentId, title, kind,
-                OckerOptions.builder().build());
+                OckerOptions.builder().doclingServe(docling).build());
             record = Ocker.buildChronology(record, document,
                 OckerOptions.builder().llm(llm).build());
             record = Ocker.findRelationships(record,
@@ -198,7 +204,7 @@ public final class ExampleApp extends Application {
         List<DocumentChoice> selected = new ArrayList<>();
         for (var file : files) chooseDocumentType(stage, file).ifPresent(type -> selected.add(new DocumentChoice(file.toPath(), file.getName(), type)));
         List<DocumentChoice> choices = List.copyOf(selected);
-        if (!choices.isEmpty()) { status.setText("Adding " + choices.size() + " document" + (choices.size() == 1 ? "…" : "s…")); run(() -> { List<Intermediate> pending = new ArrayList<>(); for (DocumentChoice choice : choices) pending.add(Ocker.parseDocument(choice.path(), UUID.randomUUID().toString(), choice.name(), choice.type(), work(null))); queued.addAll(pending); return record; }, () -> status.setText("Documents ready · " + queued.size() + " queued. Next, choose a provider and select Build chronology.")); }
+        if (!choices.isEmpty()) { DoclingServeClient service = docling(); status.setText("Adding " + choices.size() + " document" + (choices.size() == 1 ? "…" : "s…")); run(() -> { List<Intermediate> pending = new ArrayList<>(); for (DocumentChoice choice : choices) pending.add(Ocker.parseDocument(choice.path(), UUID.randomUUID().toString(), choice.name(), choice.type(), work(null, service))); queued.addAll(pending); return record; }, () -> status.setText("Documents ready · " + queued.size() + " queued. Next, choose a provider and select Build chronology.")); }
     }
     private Optional<String> chooseDocumentType(Stage stage, java.io.File file) {
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -219,8 +225,10 @@ public final class ExampleApp extends Application {
     }
     private CompletionAdapter adapter() { if (endpoint.getText().isBlank() || model.getText().isBlank()) throw new IllegalStateException("Enter endpoint and model."); if (key.getText().isBlank() && !loopbackEndpoint(endpoint.getText())) throw new IllegalStateException("Enter an API key unless using a local Ollama endpoint."); return new OpenAICompatibleAdapter(endpoint.getText(), model.getText(), key.getText()); }
     private boolean loopbackEndpoint(String value) { try { String host = java.net.URI.create(value).getHost(); return "localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host) || "::1".equals(host); } catch (IllegalArgumentException error) { return false; } }
-    private OckerOptions work(CompletionAdapter adapter) { return OckerOptions.builder().llm(adapter).cancellation(cancelled::get).onProgress(progress -> Platform.runLater(() -> status.setText(progress.phase() + ": " + progress.message()))).build(); }
-    private void build() { if (queued.isEmpty()) throw new IllegalStateException("Add at least one document, then choose a provider."); CompletionAdapter adapter = adapter(); List<Intermediate> input = List.copyOf(queued); status.setText("Building chronology: extracting accounts, then checking direct relationships…"); run(() -> { OckerRecord next = Ocker.createRecord("Imported document chronology"); for (Intermediate item : input) next = Ocker.buildChronology(next, item, work(adapter)); return Ocker.findRelationships(next, work(adapter)); }); }
+    private DoclingServeClient docling() { return DoclingServeClient.builder().baseUrl(doclingEndpoint.getText()).build(); }
+    private void testDocling() { DoclingServeClient service = docling(); String url = doclingEndpoint.getText(); status.setText("Testing Docling Serve…"); run(() -> { service.testConnection(); return record; }, () -> status.setText("Docling Serve is ready at " + url)); }
+    private OckerOptions work(CompletionAdapter adapter, DoclingServeClient service) { return OckerOptions.builder().llm(adapter).doclingServe(service).cancellation(cancelled::get).onProgress(progress -> Platform.runLater(() -> status.setText(progress.phase() + ": " + progress.message()))).build(); }
+    private void build() { if (queued.isEmpty()) throw new IllegalStateException("Add at least one document, then choose a provider."); CompletionAdapter adapter = adapter(); DoclingServeClient service = docling(); List<Intermediate> input = List.copyOf(queued); status.setText("Building chronology: extracting accounts, then checking direct relationships…"); run(() -> { OckerRecord next = Ocker.createRecord("Imported document chronology"); for (Intermediate item : input) next = Ocker.buildChronology(next, item, work(adapter, service)); return Ocker.findRelationships(next, work(adapter, service)); }); }
     private void run(Work work) { run(work, null); }
     private void run(Work work, Runnable success) { if (busy) return; busy = true; commands.setDisable(true); cancelled.set(false); Task<OckerRecord> task = new Task<>() { protected OckerRecord call() throws Exception { return work.get(); } }; task.setOnSucceeded(e -> { if (!cancelled.get()) { OckerRecord next = task.getValue(); view.setRecord(next); record = next; if (success == null) status.setText("Ready · " + record.events().size() + " events · " + record.relationships().size() + " relationships · " + queued.size() + " queued documents"); else success.run(); } done(); }); task.setOnFailed(e -> { if (cancelled.get()) status.setText("Cancelled. The displayed chronology was not changed."); else showError("complete the operation", task.getException() instanceof Exception error ? error : new Exception(task.getException())); done(); }); Thread worker = new Thread(task, "ocker-operation"); worker.setDaemon(true); worker.start(); }
     private void done() { busy = false; commands.setDisable(false); }

@@ -24,3 +24,6 @@ ri/js/src/prompts.generated.json
 **/public/assets/ocker-icon.png
 **/public/assets/examples/
 /public/
+
+**/public/docling/
+**/public/assets/docling/

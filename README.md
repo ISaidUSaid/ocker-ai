@@ -25,7 +25,7 @@ npm run dev
 
 Open the printed local URL. **Add your own documents**, choose a provider and model, enter your API key and choose **Build chronology**. That single action creates the events and compares the accounts for support and contradiction. The visible process steps and progress show the work as it happens. Keys stay in memory and out of exported records.
 
-PDF, DOCX, RTF and plain text import into the same intermediate format. Browser examples also accept pasted rich text and HTML without executing its markup. Original file bytes remain attached as evidence; non-PDF paragraphs use logical page 1 rather than invented Word pagination. PDF imports require selectable text and do not perform OCR.
+PDF, DOCX, RTF and plain text import into the same intermediate format. Browser examples also accept pasted rich text and HTML without executing its markup. Original file bytes remain attached as evidence; non-PDF paragraphs use logical page 1 rather than invented Word pagination. Browser PDF import runs Docling locally after the host prepares its browser assets; Node, Java and C# send PDFs to a configured Docling Serve instance. See [Docling setup](docs/docling.md).
 
 **Import OCKER file** opens an existing `.ocker.json` record. The separate **Joe and Jill Blogs Example Chronology** link loads a saved example converted from the tested production chronology, verified read-only on 24 October 2026. It contains the 46 displayed cards from that artifact, common ground, four direct contradiction links, the original test PDFs and fresh demonstration notes/precedents. No message matching, advanced relationship data, production annotations or private account identifiers are included. It is a saved import, not a new LLM result.
 
@@ -59,7 +59,7 @@ The browser example is fully client-side. Angular and React examples are also cl
 
 - Import/export versioned OCKER JSON and preserve extension data.
 - Keep source paragraphs and original evidence bytes together, with byte lengths and SHA-256 hashes.
-- Import PDF, DOCX, RTF, plain text and browser rich text; create reviewable intermediate JSON using public libraries.
+- Import PDF through Docling, and DOCX, RTF, plain text and browser rich text through their existing local import paths; create reviewable intermediate JSON with original evidence bytes.
 - Build attributed chronology accounts using a supplied LLM adapter.
 - Infer only **support** and **contradiction** relationships, with reasons and provenance.
 - Filter/search/zoom, inspect source evidence and open a related-event web.
@@ -70,7 +70,7 @@ The browser example is fully client-side. Angular and React examples are also cl
 
 ## Deliberate limits
 
-These are reference implementations, not a case-management product. They contain no behavioural scoring, message matching, message evidence system, OCR, scanned-PDF reconstruction, proprietary document-reading pipeline or production prompts. The PDF importer is intentionally basic. Images/video frames can be embedded in an OCKER record, but that does not add OCR or automatic video analysis to the importer.
+These are reference implementations, not a case-management product. They contain no behavioural scoring, message matching, message evidence system, proprietary document-reading pipeline or production prompts. PDF conversion uses Docling: browser hosts process PDFs locally, while the server-backed RIs use Docling Serve. Images/video frames can be embedded in an OCKER record, but that does not add automatic video analysis to the importer.
 
 Host applications own authentication, persistence, tenant boundaries, provider policy and branding. The built-in AI adapter supports a standard OpenAI-compatible chat-completion API; replace it for other APIs. No provider call is necessary to read or annotate an exported record.
 
@@ -86,4 +86,4 @@ The Pages workflow builds the JavaScript example. Deployment is manual and requi
 
 The shared conformance fixture exercises 12 events, two embedded assets, six relationships, a note and a precedent. The separate `spec/examples/joe-jill.ocker.json` demonstration contains the 46-event Joe/Jill chronology described above. Browser and native examples use that same demonstration. Test details and remaining manual verification limits are recorded in [VALIDATION.md](VALIDATION.md).
 
-The JSON schemas follow [Draft 2020-12](https://json-schema.org/draft/2020-12); the browser text importer uses the standard [PDF.js API](https://mozilla.github.io/pdf.js/examples/). Third-party dependencies retain their own licences. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+The JSON schemas follow [Draft 2020-12](https://json-schema.org/draft/2020-12). Browser PDF.js is used only to rasterise pages for the local Docling worker; it is not the text extractor. OCKER source code and documentation are Apache-2.0, while Docling, its browser/runtime dependencies and any downloaded models retain their own licences. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

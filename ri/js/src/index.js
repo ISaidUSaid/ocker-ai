@@ -7,3 +7,5 @@ export * from './ui.js';
 export * from './documents.js';
 export * from './graph.js';
 export * from './builder.js';
+
+export {testDoclingConnection,doclingParagraphs} from "./docling.js";

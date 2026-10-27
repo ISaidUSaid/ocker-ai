@@ -35,6 +35,18 @@ The demos explicitly mark asynchronous view changes for Angular change detection
 
 The demo starts with three clear paths: add documents, open a saved portable record, or try the fictional Joe/Jill example. It then guides the user to choose an LLM provider before Build. A provider notice explains transmission; keys stay only in memory. It runs entirely client-side. The library build uses ng-packagr and produces an Angular package under `ri/angular/dist`; registry publication is separate.
 
+## Browser PDF conversion
+
+Angular browser hosts run Docling locally for PDFs. Before the application build, copy the browser runtime beside the self-hosted PDF.js worker:
+
+```js
+import {prepareDoclingAssets} from '@ocker-ai/core/prepare-docling-assets';
+
+await prepareDoclingAssets('public/assets/docling');
+```
+
+With a worker at `/assets/pdf.worker.min.mjs`, call `parseDocument(file, {workerSrc: '/assets/pdf.worker.min.mjs', docling: {assetBaseUrl: '/assets/docling/', ocrLanguage: 'en', tableStructure: true}})`. `modelBaseUrl` can point to host-served Docling model assets. PDF.js rasterises pages for the local Docling worker; the document stays in the browser. The returned intermediate keeps the original PDF and uses Docling JSON, including picture-child text and table cells, for page-attributed paragraphs. DOCX, RTF, text and pasted HTML keep their existing local import paths. See [Docling setup](../../docs/docling.md).
+
 ## Complete application boundary
 
 ```ts

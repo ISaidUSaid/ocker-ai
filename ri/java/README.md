@@ -63,7 +63,29 @@ var view = new ChronologyView(record, ChronologyViewOptions.builder()
     .build());
 ```
 
-The view is an independent native control. Keep JavaFX work on the application thread. The example host demonstrates normal text-PDF, TXT, RTF and DOCX import, selected-provider extraction, related-account assessment, source evidence, notes, authorities, JSON editing and PNG/PDF export. PDF extraction uses PDFBox text only; image-only PDFs are rejected without OCR.
+The view is an independent native control. Keep JavaFX work on the application thread. The example host demonstrates PDF, TXT, RTF and DOCX import, selected-provider extraction, related-account assessment, source evidence, notes, authorities, JSON editing and PNG/PDF export.
+
+## PDF import with Docling Serve
+
+PDF import always uses [Docling Serve](https://docling-project.github.io/docling/usage/api_server/rest_api/) and defaults to `http://localhost:5001`. It submits the original PDF to `POST /v1/convert/file` as multipart form data with `from_formats=pdf`, `to_formats=json`, OCR and table structure enabled. The SDK reads the returned `document.json_content`, including text nested in pictures and table cells, into page-attributed OCKER paragraphs. The original PDF is retained as the OCKER asset with its SHA-256 hash; Docling output is never exported as a replacement asset.
+
+Start a compatible Docling Serve instance, enter its base URL in the example's **Docling Serve URL** field, and use **Test connection** before importing PDFs. The connection check calls `GET /health`; a missing service reports its URL and directs the user to test the connection. TXT, RTF and DOCX remain local imports.
+
+Hosts can set the endpoint and timeouts explicitly. Cancellation interrupts an in-flight HTTP request when the supplied `OckerOptions` cancellation callback becomes true:
+
+```java
+var docling = DoclingServeClient.builder()
+    .baseUrl("http://localhost:5001")
+    .connectTimeout(Duration.ofSeconds(10))
+    .requestTimeout(Duration.ofMinutes(5))
+    .build();
+
+var document = Ocker.parsePdf(pdfPath, documentId, title, kind,
+    OckerOptions.builder()
+        .doclingServe(docling)
+        .cancellation(cancel::get)
+        .build());
+```
 
 Run the example after local installation:
 

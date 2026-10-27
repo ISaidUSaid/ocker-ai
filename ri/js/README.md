@@ -2,7 +2,7 @@
 
 Author: Jenko <adam@isaidusaid.com> · Apache-2.0
 
-`@ocker-ai/core` is an ESM package with TypeScript declarations and plain browser CSS. It has no application-server dependency.
+`@ocker-ai/core` is an ESM package with TypeScript declarations and plain browser CSS. Browser PDF conversion runs locally through Docling after the host prepares its static assets; Node PDF conversion calls Docling Serve. DOCX, RTF, text and HTML imports keep their existing local paths.
 
 Install the core tarball from the [private SDK distribution](../../DISTRIBUTION.md). Public registry publication has not occurred. Node 22.22.3+ is the current SDK baseline. Browser hosts need a modern ESM bundler; UI mounting belongs on the client, while the headless entry point can run on a server.
 
@@ -51,7 +51,13 @@ const view = mountChronology(container, parseRecord(ockerJson), {
 
 ```js
 const intermediate = await parsePdf(file, {
-  kind: 'affidavit', workerSrc: '/assets/pdf.worker.min.mjs',
+  kind: 'affidavit',
+  workerSrc: '/assets/pdf.worker.min.mjs',
+  docling: {
+    assetBaseUrl: '/assets/docling/',
+    ocrLanguage: 'en',
+    tableStructure: true
+  },
   signal, onProgress: progress => showProgress(progress)
 });
 const llm = createOpenAICompatibleAdapter({endpoint, model, apiKey});
@@ -59,9 +65,17 @@ let record = await buildChronology([intermediate], {llm, signal});
 record = await findRelationships(record, {llm, signal});
 ```
 
-No fixed model is selected. A host can replace the entire `llm` callback, PDF adapter or workbench pipeline. The built-in adapter uses standard chat-completion JSON; set `responseFormat: false` for compatible providers that do not accept the JSON response-format option. Browser providers must permit CORS.
+No fixed model is selected. A host can replace the entire `llm` callback or workbench pipeline. The built-in adapter uses standard chat-completion JSON; set `responseFormat: false` for compatible providers that do not accept the JSON response-format option. Browser providers must permit CORS.
 
-The core's optional standard PDF.js worker fallback is versioned jsDelivr. Host applications can self-host it with `workerSrc`; the included demos do. There is no OCR or special scanned-PDF handling.
+Prepare the browser Docling runtime before the application build, normally beside the self-hosted PDF.js worker:
+
+```js
+import {prepareDoclingAssets} from '@ocker-ai/core/prepare-docling-assets';
+
+await prepareDoclingAssets('public/assets/docling');
+```
+
+With `workerSrc: '/assets/pdf.worker.min.mjs'`, the default `assetBaseUrl` is `/assets/docling/`. Set `assetBaseUrl` explicitly when assets live elsewhere; set `modelBaseUrl` only when the host serves model assets from a chosen location. `ocrLanguage` accepts `en`, `ch` or `cyrillic`, and `tableStructure` defaults to enabled. PDF.js rasterises pages for the local Docling worker; Docling produces the source text. Model downloads or local model hosting are host concerns. See the repository [Docling setup](../../docs/docling.md).
 
 ## UI options
 
@@ -88,6 +102,8 @@ The package publishes source ESM plus types/styles; the library build is also av
 
 ## Documents and prompts
 
-Use `parseDocument(file, {kind, title})` for PDF, DOCX, RTF, TXT or HTML, `parseText(text, options)` for plain text, or `parseRichText(html, options)` for rich content. HTML is parsed into evidence text, never executed. Original bytes and hashes remain in the intermediate asset; the LLM receives only attributed text paragraphs. The ordinary PDF importer performs no OCR. DOCX is read with Mammoth; formatting is not used to infer court-page numbers.
+Use `parseDocument(file, {kind, title, docling})` for PDF, DOCX, RTF, TXT or HTML, `parseText(text, options)` for plain text, or `parseRichText(html, options)` for rich content. HTML is parsed into evidence text, never executed. Original bytes and hashes remain in the intermediate asset; the LLM receives only attributed text paragraphs. PDF conversion reads Docling's full JSON document tree so text nested beneath pictures and table-cell text can become page-attributed paragraphs. DOCX is read with Mammoth; formatting is not used to infer court-page numbers.
+
+In Node, set `docling: {endpoint, timeoutMs}` on `parsePdf` or `parseDocument`; the defaults are `http://localhost:5001` and 300000 ms. `testDoclingConnection({endpoint, timeoutMs, signal})` checks the configured service before an import. A browser host does not use the `endpoint` setting.
 
 The canonical templates live in root `prompt-library/`. npm lifecycle hooks generate the package-local prompt module before development, tests, builds and packaging. Java and .NET copy/embed the same templates with their own build systems. Override the LLM callback for custom provider/prompt behaviour.

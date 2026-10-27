@@ -56,6 +56,9 @@ const restored=parseRecord(exportRecord(noted));
 if (restored.events[0]?.title !== 'Consumer event' || restored.notes[0]?.body !== 'Consumer note') throw new Error('Export/import round trip failed');`);
  run(node,[...guardedArgs,'headless-check.mjs'],consumer);
  for(const resource of ['src/styles.css','src/index.d.ts','src/schema.json','src/prompts.generated.json','LICENSE','NOTICE','README.md']) assert(existsSync(resolve(installed,'@ocker-ai/core',resource)),`Core package missing ${resource}`);
+ await writeFile(join(consumer,'prepare-docling.mjs'),`import {prepareDoclingAssets} from '@ocker-ai/core/prepare-docling-assets';await prepareDoclingAssets('./public/docling');`);
+ run(node,[...guardedArgs,'prepare-docling.mjs'],consumer);
+ for(const resource of ['worker.js','pipeline.js','docling_wasm.js','docling_wasm_bg.wasm','LICENSE','ONNX-LICENSE','ONNX-ThirdPartyNotices.txt','ort/ort.wasm.min.mjs']) assert(existsSync(join(consumer,'public/docling',resource)),`Prepared Docling assets missing ${resource}`);
  // Compile minimal React and Angular consumers from copied fixtures. The application source only imports installed packages.
  await cp(join(here,'fixtures'),join(consumer,'fixtures'),{recursive:true});
  await mkdir(join(consumer,'react/src'),{recursive:true}); await cp(join(consumer,'fixtures/react-main.tsx'),join(consumer,'react/src/main.tsx')); await writeFile(join(consumer,'react/src/styles.d.ts'),"declare module '*.css';\n"); await cp(join(consumer,'fixtures/react-index.html'),join(consumer,'react/index.html'));

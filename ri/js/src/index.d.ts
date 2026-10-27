@@ -46,7 +46,8 @@ export function recordBuilder(input?:string|Record):RecordBuilder;
 export interface Progress {stage:string;detail:string;current?:number;total?:number}
 export type LlmAdapter=(request:{task:'extract'|'relate';prompt:string;input:unknown;signal?:AbortSignal})=>Promise<object|string>;
 export interface PipelineOptions {llm?:LlmAdapter;onProgress?:(progress:Progress)=>void;signal?:AbortSignal;title?:string;authorId?:string;maxDocumentCharacters?:number;maxRelationshipCharacters?:number;maxEventsPerDocument?:number}
-export interface PdfOptions {workerSrc?:string;title?:string;kind?:Document['kind'];author?:string;maxBytes?:number;maxPages?:number;signal?:AbortSignal;onProgress?:(progress:Progress)=>void}
+export interface DoclingOptions {endpoint?:string;timeoutMs?:number;assetBaseUrl?:string;modelBaseUrl?:string;ocrLanguage?:'en'|'ch'|'cyrillic';tableStructure?:boolean;fetch?:typeof fetch}
+export interface PdfOptions {docling?:DoclingOptions;maxTextCharacters?:number;workerSrc?:string;title?:string;kind?:Document['kind'];author?:string;maxBytes?:number;maxPages?:number;signal?:AbortSignal;onProgress?:(progress:Progress)=>void}
 export interface ChronologyOptions {onChange?:(record:Record)=>void;onProgress?:(progress:Progress)=>void;onError?:(error:Error)=>void;llm?:LlmAdapter;readOnly?:boolean;locale?:string;theme?:'glass'|'none'|{[key:string]:string};themeVariables?:{[key:string]:string};labels?:{[key:string]:string};assetResolver?:(asset:Asset)=>Promise<Uint8Array>;onEventClick?:(event:Event)=>void;onSourceClick?:(source:Source,event:Event)=>void;animate?:boolean;showToolbar?:boolean;mobile?:boolean;authorId?:string;className?:string}
 export interface ChronologyHandle {getRecord():Record;setRecord(record:Record):void;setOptions(options:Partial<ChronologyOptions>):void;destroy():void}
 export const VERSION:string;
@@ -90,3 +91,6 @@ export function parseRichText(html:string,options?:DocumentOptions):Promise<Inte
 
 export function isLoopbackEndpoint(endpoint:string):boolean;
 export function createProviderAdapter(options:{protocol?:'openai'|'anthropic';endpoint:string;model:string;apiKey?:string;fetch?:typeof fetch;headers?:{[key:string]:string};temperature?:number;responseFormat?:boolean;maxResponseBytes?:number;maxTokens?:number}):LlmAdapter;
+
+export function testDoclingConnection(options?:{endpoint?:string;timeoutMs?:number;signal?:AbortSignal;fetch?:typeof fetch}):Promise<{ok:true;endpoint:string}>;
+export function doclingParagraphs(document:unknown,options?:PdfOptions):Paragraph[];

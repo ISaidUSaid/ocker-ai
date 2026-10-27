@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (c) 2026 Jenko <adam@isaidusaid.com>
 using Ocker;
-using UglyToad.PdfPig.Writer;
-using UglyToad.PdfPig.Content;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
@@ -47,17 +48,103 @@ var fixture = Path.GetFullPath("spec/examples/joe-jill.ocker.json");
 if (!File.Exists(fixture)) throw new Exception("Required cross-runtime fixture is missing.");
 var fixtureRecord = Ocker.Ocker.ParseRecord(await File.ReadAllTextAsync(fixture));
 if (fixtureRecord.Events.Count == 0 || fixtureRecord.Relationships.Count == 0 || fixtureRecord.Notes.Count == 0 || fixtureRecord.Authorities.Count == 0) throw new Exception("Cross-runtime fixture lacks required chronology, relationship, note, or authority coverage.");
-foreach (var pdfName in new[] { "JoeBlogsAffidavit.pdf", "JillBlogsAffidavit.pdf" }) { await using var pdf = File.OpenRead(Path.Combine("ri/js/demo/public/examples", pdfName)); var parsedPdf = await Ocker.Ocker.ParsePdfAsync(pdf, Guid.NewGuid().ToString("N"), pdfName, "affidavit"); if (parsedPdf.Document.Paragraphs.Count == 0) throw new Exception("Text PDF produced no intermediate paragraphs."); }
+var doclingResponse = """
+{
+  "status": "success",
+  "document": { "json_content": {
+    "body": { "children": [
+      { "$ref": "#/texts/0" }, { "$ref": "#/pictures/0" }, { "$ref": "#/tables/0" }
+    ] },
+    "texts": [
+      { "self_ref": "#/texts/0", "text": "First page text", "prov": [{ "page_no": 1 }] },
+      { "self_ref": "#/texts/1", "text": "Picture child text", "prov": [{ "page_no": 2 }] }
+    ],
+    "pictures": [
+      { "self_ref": "#/pictures/0", "prov": [{ "page_no": 2 }], "children": [{ "$ref": "#/texts/1" }] }
+    ],
+    "tables": [
+      { "self_ref": "#/tables/0", "prov": [{ "page_no": 3 }], "data": { "table_cells": [
+        { "text": "Date", "start_row_offset_idx": 0, "start_col_offset_idx": 0 },
+        { "text": "Event", "start_row_offset_idx": 0, "start_col_offset_idx": 1 },
+        { "text": "2026-10-23", "start_row_offset_idx": 1, "start_col_offset_idx": 0 },
+        { "text": "Hearing", "start_row_offset_idx": 1, "start_col_offset_idx": 1 }
+      ] } }
+    ]
+  } }
+}
+""";
+var handler = new StubDoclingHandler(request => request.RequestUri!.AbsolutePath == "/health"
+    ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"status\":\"ok\"}", Encoding.UTF8, "application/json") }
+    : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(doclingResponse, Encoding.UTF8, "application/json") });
+using var doclingHttp = new HttpClient(handler);
+using var docling = new DoclingServeClient(doclingHttp, new DoclingServeOptions { BaseUrl = new Uri("http://docling.test:5001"), Timeout = TimeSpan.FromSeconds(5) });
+await docling.TestConnectionAsync();
+using var badHealthHttp = new HttpClient(new StubDoclingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"status\":\"warming_up\"}", Encoding.UTF8, "application/json") }));
+using var badHealth = new DoclingServeClient(badHealthHttp, new DoclingServeOptions { BaseUrl = new Uri("http://docling.test:5001") });
+try { await badHealth.TestConnectionAsync(); throw new Exception("Docling health response without status ok was accepted."); } catch (OckerException e) when (e.Message.Contains("unexpected health", StringComparison.OrdinalIgnoreCase)) { }
+foreach (var invalidBaseUrl in new[] { "http://username:password@docling.test:5001", "http://docling.test:5001/?ignored=true", "http://docling.test:5001/#ignored", "http://docling.test:5001/?", "http://docling.test:5001/#" })
+{
+    try { using var invalid = new DoclingServeClient(new DoclingServeOptions { BaseUrl = new Uri(invalidBaseUrl) }); throw new Exception("Unsafe Docling base URL was accepted."); }
+    catch (ArgumentException) { }
+}
+using var slowHttp = new HttpClient(new StubDoclingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new DelayedContent(TimeSpan.FromMilliseconds(250), "{\"status\":\"ok\"}") }));
+using var slowDocling = new DoclingServeClient(slowHttp, new DoclingServeOptions { BaseUrl = new Uri("http://docling.test:5001"), Timeout = TimeSpan.FromMilliseconds(25) });
+try { await slowDocling.TestConnectionAsync(); throw new Exception("Docling response-body timeout was accepted."); } catch (OckerException e) when (e.Message.Contains("timed out", StringComparison.OrdinalIgnoreCase)) { }
+await using var sourcePdf = new MemoryStream(Encoding.UTF8.GetBytes("original-pdf-bytes"));
+var parsedPdf = await Ocker.Ocker.ParsePdfAsync(sourcePdf, "docling-pdf", "Docling source", "affidavit", assetName: "source.pdf", options: new OckerOptions { DoclingServe = docling });
+if (parsedPdf.Document.Paragraphs.Select(p => (p.Page, p.Text)).SequenceEqual(new[] { (1, "First page text"), (2, "Picture child text"), (3, "Date | Event\n2026-10-23 | Hearing") }) is false) throw new Exception("Docling JSON did not preserve body, picture-child, and table text by page.");
+if (parsedPdf.Asset is not { } parsedAsset || parsedAsset.Data != Convert.ToBase64String(Encoding.UTF8.GetBytes("original-pdf-bytes")) || parsedAsset.Sha256 != Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes("original-pdf-bytes"))).ToLowerInvariant()) throw new Exception("Docling PDF import did not retain the original asset and hash.");
+if (handler.LastMethod != "POST" || handler.LastPath != "/v1/convert/file" || handler.LastContentType != "multipart/form-data" || handler.LastBody is null || !handler.LastBody.Contains("files", StringComparison.Ordinal) || !handler.LastBody.Contains("to_formats", StringComparison.Ordinal) || !handler.LastBody.Contains("json", StringComparison.Ordinal) || !handler.LastBody.Contains("do_ocr", StringComparison.Ordinal) || !handler.LastBody.Contains("do_table_structure", StringComparison.Ordinal)) throw new Exception("Docling import did not use the documented multipart request.");
+using var partialHttp = new HttpClient(new StubDoclingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(doclingResponse.Replace("\"success\"", "\"partial_success\"", StringComparison.Ordinal), Encoding.UTF8, "application/json") }));
+using var partialDocling = new DoclingServeClient(partialHttp, new DoclingServeOptions { BaseUrl = new Uri("http://docling.test:5001") });
+await using var partialPdf = new MemoryStream(Encoding.UTF8.GetBytes("partial-pdf"));
+try { await Ocker.Ocker.ParsePdfAsync(partialPdf, "partial", "Partial", "report", options: new OckerOptions { DoclingServe = partialDocling }); throw new Exception("Partial Docling conversion was accepted."); } catch (OckerException e) when (e.Message.Contains("did not fully convert", StringComparison.OrdinalIgnoreCase)) { }
+using var failureHttp = new HttpClient(new StubDoclingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"status\":\"failure\",\"errors\":[\"bad PDF\"]}", Encoding.UTF8, "application/json") }));
+using var failureDocling = new DoclingServeClient(failureHttp, new DoclingServeOptions { BaseUrl = new Uri("http://docling.test:5001") });
+await using var failurePdf = new MemoryStream(Encoding.UTF8.GetBytes("failure-pdf"));
+try { await Ocker.Ocker.ParsePdfAsync(failurePdf, "failure", "Failure", "report", options: new OckerOptions { DoclingServe = failureDocling }); throw new Exception("Failed Docling conversion was accepted."); } catch (OckerException e) when (e.Message.Contains("did not fully convert", StringComparison.OrdinalIgnoreCase)) { }
+const string missingPageResponse = "{\"status\":\"success\",\"document\":{\"json_content\":{\"body\":{\"children\":[{\"$ref\":\"#/texts/0\"}]},\"texts\":[{\"self_ref\":\"#/texts/0\",\"text\":\"Unattributed text\",\"prov\":[]}]}}}";
+using var missingPageHttp = new HttpClient(new StubDoclingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(missingPageResponse, Encoding.UTF8, "application/json") }));
+using var missingPageDocling = new DoclingServeClient(missingPageHttp, new DoclingServeOptions { BaseUrl = new Uri("http://docling.test:5001") });
+await using var missingPagePdf = new MemoryStream(Encoding.UTF8.GetBytes("missing-page-pdf"));
+try { await Ocker.Ocker.ParsePdfAsync(missingPagePdf, "missing-page", "Missing page", "report", options: new OckerOptions { DoclingServe = missingPageDocling }); throw new Exception("Docling text without page provenance was accepted."); } catch (OckerException e) when (e.Message.Contains("page_no provenance", StringComparison.OrdinalIgnoreCase)) { }
+using var unavailableHttp = new HttpClient(new StubDoclingHandler(_ => throw new HttpRequestException("offline")));
+var unavailable = new DoclingServeClient(unavailableHttp, new DoclingServeOptions { BaseUrl = new Uri("http://offline.test:5001"), Timeout = TimeSpan.FromSeconds(1) });
+try { await unavailable.TestConnectionAsync(); throw new Exception("Unavailable Docling server was accepted."); } catch (OckerException e) when (e.Message.Contains("unavailable", StringComparison.OrdinalIgnoreCase)) { } finally { unavailable.Dispose(); }
 await using (var plain = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("First paragraph\nSecond paragraph"))) { var imported = await Ocker.Ocker.ParseTextDocumentAsync(plain, "source.txt", "txt-doc", "Text", "report"); if (imported.Document.Paragraphs.Count != 2 || imported.Asset?.Data is null) throw new Exception("Text import did not retain paragraphs and asset."); }
 await using (var rtf = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(@"{\rtf1\ansi Caf\u233?} "))) { var imported = await Ocker.Ocker.ParseTextDocumentAsync(rtf, "source.rtf", "rtf-doc", "RTF", "report"); if (imported.Document.Paragraphs.Count == 0 || !imported.Document.Paragraphs[0].Text.Contains("Caf", StringComparison.Ordinal)) throw new Exception("Unicode RTF import failed."); }
 await using (var docx = new MemoryStream()) { using (var word = WordprocessingDocument.Create(docx, DocumentFormat.OpenXml.WordprocessingDocumentType.Document, true)) { var main = word.AddMainDocumentPart(); main.Document = new W.Document(new W.Body(new W.Paragraph(new W.Run(new W.Text("DOCX retained paragraph"))))); main.Document.Save(); } docx.Position = 0; var imported = await Ocker.Ocker.ParseTextDocumentAsync(docx, "source.docx", "docx-doc", "DOCX", "report"); if (imported.Document.Paragraphs.Count == 0 || !imported.Document.Paragraphs[0].Text.Contains("DOCX", StringComparison.Ordinal)) throw new Exception("DOCX import failed."); }
 await using (var invalid = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("not-a-docx"))) { try { await Ocker.Ocker.ParseTextDocumentAsync(invalid, "bad.docx", "bad-doc", "Bad", "report"); throw new Exception("Malformed DOCX was accepted."); } catch (Exception) { } }
-var blankBuilder = new PdfDocumentBuilder(); blankBuilder.AddPage(PageSize.A4); await using var blankPdf = new MemoryStream(blankBuilder.Build()); try { await Ocker.Ocker.ParsePdfAsync(blankPdf, "blank", "Blank", "report"); throw new Exception("Image-only/blank PDF was accepted."); } catch (OckerException e) when (e.Message.Contains("no extractable text", StringComparison.OrdinalIgnoreCase)) { }
 try { await Ocker.Ocker.BuildChronologyAsync(intermediate, new OckerOptions { CompletionAdapter = new FixedAdapter("{\"events\":[{\"title\":\"Bad\",\"summary\":\"Bad\",\"date\":{\"precision\":\"unknown\"},\"paragraphIds\":[\"not-present\"]}]} ") }); throw new Exception("Unknown LLM paragraph ID was accepted."); } catch (OckerException) { }
 using (var cancelled = new CancellationTokenSource()) { cancelled.Cancel(); try { await Ocker.Ocker.BuildChronologyAsync(intermediate, new OckerOptions { CompletionAdapter = new FixedAdapter("{}") }, cancelled.Token); throw new Exception("Cancelled extraction continued."); } catch (OperationCanceledException) { } }
-Console.WriteLine("Synthetic, fixture, PDF, malformed LLM ID and cancellation checks passed.");
+Console.WriteLine("Synthetic, fixture, Docling multipart, malformed LLM ID and cancellation checks passed.");
 
 sealed class FixedAdapter(string response) : IOckerCompletionAdapter { public Task<string> CompleteAsync(CompletionRequest request, CancellationToken cancellationToken) => Task.FromResult(response); }
 sealed class NoAssetAdapter(string response, string forbidden) : IOckerCompletionAdapter { public Task<string> CompleteAsync(CompletionRequest request, CancellationToken cancellationToken) { if (request.Input.Contains(forbidden, StringComparison.Ordinal)) throw new Exception("Extraction payload contained asset bytes."); return Task.FromResult(response); } }
 
 sealed class ThrowAdapter : IOckerCompletionAdapter {public Task<string> CompleteAsync(CompletionRequest request,CancellationToken token)=>throw new Exception("Provider must not be called for invalid evidence");}
+sealed class StubDoclingHandler(Func<HttpRequestMessage, HttpResponseMessage> response) : HttpMessageHandler
+{
+    public string? LastMethod { get; private set; }
+    public string? LastPath { get; private set; }
+    public string? LastContentType { get; private set; }
+    public string? LastBody { get; private set; }
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        LastMethod = request.Method.Method; LastPath = request.RequestUri?.AbsolutePath; LastContentType = request.Content?.Headers.ContentType?.MediaType;
+        LastBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
+        return response(request);
+    }
+}
+
+sealed class DelayedContent(TimeSpan delay, string body) : HttpContent
+{
+    protected override bool TryComputeLength(out long length) { length = Encoding.UTF8.GetByteCount(body); return true; }
+    protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context) => WriteAsync(stream, CancellationToken.None);
+    protected override Task SerializeToStreamAsync(Stream stream, System.Net.TransportContext? context, CancellationToken cancellationToken) => WriteAsync(stream, cancellationToken);
+    private async Task WriteAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        await Task.Delay(delay, cancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(body), cancellationToken);
+    }
+}

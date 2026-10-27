@@ -6,13 +6,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
 using Json.Schema;
-using UglyToad.PdfPig;
-using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
 namespace Ocker;
 
 public static class Ocker
 {
+    static Ocker() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
     public static string ExtractPrompt => LoadPrompt("extract.txt");
     public static string RelatePrompt => LoadPrompt("relate.txt");
     private static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
@@ -78,16 +77,102 @@ public static class Ocker
     {
         options?.OnProgress?.Invoke(new(OckerProgressStage.Reading, "Reading PDF", 0));
         using var copy = new MemoryStream(); await pdf.CopyToAsync(copy, cancellationToken); var bytes = copy.ToArray(); cancellationToken.ThrowIfCancellationRequested();
+        var ownsDocling = options?.DoclingServe is null;
+        using var docling = ownsDocling ? new DoclingServeClient() : null;
+        var client = options?.DoclingServe ?? docling!;
         try
         {
-            using var input = new MemoryStream(bytes); using var document = PdfDocument.Open(input);
-            var paragraphs = new List<Paragraph>();
-            foreach (var page in document.GetPages()) { cancellationToken.ThrowIfCancellationRequested(); var text = ContentOrderTextExtractor.GetText(page).Trim(); if (text.Length > 0) paragraphs.Add(new(NewId(), page.Number, text)); }
-            if (paragraphs.Count == 0) throw new OckerException("This PDF has no extractable text and may be scanned. OCKER does not perform OCR.");
+            options?.OnProgress?.Invoke(new(OckerProgressStage.Reading, "Converting PDF with Docling Serve", .2));
+            using var response = await client.ConvertPdfAsync(bytes, assetName ?? title + ".pdf", cancellationToken).ConfigureAwait(false);
+            var paragraphs = ParseDoclingParagraphs(response.RootElement);
+            if (paragraphs.Count == 0) throw new OckerException("Docling Serve returned no document text, picture-child text, or table contents.");
             var asset = new Asset(NewId(), assetName ?? title + ".pdf", "application/pdf", Sha256(bytes), bytes.LongLength, Convert.ToBase64String(bytes));
             var result = new Intermediate("ocker-document", "0.1.0", new(documentId, title, kind, paragraphs, author, asset.Id), asset); ValidateIntermediate(result);
-            options?.OnProgress?.Invoke(new(OckerProgressStage.Completed, "PDF parsed", 1)); return result;
-        } catch (OckerException) { throw; } catch (Exception ex) { options?.OnError?.Invoke(ex); throw new OckerException("PDF could not be read: " + ex.Message); }
+            options?.OnProgress?.Invoke(new(OckerProgressStage.Completed, "PDF converted by Docling Serve", 1)); return result;
+        } catch (OckerException ex) { options?.OnError?.Invoke(ex); throw; } catch (Exception ex) { options?.OnError?.Invoke(ex); throw new OckerException("PDF could not be converted by Docling Serve: " + ex.Message); }
+    }
+    private static List<Paragraph> ParseDoclingParagraphs(JsonElement response)
+    {
+        if (!response.TryGetProperty("status", out var status) || status.ValueKind != JsonValueKind.String || status.GetString() != "success")
+        {
+            var errors = response.TryGetProperty("errors", out var value) ? value.GetRawText() : "No conversion details were returned.";
+            var result = status.ValueKind == JsonValueKind.String ? status.GetString() : "missing";
+            throw new OckerException("Docling Serve did not fully convert the PDF (status: " + result + "): " + errors);
+        }
+        if (!response.TryGetProperty("document", out var document) || !document.TryGetProperty("json_content", out var json) || json.ValueKind != JsonValueKind.Object)
+            throw new OckerException("Docling Serve response did not include document.json_content. Ensure the request permits the json output format.");
+
+        var items = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        foreach (var collection in new[] { "texts", "pictures", "tables", "groups", "key_value_items", "form_items", "field_regions", "field_items" })
+        {
+            if (!json.TryGetProperty(collection, out var values) || values.ValueKind != JsonValueKind.Array) continue;
+            var index = 0;
+            foreach (var item in values.EnumerateArray())
+            {
+                var reference = item.TryGetProperty("self_ref", out var self) && self.ValueKind == JsonValueKind.String ? self.GetString() : $"#/{collection}/{index}";
+                if (!string.IsNullOrWhiteSpace(reference)) items[reference!] = item;
+                index++;
+            }
+        }
+
+        var output = new List<(int Page, string Text)>();
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        void VisitReference(string reference)
+        {
+            if (!visited.Add(reference)) return;
+            if (!items.TryGetValue(reference, out var item)) throw new OckerException("Docling Serve JSON refers to an unknown item: " + reference);
+            var text = ItemText(item);
+            if (!string.IsNullOrWhiteSpace(text)) output.Add((ItemPage(item, reference), text));
+            if (item.TryGetProperty("children", out var children) && children.ValueKind == JsonValueKind.Array)
+                foreach (var child in children.EnumerateArray()) if (child.TryGetProperty("$ref", out var childRef) && childRef.ValueKind == JsonValueKind.String && childRef.GetString() is { } value) VisitReference(value);
+        }
+
+        if (json.TryGetProperty("body", out var body) && body.TryGetProperty("children", out var children) && children.ValueKind == JsonValueKind.Array)
+            foreach (var child in children.EnumerateArray()) if (child.TryGetProperty("$ref", out var reference) && reference.ValueKind == JsonValueKind.String && reference.GetString() is { } value) VisitReference(value);
+        foreach (var item in items.OrderBy(entry => SortPage(entry.Value)).ThenBy(entry => entry.Key)) VisitReference(item.Key);
+        return output.Select(item => new Paragraph(NewId(), Math.Max(1, item.Page), item.Text)).ToList();
+    }
+    private static int SortPage(JsonElement item)
+    {
+        if (item.TryGetProperty("prov", out var provenance) && provenance.ValueKind == JsonValueKind.Array)
+            foreach (var entry in provenance.EnumerateArray()) if (entry.TryGetProperty("page_no", out var page) && page.TryGetInt32(out var number) && number > 0) return number;
+        return int.MaxValue;
+    }
+    private static int ItemPage(JsonElement item, string reference)
+    {
+        var page = SortPage(item);
+        if (page == int.MaxValue) throw new OckerException("Docling Serve JSON item " + reference + " contains text but has no positive page_no provenance.");
+        return page;
+    }
+    private static string? ItemText(JsonElement item)
+    {
+        if (item.TryGetProperty("text", out var direct) && direct.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(direct.GetString())) return direct.GetString()!.Trim();
+        if (item.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object && data.TryGetProperty("table_cells", out var cells) && cells.ValueKind == JsonValueKind.Array)
+        {
+            var rows = new SortedDictionary<int, List<(int Column, string Text)>>(); var fallback = 0;
+            foreach (var cell in cells.EnumerateArray())
+            {
+                if (!cell.TryGetProperty("text", out var text) || text.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(text.GetString())) { fallback++; continue; }
+                var row = cell.TryGetProperty("start_row_offset_idx", out var rowValue) && rowValue.TryGetInt32(out var rowNumber) ? rowNumber : fallback;
+                var column = cell.TryGetProperty("start_col_offset_idx", out var columnValue) && columnValue.TryGetInt32(out var columnNumber) ? columnNumber : 0;
+                if (!rows.TryGetValue(row, out var columns)) rows[row] = columns = []; columns.Add((column, text.GetString()!.Trim())); fallback++;
+            }
+            var table = string.Join("\n", rows.Values.Select(row => string.Join(" | ", row.OrderBy(cell => cell.Column).Select(cell => cell.Text))));
+            if (!string.IsNullOrWhiteSpace(table)) return table;
+        }
+        if (item.TryGetProperty("data", out data) && data.ValueKind == JsonValueKind.Object && data.TryGetProperty("grid", out var grid) && grid.ValueKind == JsonValueKind.Array)
+        {
+            var rows = grid.EnumerateArray().Select(GridRowText).Where(row => !string.IsNullOrWhiteSpace(row));
+            var table = string.Join("\n", rows);
+            if (!string.IsNullOrWhiteSpace(table)) return table;
+        }
+        if (item.TryGetProperty("data", out data) && data.ValueKind == JsonValueKind.Object && data.TryGetProperty("description", out var description) && description.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(description.GetString())) return description.GetString()!.Trim();
+        return null;
+    }
+    private static string GridRowText(JsonElement row)
+    {
+        if (row.ValueKind != JsonValueKind.Array) return "";
+        return string.Join(" | ", row.EnumerateArray().Select(cell => cell.ValueKind == JsonValueKind.String ? cell.GetString() : cell.ValueKind == JsonValueKind.Object && cell.TryGetProperty("text", out var text) && text.ValueKind == JsonValueKind.String ? text.GetString() : null).Where(text => !string.IsNullOrWhiteSpace(text)).Select(text => text!.Trim()));
     }
     public static async Task<Intermediate> ParseTextDocumentAsync(Stream input, string fileName, string documentId, string title, string kind, string? author = null, OckerOptions? options = null, CancellationToken cancellationToken = default)
     {

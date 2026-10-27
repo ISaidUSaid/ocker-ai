@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { allowedOrigins, requireAllowedProvider } from '../src/validation.js';
 import request from 'supertest';
-import { createApp } from '../src/server.js';
+import { createApp, doclingConfig } from '../src/server.js';
 
 test('only accepts configured provider origins', () => {
   const origins = allowedOrigins('https://api.example.test, https://llm.example.test/v1');
@@ -21,8 +21,45 @@ test('server does not proxy a provider outside its allowlist', async () => {
   assert.match(response.body.error, /not allowed/);
 });
 
-test('uploads a real text PDF and builds relationships before returning the chronology', async () => {
+test('Docling configuration comes from trusted server settings', () => {
+  assert.deepEqual(doclingConfig({}), { endpoint: 'http://localhost:5001', timeoutMs: 300000 });
+  assert.deepEqual(doclingConfig({ DOCLING_SERVE_URL: 'https://docling.example.test/', DOCLING_TIMEOUT_MS: '1200' }), { endpoint: 'https://docling.example.test', timeoutMs: 1200 });
+  assert.throws(() => doclingConfig({ DOCLING_SERVE_URL: 'file:///tmp/docling' }), /HTTP\(S\)/);
+  assert.throws(() => doclingConfig({ DOCLING_SERVE_URL: 'https://user:secret@docling.example.test' }), /must not include credentials/);
+  assert.throws(() => doclingConfig({ DOCLING_TIMEOUT_MS: '0' }), /positive integer/);
+});
+
+test('reports the configured Docling service without accepting a browser-supplied URL', async () => {
   const calls = [];
+  const docling = createServer((req, res) => {
+    calls.push(req.url);
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify({ status: 'ok' }));
+  });
+  await new Promise(resolve => docling.listen(0, '127.0.0.1', resolve));
+  try {
+    const endpoint = `http://127.0.0.1:${docling.address().port}`;
+    const app = createApp({ docling: { endpoint, timeoutMs: 1200 } });
+    const response = await request(app).get('/api/docling/health?endpoint=https://untrusted.example.test').expect(200);
+    assert.deepEqual(response.body, { ok: true, endpoint });
+    assert.deepEqual(calls, ['/health']);
+  } finally { await new Promise(resolve => docling.close(resolve)); }
+});
+
+test('uploads a PDF through Docling and builds relationships before returning the chronology', async () => {
+  const calls = [];
+  const doclingCalls = [];
+  const docling = createServer((req, res) => {
+    doclingCalls.push({ url: req.url, contentType: req.headers['content-type'] });
+    res.setHeader('content-type', 'application/json');
+    res.end(JSON.stringify({ status: 'success', document: { json_content: {
+      pages: { 1: {}, 2: {} }, body: { children: [{ $ref: '#/texts/0' }, { $ref: '#/texts/1' }] },
+      texts: [
+        { text: 'The parties discussed child support.', prov: [{ page_no: 1, charspan: [0, 36] }] },
+        { text: 'The accounts differ on the date.', prov: [{ page_no: 2, charspan: [0, 35] }] }
+      ]
+    } } }));
+  });
   const provider = createServer(async (req, res) => {
     const body = await new Promise(resolve => { let text = ''; req.on('data', chunk => text += chunk); req.on('end', () => resolve(JSON.parse(text))); });
     calls.push({ authorization: req.headers.authorization, body });
@@ -34,11 +71,13 @@ test('uploads a real text PDF and builds relationships before returning the chro
     res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(content) } }] }));
   });
+  await new Promise(resolve => docling.listen(0, '127.0.0.1', resolve));
   await new Promise(resolve => provider.listen(0, '127.0.0.1', resolve));
   try {
     const port = provider.address().port;
     const endpoint = `http://127.0.0.1:${port}/v1/chat/completions`;
-    const app = createApp({ providerOrigins: new Set([new URL(endpoint).origin]) });
+    const doclingEndpoint = `http://127.0.0.1:${docling.address().port}`;
+    const app = createApp({ providerOrigins: new Set([new URL(endpoint).origin]), docling: { endpoint: doclingEndpoint, timeoutMs: 1200 } });
     const pdf = await readFile(new URL('../../js/demo/public/examples/JoeBlogsAffidavit.pdf', import.meta.url));
     const imported = await request(app).post('/api/documents').attach('file', pdf, { filename: 'JoeBlogsAffidavit.pdf', contentType: 'application/pdf' }).expect(200);
     assert.equal(imported.body.format, 'ocker-document');
@@ -51,7 +90,9 @@ test('uploads a real text PDF and builds relationships before returning the chro
     assert.equal(built.text.includes(providerConfig.apiKey), false);
     assert.equal(built.body.record.relationships[0].type, 'contradicts');
     assert.deepEqual(calls.map(call => call.authorization), ['Bearer test-key-not-for-output', 'Bearer test-key-not-for-output']);
-  } finally { await new Promise(resolve => provider.close(resolve)); }
+    assert.deepEqual(doclingCalls.map(call => call.url), ['/v1/convert/file']);
+    assert.match(doclingCalls[0].contentType, /^multipart\/form-data;/);
+  } finally { await Promise.all([new Promise(resolve => provider.close(resolve)), new Promise(resolve => docling.close(resolve))]); }
 });
 
 test('accepts a plain-text document through the bounded upload route', async () => {

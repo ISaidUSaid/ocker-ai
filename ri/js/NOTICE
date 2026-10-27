@@ -4,3 +4,12 @@ Copyright 2026 Jenko <adam@isaidusaid.com>
 Licensed under the Apache License, Version 2.0. See LICENSE.
 Third-party dependencies retain their own licences. See the implementation manifests.
 Joe and Jill examples are fictional training material.
+
+The browser PDF adapter includes modified docling.rs runtime sources from
+https://github.com/docling-project/docling.rs, tag v2.52.9
+(commit c2a25e23a470721a973850d4df52e9d9014076db).
+Copyright 2026 Artem Kustikov. MIT licence retained in
+ri/js/src/docling-runtime/LICENSE (src/docling-runtime/LICENSE in the core package).
+ONNX Runtime Web 1.30.0 is distributed under its MIT licence; upstream licence
+and third-party notices accompany the prepared browser runtime assets.
+Model files retain their upstream licences and are downloaded separately.

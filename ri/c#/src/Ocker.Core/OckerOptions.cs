@@ -11,6 +11,8 @@ public sealed class OckerOptions
     public Action<OckerProgress>? OnProgress { get; init; }
     public Action<Exception>? OnError { get; init; }
     public IOckerCompletionAdapter? CompletionAdapter { get; init; }
+    /// <summary>Optional Docling Serve client used when importing PDFs.</summary>
+    public DoclingServeClient? DoclingServe { get; init; }
     public string? AuthorId { get; init; }
 }
 public sealed record CompletionRequest(string Task, string Prompt, string Input);

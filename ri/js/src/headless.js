@@ -6,3 +6,5 @@ export * from './builder.js';
 export * from './pipeline.js';
 export * from './pdf.js';
 export * from './documents.js';
+
+export {testDoclingConnection,doclingParagraphs} from "./docling.js";

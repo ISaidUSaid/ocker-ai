@@ -29,6 +29,18 @@ npm pack --workspace=@ocker-ai/react
 
 The client-only example starts with document import, opening a saved OCKER record, or the fictional Joe/Jill example, then guides the user through provider settings, build/relationship operations and cancellation. No backend is used. The chosen provider must permit browser CORS. Publishing the package is a separate action.
 
+## Browser PDF conversion
+
+React browser hosts run Docling locally for PDFs. Before the application build, copy the browser runtime beside the self-hosted PDF.js worker:
+
+```js
+import {prepareDoclingAssets} from '@ocker-ai/core/prepare-docling-assets';
+
+await prepareDoclingAssets('public/assets/docling');
+```
+
+With a worker at `/assets/pdf.worker.min.mjs`, call `parseDocument(file, {workerSrc: '/assets/pdf.worker.min.mjs', docling: {assetBaseUrl: '/assets/docling/', ocrLanguage: 'en', tableStructure: true}})`. `modelBaseUrl` can point to host-served Docling model assets. PDF.js rasterises pages for the local Docling worker; the document stays in the browser. The returned intermediate keeps the original PDF and uses Docling JSON, including picture-child text and table cells, for page-attributed paragraphs. DOCX, RTF, text and pasted HTML keep their existing local import paths. See [Docling setup](../../docs/docling.md).
+
 ## Complete component boundary
 
 ```tsx

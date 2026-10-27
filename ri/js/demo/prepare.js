@@ -17,3 +17,7 @@ await mkdir(brandingDirectory,{recursive:true});
 for(const name of ['ocker-wordmark.png','ocker-icon.png']) {
   await copyFile(new URL('../../../assets/'+name,import.meta.url),join(brandingDirectory,name));
 }
+
+// The three browser demos ship the same local Docling worker/runtime.
+const {prepareDoclingAssets}=await import('../tools/prepare-docling-assets.mjs');
+await prepareDoclingAssets(join(dirname(typeof target==='string'?target:fileURLToPath(target)),'docling'));

@@ -3,7 +3,7 @@
 - Write only inside this checkout. The surrounding ISaidUSaid.com repositories are read-only references.
 - Author: Jenko <adam@isaidusaid.com>. Apache-2.0 for the specification and original code. Keep comments plain, direct and useful.
 - Do not copy scoring engines, behavioural ontologies, message matching, advanced PDF extraction, OCR, scanned-PDF handling, production prompts, credentials, private data, branding or artwork.
-- Import standard text PDFs using ordinary public PDF libraries. Reject image-only PDFs clearly. No OCR fallback.
+- PDF extraction uses public Docling only: browser-local docling.rs-wasm for Angular/React/JS; Docling Serve for Node/Java/C#. Support scanned PDFs with Docling OCR. No old parser fallback or proprietary extraction code.
 - Only `supports` and `contradicts` relationships. They are attributed assessments, not findings of fact.
 - No message functionality, evidence-message buttons, sliding windows, virtualisation or lazy card loading.
 - All client variants run without an application backend. API keys stay in memory and never enter an OCKER export.

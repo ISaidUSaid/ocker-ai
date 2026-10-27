@@ -8,7 +8,7 @@ import { mountRecordEditor } from '@ocker-ai/core/demo/editor';
 import { mountProviderShortcuts } from '@ocker-ai/core/demo/providers';
 import { confirmPdfDocuments } from '@ocker-ai/core/demo/documents';
 import { OckerChronology } from '@ocker-ai/react';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+const workerSrc = new URL('assets/pdf.worker.min.mjs', document.baseURI).href;
 import './style.css';
 
 function App() {

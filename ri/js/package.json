@@ -4,7 +4,7 @@
   "type": "module",
   "license": "Apache-2.0",
   "author": "Jenko <adam@isaidusaid.com>",
-  "description": "Portable OCKER chronology model, text PDF/LLM adapters and reusable browser UI",
+  "description": "Portable OCKER chronology model, Docling document import, LLM adapters and reusable browser UI",
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
@@ -31,7 +31,8 @@
     "./headless": {
       "types": "./src/headless.d.ts",
       "import": "./src/headless.js"
-    }
+    },
+    "./prepare-docling-assets": "./tools/prepare-docling-assets.mjs"
   },
   "files": [
     "src",
@@ -46,7 +47,8 @@
     "demo/record-editor.d.ts",
     "demo/record-editor.js",
     "demo/provider-shortcuts.d.ts",
-    "demo/provider-shortcuts.js"
+    "demo/provider-shortcuts.js",
+    "tools"
   ],
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -65,10 +67,12 @@
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
     "codemirror": "^6.0.2",
+    "docling.rs-wasm": "2.52.9",
     "html-to-image": "1.11.13",
     "htmlparser2": "^12.0.0",
     "jspdf": "4.2.1",
     "mammoth": "^1.13.0",
+    "onnxruntime-web": "1.30.0",
     "pdfjs-dist": "6.4.299"
   },
   "devDependencies": {

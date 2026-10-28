@@ -46,9 +46,9 @@ export const locales = {
 };
 
 export const sponsors = {
-  en: { name: 'ISaidUSaid.com', url: 'https://www.isaidusaid.com/', logoText: 'ISaidUSaid.com', mark: '®' },
-  es: { name: 'DijeDijiste.com', url: 'https://www.dijedijiste.com/', logoText: 'DijeDijiste.com', mark: '®' },
-  pt: { name: 'EuDisseVocêDisse.com', url: 'https://www.eudissevocedisse.com/', logoText: 'EuDisseVocêDisse.com', mark: '®' },
-  fr: { name: 'JeDisTuDis.com', url: 'https://www.jedistudis.com/', logoText: 'JeDisTuDis.com', mark: '®' },
-  de: { name: 'IchSagDuSagst.com', url: 'https://www.ichsagdusagst.com/', logoText: 'IchSagDuSagst.com', mark: '®' },
+  en: { name: 'ISaidUSaid.com', url: 'https://www.isaidusaid.com/', logoText: 'ISaidUSaid', mark: '®' },
+  es: { name: 'DijeDijiste.com', url: 'https://www.dijedijiste.com/', logoText: 'DijeDijiste', mark: '®' },
+  pt: { name: 'EuDisseVocêDisse.com', url: 'https://www.eudissevocedisse.com/', logoText: 'EuDisseVocêDisse', mark: '®' },
+  fr: { name: 'JeDisTuDis.com', url: 'https://www.jedistudis.com/', logoText: 'JeDisTuDis', mark: '®' },
+  de: { name: 'IchSagDuSagst.com', url: 'https://www.ichsagdusagst.com/', logoText: 'IchSagDuSagst', mark: '®' },
 };

@@ -1,0 +1,9 @@
+{
+  "name": "Ocker",
+  "description": "Open Chronology, Knowledge and Evidence Record — website and browser demo",
+  "repository": "https://github.com/ISaidUSaid/ocker-ai",
+  "success_url": "/",
+  "env": { "NODE_ENV": "production" },
+  "formation": { "web": { "quantity": 1, "size": "basic" } },
+  "buildpacks": [{ "url": "heroku/nodejs" }]
+}

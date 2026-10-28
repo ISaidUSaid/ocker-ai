@@ -19,6 +19,10 @@
     "node": ">=22.22.3"
   },
   "scripts": {
+    "start": "node website/server.mjs",
+    "website:build": "node website/build.mjs",
+    "website:test": "node website/test.mjs",
+    "heroku-postbuild": "npm run website:build && npm run demo:build",
     "dev": "npm run dev --workspace=@ocker-ai/core",
     "test": "npm run test --workspace=@ocker-ai/core",
     "build": "npm run build --workspace=@ocker-ai/core",

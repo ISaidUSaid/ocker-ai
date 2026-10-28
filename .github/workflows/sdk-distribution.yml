@@ -1,4 +1,4 @@
-name: Prepare private SDK distribution
+name: Prepare SDK distribution
 on:
   workflow_dispatch:
 permissions:
@@ -28,7 +28,7 @@ jobs:
       - run: npm run test:consumers:dotnet
       - uses: actions/upload-artifact@v4
         with:
-          name: ocker-sdk-private-${{ github.sha }}
+          name: ocker-sdk-${{ github.sha }}
           path: |
             .work/distribution/*.tar.gz
             .work/distribution/*.tar.gz.sha256

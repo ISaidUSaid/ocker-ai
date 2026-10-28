@@ -5,6 +5,10 @@ Licensed under the Apache License, Version 2.0. See LICENSE.
 Third-party dependencies retain their own licences. See the implementation manifests.
 Joe and Jill examples are fictional training material.
 
+The website's ISaidUSaid.com sponsor logo and registered trade marks belong to
+ISaidUSaid Pty Ltd and are reproduced with permission. The Apache 2.0 licence
+does not grant rights to use those trade marks as your own branding.
+
 The browser PDF adapter includes modified docling.rs runtime sources from
 https://github.com/docling-project/docling.rs, tag v2.52.9
 (commit c2a25e23a470721a973850d4df52e9d9014076db).

@@ -6,13 +6,13 @@ Portable legal chronologies, embedded source evidence, notes, precedents and a s
 
 **Apache 2.0 · Jenko <adam@isaidusaid.com> · Draft 0.1.0**
 
-This repository is private while the first release is being developed. Making it public is a separate decision. Nothing here changes the ISaidUSaid.com product or adds its OCKER exporter.
+Try the browser demo at **[ocker.ai](https://ocker.ai)**, or use the open specification and reusable components in your own application. Ocker is proudly sponsored and maintained by ISaidUSaid.com.
 
 ## Use it in your own application
 
-Start with [Installing the SDK](DISTRIBUTION.md) for private npm/Maven/NuGet artifacts and the compatibility matrix, then [Embedding OCKER](spec/INTEGRATION.md) for headless and UI integration. The [SDK contract](spec/SDK.md) defines graph navigation and fluent record building. JavaScript/Node, Java and C# can navigate and construct validated records without a UI or provider; JavaScript, Angular, React, JavaFX and Avalonia can embed the chronology control independently of the demo app.
+Start with [Installing the SDK](DISTRIBUTION.md) for npm/Maven/NuGet artifacts and the compatibility matrix, then [Embedding OCKER](spec/INTEGRATION.md) for headless and UI integration. The [SDK contract](spec/SDK.md) defines graph navigation and fluent record building. JavaScript/Node, Java and C# can navigate and construct validated records without a UI or provider; JavaScript, Angular, React, JavaFX and Avalonia can embed the chronology control independently of the demo app.
 
-`npm run sdk:distribution` prepares a checksummed private SDK bundle. `test:consumers:web`, `test:consumers:java` and `test:consumers:dotnet` verify actual installed package artifacts in separate consumer projects. Public registry publishing is not enabled.
+`npm run sdk:distribution` prepares a checksummed SDK bundle. `test:consumers:web`, `test:consumers:java` and `test:consumers:dotnet` verify actual installed package artifacts in separate consumer projects. Packages can be built from source; public npm, Maven Central and NuGet registry publishing is not enabled.
 
 ## Start with the browser example
 
@@ -80,7 +80,7 @@ See [integration](spec/INTEGRATION.md), [security](spec/SECURITY.md) and each RI
 
 The [shared presentation contract](spec/PRESENTATION.md) defines the default chronology design and drag/drop behaviour across browser, JavaFX and Avalonia implementations. All six example applications follow the Avalonia workspace design, with the [Ocker cork-hat wordmark](assets/ocker-wordmark.png), three numbered panels, teal serif headings and paper annotations. Native window chrome can differ. Embedding applications retain control of branding and styling.
 
-The Pages workflow builds the JavaScript example. Deployment is manual and requires GitHub Pages to be enabled for this repository. The repository remains private unless Adam changes its visibility.
+The public website lives in `website/`. `npm run heroku-postbuild` builds its five language editions and the client-only JavaScript demo; `npm start` serves both. The Heroku app uses one Basic web dyno, without a database or hosted AI/PDF service. The optional Pages workflow can also publish the JavaScript example.
 
 ## Validation
 

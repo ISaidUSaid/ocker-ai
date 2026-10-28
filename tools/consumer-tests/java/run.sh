@@ -13,5 +13,5 @@ cp "$ROOT/tools/consumer-tests/java/pom.xml" "$WORK/pom.xml"
 cp -R "$ROOT/tools/consumer-tests/java/src" "$WORK/src"
 mkdir -p "$WORK/src/test/resources"
 cp "$ROOT/spec/examples/joe-jill.ocker.json" "$WORK/src/test/resources/joe-jill.ocker.json"
-TMPDIR="$TMP" "$MAVEN" --batch-mode -Dmaven.repo.local="$REPOSITORY" -f "$ROOT/ri/java/pom.xml" -DskipTests install
+TMPDIR="$TMP" "$MAVEN" --batch-mode -Dmaven.repo.local="$REPOSITORY" -f "$ROOT/ri/java/pom.xml" -DskipTests clean install
 TMPDIR="$TMP" "$MAVEN" --batch-mode -Dmaven.repo.local="$REPOSITORY" -Dconsumer.repository="$REPOSITORY" -f "$WORK/pom.xml" test

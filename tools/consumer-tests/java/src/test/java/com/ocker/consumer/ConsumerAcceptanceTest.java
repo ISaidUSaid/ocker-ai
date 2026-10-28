@@ -22,8 +22,11 @@ class ConsumerAcceptanceTest {
     assertTrue(coreJar.getFileName().toString().endsWith(".jar"));
     assertNotNull(ChronologyView.class); // Maven compiles the UI dependency without a workspace source link.
     assertNotNull(Ocker.class.getResourceAsStream("/ocker.schema.json"));
-    assertNotNull(Ocker.class.getResourceAsStream("/extract.txt"));
-    assertNotNull(Ocker.class.getResourceAsStream("/relate.txt"));
+    assertNotNull(Ocker.class.getResourceAsStream("/prompts.json"));
+    for (PromptLocale locale : PromptLocale.values()) {
+      assertFalse(Ocker.prompt(locale, "extract").isBlank());
+      assertFalse(Ocker.prompt(locale, "relate").isBlank());
+    }
     assertNotNull(Ocker.class.getResourceAsStream("/LICENSE"));
     assertNotNull(Ocker.class.getResourceAsStream("/NOTICE"));
 

@@ -12,11 +12,11 @@ export function mountChronology(element,initial,configuration={}) {
   let drag=null,ghost=null,dragFrame=0,observer;const dialogs=new Set(),controllers=new Set();
   const root=el('section','ocker-root '+(options.className??''));root.setAttribute('aria-label','OCKER chronology');element.appendChild(root);
   const toolbar=el('div','ocker-toolbar'),board=el('div','ocker-board'),stage=el('div','ocker-stage');stage.append(board);root.append(toolbar,stage);
-  const dispensers=el('div','ocker-dispensers');root.append(dispensers);
-  const notePad=button('Add note',()=>{},'ocker-note-pad'),flagPad=button('Add precedent',()=>{},'ocker-flag-pad');
-  notePad.setAttribute('aria-label','Drag a note onto an event');flagPad.setAttribute('aria-label','Drag a precedent onto an event');
-  dispensers.append(flagPad,notePad);
   const t=(key,fallback)=>options.labels?.[key]??fallback;
+  const dispensers=el('div','ocker-dispensers');root.append(dispensers);
+  const notePad=button(t('addNote','Add note'),()=>{},'ocker-note-pad'),flagPad=button(t('addAuthority','Add precedent'),()=>{},'ocker-flag-pad');
+  notePad.setAttribute('aria-label',t('dragNote','Drag a note onto an event'));flagPad.setAttribute('aria-label',t('dragAuthority','Drag a precedent onto an event'));
+  dispensers.append(flagPad,notePad);
   function error(e){options.onError?.(e);const box=modal(t('error','Something needs attention'));box.content.append(el('p','',e.message));}
   function change(next){record=clone(verifyAssetsSync(assertRecord(next)));render();options.onChange?.(clone(record));root.dispatchEvent(new CustomEvent('ocker:change',{detail:clone(record),bubbles:true}));}
   function currentAuthor(){return options.authorId?{authorId:options.authorId}:{};}
@@ -74,7 +74,7 @@ export function mountChronology(element,initial,configuration={}) {
     const paint=()=>{svg.replaceChildren();const bounds=web.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${bounds.width} ${web.scrollHeight}`);svg.style.height=web.scrollHeight+'px';for(const relation of relationships){const a=nodes.get(relation.from)?.getBoundingClientRect(),b=nodes.get(relation.to)?.getBoundingClientRect();if(!a||!b)continue;const line=document.createElementNS(svgNS,'path');const x1=a.left-bounds.left+a.width/2,y1=a.top-bounds.top+a.height/2,x2=b.left-bounds.left+b.width/2,y2=b.top-bounds.top+b.height/2;line.setAttribute('d',`M ${x1} ${y1} C ${x1} ${y1+50}, ${x2} ${y2-50}, ${x2} ${y2}`);line.setAttribute('class','ocker-edge ocker-edge-'+relation.type);svg.append(line);}};
     const resize=new ResizeObserver(paint);resize.observe(web);box.dialog.addEventListener('close',()=>resize.disconnect(),{once:true});requestAnimationFrame(paint);
     for(const r of relationships){const detail=el('details','ocker-relation-detail');const sum=el('summary','',`${r.type}: ${record.events.find(candidate=>candidate.id===(r.from===e.id?r.to:r.from))?.title??''}`);detail.append(sum,el('p','',r.rationale),button(t('goTo','Go to event'),()=>{box.close();const id=r.from===e.id?r.to:r.from;root.querySelector(`[data-event-id="${CSS.escape(id)}"]`)?.scrollIntoView({behavior:options.animate?'smooth':'instant',block:'center'});}));box.content.append(detail);}
-    if(!mobile&&!options.readOnly){const pads=el('div','ocker-modal-pads');const np=button('Add note',()=>{},'ocker-note-pad'),fp=button('Add precedent',()=>{},'ocker-flag-pad');np.addEventListener('pointerdown',e=>startDrag(e,{kind:'note'}));fp.addEventListener('pointerdown',e=>startDrag(e,{kind:'authority'}));pads.append(fp,np);box.content.append(pads);}
+    if(!mobile&&!options.readOnly){const pads=el('div','ocker-modal-pads');const np=button(t('addNote','Add note'),()=>{},'ocker-note-pad'),fp=button(t('addAuthority','Add precedent'),()=>{},'ocker-flag-pad');np.addEventListener('pointerdown',e=>startDrag(e,{kind:'note'}));fp.addEventListener('pointerdown',e=>startDrag(e,{kind:'authority'}));pads.append(fp,np);box.content.append(pads);}
   }
   function card(e,index,inWeb=false){
     const card=el('article','ocker-card '+(index%2?'ocker-right':'ocker-left'));card.dataset.eventId=e.id;card.tabIndex=0;card.setAttribute('aria-label',e.title);card.style.setProperty('--ocker-local-zoom',inWeb?1:zoom);
@@ -114,7 +114,7 @@ export function mountChronology(element,initial,configuration={}) {
   }
   function startDrag(event,value){
     if(options.readOnly||mobile||event.button!==0)return;event.preventDefault();event.stopPropagation();
-    drag={...value,x:event.clientX,y:event.clientY};ghost=el('div',value.kind==='authority'?'ocker-drag-flag':'ocker-drag-note',value.kind==='authority'?'Add precedent':(value.note?.body??'Add note'));ghost.setAttribute('aria-hidden','true');document.body.append(ghost);moveGhost();document.addEventListener('pointermove',moveDrag);document.addEventListener('pointerup',finishDrag,{once:true});document.addEventListener('keydown',escapeDrag);
+    drag={...value,x:event.clientX,y:event.clientY};ghost=el('div',value.kind==='authority'?'ocker-drag-flag':'ocker-drag-note',value.kind==='authority'?t('addAuthority','Add precedent'):(value.note?.body??t('addNote','Add note')));ghost.setAttribute('aria-hidden','true');document.body.append(ghost);moveGhost();document.addEventListener('pointermove',moveDrag);document.addEventListener('pointerup',finishDrag,{once:true});document.addEventListener('keydown',escapeDrag);
     const scroll=()=>{if(!drag)return;let target=document.elementFromPoint(drag.x,drag.y);while(target&&target!==document.body){const style=getComputedStyle(target);if(/auto|scroll/.test(style.overflowY)&&target.scrollHeight>target.clientHeight){const r=target.getBoundingClientRect();let dy=drag.y<r.top+64?-14:drag.y>r.bottom-64?14:0;if(dy)target.scrollTop+=dy;break;}target=target.parentElement;}if(!target||target===document.body){if(drag.y<70)window.scrollBy(0,-14);else if(drag.y>innerHeight-70)window.scrollBy(0,14);}dragFrame=requestAnimationFrame(scroll);};dragFrame=requestAnimationFrame(scroll);
   }
   function moveGhost(){if(!ghost||!drag)return;ghost.style.left=drag.x-(drag.kind==='note'?120:70)+'px';ghost.style.top=drag.y-(drag.kind==='note'?14:16)+'px';}

@@ -51,6 +51,21 @@ var exported = Ocker.exportRecord(next);
 
 `OckerRecordBuilder.create(title)` and `OckerRecordBuilder.from(record)` add the public model types: actors, assets, documents, events, relationships, notes, authorities, or complete intermediate documents. Add in any order. `build()` validates strict references and embedded asset hashes and returns an independent snapshot without mutating the input.
 
+## LLM instruction language
+
+The public prompt library is available in English, Spanish, Portuguese, French and German. Choose one language for an LLM operation; OCKER does not mix translated instruction fragments in a single provider request. The portable JSON field names remain English in every language. SDK calls default to English for compatibility, while the JavaFX example defaults its **AI prompt language** selector from the system UI language and lets the person override it.
+
+```java
+var options = OckerOptions.builder()
+    .llm(provider)
+    .promptLocale(PromptLocale.FR) // EN, ES, PT, FR or DE
+    .build();
+record = Ocker.buildChronology(record, document, options);
+record = Ocker.findRelationships(record, options);
+```
+
+`PromptLocale.fromLanguageTag("pt-BR")` resolves to Portuguese; unsupported language tags resolve safely to English. Maven generates and packages the shared `prompt-library/dist/prompts.json` before resources are copied, so the SDK and browser RIs consume the same templates.
+
 ## JavaFX
 
 JavaFX 21 is required at runtime for `ocker-javafx`:

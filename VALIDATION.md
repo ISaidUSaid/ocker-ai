@@ -1,8 +1,8 @@
-# Validation record — updated 24 October 2026
+# Validation record — updated 29 October 2026
 
 Author: Jenko <adam@isaidusaid.com>
 
-This is a private draft 0.1.0. These checks establish the RI baseline; they are not a certification of legal conclusions or AI accuracy.
+This is the 0.1.0 validation history. The repository is now public; earlier dated sections describe the private development stages. Tests exercise the implementation and record contract, using mocked AI responses unless stated otherwise.
 
 ## Exercised locally
 
@@ -121,3 +121,15 @@ The accepted cork-hat wordmark remains in all six application headers. A transpa
 All four browser builds passed. Thirteen shared browser tests and three framework runtime tests passed, covering icon responses, document confirmation/removal, provider guidance, examples without credentials, mobile notes, drag/drop pin coordinates, relationships, JSON editing and filtered PNG/PDF exports. The setup regression caught a redundant connect-provider button after example loading, which was corrected. Java's eleven tests and package build passed; its example JAR contains both brand images. The .NET solution build passed with zero warnings/errors and its core checks passed. Native screenshots and the running browser example were inspected. Existing Angular CommonJS optimisation warnings remain; one development ResizeObserver notification occurred in the first browser run, while the final run passed without it.
 
 These changes simplify the existing apps; they do not add signed installers or bundled models. Provider model selection and credential persistence are unchanged. No real provider requests or additional Windows/Linux native visual acceptance were performed. The Java, C# and framework workers are finished. All writes stayed inside Ocker; no ISaidUSaid.com source was changed.
+
+## Public website and language release — 29 October 2026
+
+The repository is public and https://ocker.ai serves the static website plus the client-only JavaScript demo on a Heroku Basic dyno. DNSimple handles the apex/www records and Heroku ACM has issued both certificates. No original ISaidUSaid.com source was changed.
+
+The website has English, Spanish, Portuguese, French and German pages, browser-language selection, an explicit language selector, localised sponsor links, and localised specification landing pages. The shared prompt library now lives in `prompt-library/{en,es,pt,fr,de}/`; each RI build prepares its resources. Wire-format keys stay stable while the selected language controls AI instructions. Browser language changes preserve the loaded record, annotations and in-memory provider settings without a reload.
+
+Visual QA covered the live site at 390/768/1440 pixels in all five languages and the release candidate at 320/390/768/1024/1440 pixels. Checks included page overflow, image loading, console errors, navigation, language selection, specification/demo links and licence downloads. The final narrow German and iPad layouts were inspected after fixing sponsor wrapping, long miniature-card labels, the placeholder hat, the freedom icon and the header tagline spacing. CSS/script content hashes prevent stale assets after a release.
+
+Core validation: 26 JavaScript tests and 16 specification checks pass. The website build, five-language content checks and HTTP server integration checks pass. Native Maven/.NET builds and installed-package consumers were verified during this release. Paid AI calls were not made; provider and chronology-building behaviour uses controlled responses in automated tests.
+
+Release regression checks also passed: all 14 shared browser scenarios (12 in the full run, followed by successful targeted reruns of two corrected accessible-label selectors), all three Angular/React/Node framework scenarios, and installed web SDK consumer acceptance. The real Docling PDF import has a scoped 180-second import allowance for its initial model download; normal UI assertions retain their short timeouts. Desktop drag/drop is checked at 1280×900 and compact annotation behaviour at 390×844.

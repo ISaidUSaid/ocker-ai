@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import { assertRecord, buildChronology, createProviderAdapter, findRelationships, parseDocument, testDoclingConnection } from '@ocker-ai/core';
+import { assertRecord, buildChronology, createProviderAdapter, findRelationships, normalisePromptLocale, parseDocument, testDoclingConnection } from '@ocker-ai/core';
 import { DEFAULT_MAX_UPLOAD_BYTES, allowedOrigins, requireAllowedProvider } from './validation.js';
 
 const supportedDocument = /\.(pdf|docx|rtf|txt|html?)$/i;
@@ -39,11 +39,11 @@ export function createApp({ providerOrigins = allowedOrigins(), docling = doclin
   });
   app.post('/api/records/build', async (req, res, next) => {
     const operation = operationFor(req, operations);
-    try { const adapter = adapterFor(req.body?.provider, providerOrigins); const extracted = await buildChronology(Array.isArray(req.body?.intermediates) ? req.body.intermediates : [req.body?.intermediate], { llm: adapter, signal: operation.controller.signal, onProgress: progress => operation.phase = phaseOf(progress), title: req.body?.title }); operation.phase='Finding relationships'; const record = await findRelationships(extracted, { llm: adapter, signal: operation.controller.signal, onProgress: progress => operation.phase = phaseOf(progress) }); assertRecord(record); operation.done = true; res.json({ record }); } catch (error) { finishError(operation, error); next(error); }
+    try { const adapter = adapterFor(req.body?.provider, providerOrigins); const locale=localeFor(req.body?.locale); const extracted = await buildChronology(Array.isArray(req.body?.intermediates) ? req.body.intermediates : [req.body?.intermediate], { llm: adapter, locale, signal: operation.controller.signal, onProgress: progress => operation.phase = phaseOf(progress), title: req.body?.title }); operation.phase='Finding relationships'; const record = await findRelationships(extracted, { llm: adapter, locale, signal: operation.controller.signal, onProgress: progress => operation.phase = phaseOf(progress) }); assertRecord(record); operation.done = true; res.json({ record, locale }); } catch (error) { finishError(operation, error); next(error); }
   });
   app.post('/api/relationships', async (req, res, next) => {
     const operation = operationFor(req, operations);
-    try { assertRecord(req.body?.record); const adapter = adapterFor(req.body?.provider, providerOrigins); const record = await findRelationships(req.body.record, { llm: adapter, signal: operation.controller.signal, onProgress: progress => operation.phase = phaseOf(progress) }); assertRecord(record); operation.done = true; res.json({ record }); } catch (error) { finishError(operation, error); next(error); }
+    try { assertRecord(req.body?.record); const adapter = adapterFor(req.body?.provider, providerOrigins); const locale=localeFor(req.body?.locale); const record = await findRelationships(req.body.record, { llm: adapter, locale, signal: operation.controller.signal, onProgress: progress => operation.phase = phaseOf(progress) }); assertRecord(record); operation.done = true; res.json({ record, locale }); } catch (error) { finishError(operation, error); next(error); }
   });
   const frontend = fileURLToPath(new URL('../frontend/dist/browser/', import.meta.url));
   if (existsSync(frontend)) app.use(express.static(frontend));
@@ -54,6 +54,7 @@ export function createApp({ providerOrigins = allowedOrigins(), docling = doclin
 function abortOnDisconnect(req) { const controller = new AbortController(); if (req.aborted) controller.abort(); else req.once('aborted', () => controller.abort()); return controller; }
 function operationFor(req, operations) { const id = req.get('X-Ocker-Operation-Id') || crypto.randomUUID(); const operation = { controller: abortOnDisconnect(req), phase: 'starting', done: false, error: undefined }; operations.set(id, operation); return operation; }
 function phaseOf(progress) { return typeof progress === 'string' ? progress : progress?.stage ?? progress?.phase ?? 'working'; }
+function localeFor(value) { if(value!==undefined&&typeof value!=='string')throw new Error('Locale must be a language tag.');return normalisePromptLocale(value); }
 function finishError(operation, error) { operation.done = true; operation.error = error instanceof Error ? error.message : 'Request failed.'; }
 function isLoopback(endpoint) { const host=new URL(endpoint).hostname.toLowerCase(); return host==='localhost'||host==='127.0.0.1'||host==='[::1]'; }
 function adapterFor(provider, origins) {

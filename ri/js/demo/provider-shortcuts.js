@@ -9,7 +9,7 @@ export const PROVIDER_PRESETS=Object.freeze([
  {id:'openrouter',label:'OpenRouter',endpoint:'https://openrouter.ai/api/v1/chat/completions',protocol:'openai',requiresKey:true},
  {id:'ollama',label:'Ollama local',endpoint:'http://localhost:11434/v1/chat/completions',protocol:'openai',requiresKey:false}
 ].map(Object.freeze));
-export function mountProviderShortcuts(container,{onSelect}={}) {
- const group=document.createElement('div');group.className='ocker-provider-shortcuts';group.setAttribute('role','group');group.setAttribute('aria-label','Provider shortcuts');
+export function mountProviderShortcuts(container,{onSelect,labels={}}={}) {
+ const group=document.createElement('div');group.className='ocker-provider-shortcuts';group.setAttribute('role','group');group.setAttribute('aria-label',labels.providerShortcuts??'Provider shortcuts');
  for(const preset of PROVIDER_PRESETS){const button=document.createElement('button');button.type='button';button.textContent=preset.label;button.setAttribute('aria-pressed','false');button.onclick=()=>{for(const b of group.children)b.setAttribute('aria-pressed',String(b===button));onSelect(preset);};group.append(button);}container.append(group);return{destroy(){group.remove();}};
 }

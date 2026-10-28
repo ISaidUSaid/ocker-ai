@@ -44,8 +44,8 @@ export class RecordBuilder {
 }
 export function recordBuilder(input?:string|Record):RecordBuilder;
 export interface Progress {stage:string;detail:string;current?:number;total?:number}
-export type LlmAdapter=(request:{task:'extract'|'relate';prompt:string;input:unknown;signal?:AbortSignal})=>Promise<object|string>;
-export interface PipelineOptions {llm?:LlmAdapter;onProgress?:(progress:Progress)=>void;signal?:AbortSignal;title?:string;authorId?:string;maxDocumentCharacters?:number;maxRelationshipCharacters?:number;maxEventsPerDocument?:number}
+export type LlmAdapter=(request:{task:'extract'|'relate';locale?:string;prompt:string;input:unknown;signal?:AbortSignal})=>Promise<object|string>;
+export interface PipelineOptions {llm?:LlmAdapter;onProgress?:(progress:Progress)=>void;signal?:AbortSignal;title?:string;authorId?:string;locale?:string;maxDocumentCharacters?:number;maxRelationshipCharacters?:number;maxEventsPerDocument?:number}
 export interface DoclingOptions {endpoint?:string;timeoutMs?:number;assetBaseUrl?:string;modelBaseUrl?:string;ocrLanguage?:'en'|'ch'|'cyrillic';tableStructure?:boolean;fetch?:typeof fetch}
 export interface PdfOptions {docling?:DoclingOptions;maxTextCharacters?:number;workerSrc?:string;title?:string;kind?:Document['kind'];author?:string;maxBytes?:number;maxPages?:number;signal?:AbortSignal;onProgress?:(progress:Progress)=>void}
 export interface ChronologyOptions {onChange?:(record:Record)=>void;onProgress?:(progress:Progress)=>void;onError?:(error:Error)=>void;llm?:LlmAdapter;readOnly?:boolean;locale?:string;theme?:'glass'|'none'|{[key:string]:string};themeVariables?:{[key:string]:string};labels?:{[key:string]:string};assetResolver?:(asset:Asset)=>Promise<Uint8Array>;onEventClick?:(event:Event)=>void;onSourceClick?:(source:Source,event:Event)=>void;animate?:boolean;showToolbar?:boolean;mobile?:boolean;authorId?:string;className?:string}
@@ -78,6 +78,10 @@ export function mountChronology(element:HTMLElement,record:Record,options?:Chron
 export function exportVisual(element:HTMLElement,format:'pdf'|'png',title?:string):Promise<void>;
 export const EXTRACTION_PROMPT:string;
 export const RELATIONSHIP_PROMPT:string;
+export const SUPPORTED_PROMPT_LOCALES:readonly string[];
+export const DEFAULT_PROMPT_LOCALE:string;
+export function normalisePromptLocale(locale?:string,fallback?:string):string;
+export function getPrompts(locale?:string):{extract:string;relate:string};
 
 export function assertIntermediate(item:Intermediate):Intermediate;
 export function parseIntermediate(input:string|Uint8Array):Intermediate;

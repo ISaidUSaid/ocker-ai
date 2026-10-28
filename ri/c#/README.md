@@ -45,6 +45,21 @@ var view = new ChronologyView {
 
 `IOckerCompletionAdapter` is replaceable. `ChronologyViewOptions` supplies callbacks, read-only mode, device mode and `ChronologyPalette` brushes. Host applications own storage, identity and provider policy. PDF import uses Docling Serve's documented `POST /v1/convert/file` multipart endpoint with `to_formats=json`, `do_ocr=true`, and `do_table_structure=true`; a PDF cannot silently fall back to a local basic parser. `TestConnectionAsync` calls `GET /health` and requires `{"status":"ok"}`. `DoclingServeOptions` defaults to `http://localhost:5001` and a two-minute timeout that covers the full HTTP response, and accepts cancellation through `ParsePdfAsync` or `TestConnectionAsync`. The base URL must be an absolute HTTP(S) endpoint without credentials, a query, or a fragment. Provider keys stay inside the adapter and are not exported. Import and export validate the shared schema, references and embedded hashes. Intermediate objects are checked before sending text to a provider.
 
+## LLM instruction language
+
+The public prompt library ships in English, Spanish, Portuguese, French and German. Select one language for an operation; OCKER does not assemble mixed-language instructions. Portable OCKER JSON field names remain English in every locale. The SDK defaults to English for API compatibility. The Avalonia example defaults its **AI prompt language** setting from the system UI language and allows an explicit override.
+
+```csharp
+var work = new OckerOptions {
+    CompletionAdapter = provider,
+    PromptLocale = OckerPromptLocale.Fr // En, Es, Pt, Fr or De
+};
+var events = await OckerApi.BuildChronologyAsync(intermediate, work);
+var relationships = await OckerApi.FindRelationshipsAsync(events, work);
+```
+
+`OckerPromptLanguages.FromLanguageTag("pt-BR")` selects Portuguese; an unsupported tag safely selects English. The build generates and embeds the shared `prompt-library/dist/prompts.json`, so this SDK uses the same templates as the browser RIs.
+
 The desktop example accepts `--record=/absolute/file.ocker.json`, `--snapshot=/absolute/preview.png`, and optional `--export-prefix=/absolute/export` for native smoke tests without a provider.
 
 Builds produce local NuGet packages (`Ocker.AI.Core`, `Ocker.AI.Avalonia`), version 0.1.0. They are not published automatically.

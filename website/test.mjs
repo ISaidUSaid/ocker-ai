@@ -11,7 +11,7 @@ for (const locale of Object.keys(locales)) {
   assert.match(page, new RegExp(`/demo/\\?lang=${locale}`));
   assert.match(page, /isaidusaid-logo\.png/);
   assert.match(page, new RegExp(`/${locale}/spec/`));
-  assert.doesNotMatch(page, /Email from|Messages between|School email/i);
+  assert.doesNotMatch(page, /Email from|Messages between|School email|School report|♧|tiny-hat/i);
   const guide = await readFile(join('website', 'dist', locale, 'spec', 'index.html'), 'utf8');
   assert.match(guide, new RegExp(`<html lang="${locale === 'pt' ? 'pt-BR' : locale}">`));
   assert.match(guide, /ocker-wordmark\.png/);

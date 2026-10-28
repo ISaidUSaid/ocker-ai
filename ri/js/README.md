@@ -61,8 +61,8 @@ const intermediate = await parsePdf(file, {
   signal, onProgress: progress => showProgress(progress)
 });
 const llm = createOpenAICompatibleAdapter({endpoint, model, apiKey});
-let record = await buildChronology([intermediate], {llm, signal});
-record = await findRelationships(record, {llm, signal});
+let record = await buildChronology([intermediate], {llm, locale: navigator.language, signal});
+record = await findRelationships(record, {llm, locale: navigator.language, signal});
 ```
 
 No fixed model is selected. A host can replace the entire `llm` callback or workbench pipeline. The built-in adapter uses standard chat-completion JSON; set `responseFormat: false` for compatible providers that do not accept the JSON response-format option. Browser providers must permit CORS.
@@ -106,4 +106,4 @@ Use `parseDocument(file, {kind, title, docling})` for PDF, DOCX, RTF, TXT or HTM
 
 In Node, set `docling: {endpoint, timeoutMs}` on `parsePdf` or `parseDocument`; the defaults are `http://localhost:5001` and 300000 ms. `testDoclingConnection({endpoint, timeoutMs, signal})` checks the configured service before an import. A browser host does not use the `endpoint` setting.
 
-The canonical templates live in root `prompt-library/`. npm lifecycle hooks generate the package-local prompt module before development, tests, builds and packaging. Java and .NET copy/embed the same templates with their own build systems. Override the LLM callback for custom provider/prompt behaviour.
+The canonical templates live in root `prompt-library/`. They have complete English, Spanish, Portuguese, French and German versions. `locale` accepts a language or region tag such as `pt-BR`; OCKER selects `pt` and falls back safely to English for unsupported languages. `getPrompts(locale)` exposes the selected pair. JSON field names remain English so an OCKER file travels safely between language versions. npm lifecycle hooks generate the package-local prompt module before development, tests, builds and packaging. Java and .NET copy/embed the same templates with their own build systems. Override the LLM callback for custom provider/prompt behaviour.

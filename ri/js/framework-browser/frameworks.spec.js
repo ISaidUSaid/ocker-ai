@@ -12,7 +12,7 @@ for(const [name,url] of [['Angular','http://127.0.0.1:8871'],['React','http://12
   const icon=await page.request.get(new URL(iconPath,url).href);expect(icon.ok()).toBe(true);
   expect((await icon.body()).subarray(1,4).toString()).toBe('PNG');
   await expect(page.locator('.demo__status')).toContainText('Next:');
-  await page.getByRole('button',{name:'Try the Joe and Jill example',exact:true}).click();await expect(page.getByText('46 of 46 events',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Joe and Jill Blogs Example Chronology',exact:true}).click();await expect(page.getByText('46 of 46 events',{exact:true})).toBeVisible();
   await expect(page.locator('.demo__status')).toContainText('Review your chronology');
   await expect(page.locator('.ocker-card').first()).toHaveCSS('background-color','rgb(255, 255, 255)');expect(await page.locator('.ocker-card').first().evaluate(el=>getComputedStyle(el,'::after').backdropFilter)).toContain('blur');
   await page.setViewportSize({width:390,height:844});const card=page.locator('.ocker-card').first();await card.getByRole('button',{name:'Add note',exact:true}).click();

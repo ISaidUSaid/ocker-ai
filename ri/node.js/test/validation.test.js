@@ -64,7 +64,7 @@ test('uploads a PDF through Docling and builds relationships before returning th
     const body = await new Promise(resolve => { let text = ''; req.on('data', chunk => text += chunk); req.on('end', () => resolve(JSON.parse(text))); });
     calls.push({ authorization: req.headers.authorization, body });
     const input = JSON.parse(body.messages[1].content);
-    const extract = body.messages[0].content.includes('Extract a basic legal chronology');
+    const extract = body.messages[0].content.includes('Extrae una cronología jurídica básica');
     const content = extract
       ? { events: input.paragraphs.slice(0, 2).map((paragraph, index) => ({ title: `Account ${index + 1}`, summary: paragraph.text, date: { precision: 'unknown' }, paragraphIds: [paragraph.id], status: 'alleged' })) }
       : { relationships: [{ from: input.events[0].id, to: input.events[1].id, type: 'contradicts', rationale: 'The fictional accounts differ.' }] };
@@ -84,11 +84,14 @@ test('uploads a PDF through Docling and builds relationships before returning th
     assert.match(imported.body.asset.sha256, /^[a-f0-9]{64}$/);
     assert.ok(imported.body.document.paragraphs.length >= 2);
     const providerConfig = { endpoint, model: 'mock-model', apiKey: 'test-key-not-for-output' };
-    const built = await request(app).post('/api/records/build').send({ intermediate: imported.body, provider: providerConfig }).expect(200);
+    const built = await request(app).post('/api/records/build').send({ intermediate: imported.body, provider: providerConfig, locale:'es-AU' }).expect(200);
     assert.equal(built.body.record.events.length, 2);
     assert.equal(built.body.record.events[0].sources[0].documentId, imported.body.document.id);
     assert.equal(built.text.includes(providerConfig.apiKey), false);
     assert.equal(built.body.record.relationships[0].type, 'contradicts');
+    assert.equal(built.body.locale, 'es');
+    assert(calls.every(call => call.body.messages[0].content.includes('JSON')));
+    assert(calls.every(call => !call.body.messages[0].content.includes('Read the supplied')));
     assert.deepEqual(calls.map(call => call.authorization), ['Bearer test-key-not-for-output', 'Bearer test-key-not-for-output']);
     assert.deepEqual(doclingCalls.map(call => call.url), ['/v1/convert/file']);
     assert.match(doclingCalls[0].contentType, /^multipart\/form-data;/);

@@ -4,6 +4,17 @@ using System.Net.Http.Json;
 using System.Text.Json;
 namespace Ocker;
 
+/// <summary>Language used for the public LLM instructions. Portable OCKER JSON keys remain English.</summary>
+public enum OckerPromptLocale { En, Es, Pt, Fr, De }
+
+public static class OckerPromptLanguages
+{
+    public static string Tag(this OckerPromptLocale locale) => locale switch { OckerPromptLocale.Es => "es", OckerPromptLocale.Pt => "pt", OckerPromptLocale.Fr => "fr", OckerPromptLocale.De => "de", _ => "en" };
+    /// <summary>Uses the primary BCP-47 language subtag and falls back safely to English.</summary>
+    public static OckerPromptLocale FromLanguageTag(string? languageTag) => languageTag?.Replace('_', '-').Split('-', 2)[0].ToLowerInvariant() switch { "es" => OckerPromptLocale.Es, "pt" => OckerPromptLocale.Pt, "fr" => OckerPromptLocale.Fr, "de" => OckerPromptLocale.De, _ => OckerPromptLocale.En };
+    public static OckerPromptLocale FromSystemUiLanguage() => FromLanguageTag(System.Globalization.CultureInfo.CurrentUICulture.Name);
+}
+
 public enum OckerProgressStage { Reading, Extracting, Relating, Completed, Error }
 public sealed record OckerProgress(OckerProgressStage Stage, string Message, double? Fraction = null);
 public sealed class OckerOptions
@@ -14,6 +25,8 @@ public sealed class OckerOptions
     /// <summary>Optional Docling Serve client used when importing PDFs.</summary>
     public DoclingServeClient? DoclingServe { get; init; }
     public string? AuthorId { get; init; }
+    /// <summary>Uses one complete public instruction in this language; defaults to English for API compatibility.</summary>
+    public OckerPromptLocale PromptLocale { get; init; } = OckerPromptLocale.En;
 }
 public sealed record CompletionRequest(string Task, string Prompt, string Input);
 public interface IOckerCompletionAdapter { Task<string> CompleteAsync(CompletionRequest request, CancellationToken cancellationToken); }

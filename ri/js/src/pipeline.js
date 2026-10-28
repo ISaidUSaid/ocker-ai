@@ -2,8 +2,16 @@
 // Author: Jenko <adam@isaidusaid.com>
 import prompts from './prompts.generated.json' with {type:'json'};
 import {assertRecord,assertIntermediate,verifyAssetsSync,clone,createRecord,id,now} from './model.js';
-export const EXTRACTION_PROMPT=prompts.extract;
-export const RELATIONSHIP_PROMPT=prompts.relate;
+export const SUPPORTED_PROMPT_LOCALES=prompts.supportedLocales;
+export const DEFAULT_PROMPT_LOCALE=prompts.defaultLocale;
+export function normalisePromptLocale(value,fallback=DEFAULT_PROMPT_LOCALE) {
+  const candidate=String(value??'').trim().toLowerCase().replace('_','-').split('-')[0];
+  return SUPPORTED_PROMPT_LOCALES.includes(candidate)?candidate:(SUPPORTED_PROMPT_LOCALES.includes(fallback)?fallback:DEFAULT_PROMPT_LOCALE);
+}
+export function getPrompts(locale=DEFAULT_PROMPT_LOCALE) { return prompts.locales[normalisePromptLocale(locale)]; }
+// Existing integrations imported these English constants before locale support.
+export const EXTRACTION_PROMPT=getPrompts('en').extract;
+export const RELATIONSHIP_PROMPT=getPrompts('en').relate;
 function progress(options,stage,detail,current,total){options.onProgress?.({stage,detail,current,total});}
 function objectResponse(value) {
   if(typeof value!=='string')return value;
@@ -13,6 +21,7 @@ function objectResponse(value) {
 function adapter(options){if(typeof options.llm!=='function')throw new Error('Choose an LLM and supply its API key, or configure an llm callback.');return options.llm;}
 export async function buildChronology(intermediates,options={}) {
   const llm=adapter(options); const record=createRecord(options.title??'Chronology');
+  const prompt=getPrompts(options.locale);
   if(!Array.isArray(intermediates)||!intermediates.length)throw new Error('Import at least one document first.');
   for(const [index,item] of intermediates.entries()) {
     options.signal?.throwIfAborted();
@@ -22,7 +31,7 @@ export async function buildChronology(intermediates,options={}) {
     const document=clone(item.document); if(record.documents.some(d=>d.id===document.id))throw new Error('Duplicate document ID.');
     record.documents.push(document);if(item.asset&&!record.assets.some(a=>a.id===item.asset.id))record.assets.push(clone(item.asset));
     progress(options,'extracting',document.title,index+1,intermediates.length);
-    const response=objectResponse(await llm({task:'extract',prompt:EXTRACTION_PROMPT,input:document,signal:options.signal}));
+    const response=objectResponse(await llm({task:'extract',locale:normalisePromptLocale(options.locale),prompt:prompt.extract,input:document,signal:options.signal}));
     options.signal?.throwIfAborted();
     if(!Array.isArray(response?.events)||response.events.length>(options.maxEventsPerDocument??300))throw new Error('Invalid or oversized event response.');
     const paragraphMap=new Map(document.paragraphs.map(p=>[p.id,p]));
@@ -38,11 +47,12 @@ export async function buildChronology(intermediates,options={}) {
 }
 export async function findRelationships(record,options={}) {
   verifyAssetsSync(assertRecord(record));const llm=adapter(options);options.signal?.throwIfAborted();
+  const prompt=getPrompts(options.locale);
   if(record.events.length<2)return clone(record);
   const events=record.events.map(({id,title,summary,date,assertedBy,sources})=>({id,title,summary,date,assertedBy,sources}));
   if(JSON.stringify(events).length>(options.maxRelationshipCharacters??200000))throw new Error('Chronology exceeds the basic relationship input limit. Supply a custom adapter or smaller record.');
   progress(options,'relating','Comparing chronology accounts',0,1);
-  const response=objectResponse(await llm({task:'relate',prompt:RELATIONSHIP_PROMPT,input:{events},signal:options.signal}));
+  const response=objectResponse(await llm({task:'relate',locale:normalisePromptLocale(options.locale),prompt:prompt.relate,input:{events},signal:options.signal}));
   options.signal?.throwIfAborted();if(!Array.isArray(response?.relationships)||response.relationships.length>events.length*5)throw new Error('Invalid relationship response.');
   const result=clone(record);const ids=new Set(events.map(e=>e.id));
   const pairs=new Set(result.relationships.map(r=>[r.from,r.to].sort().join('|')+'|'+r.type));

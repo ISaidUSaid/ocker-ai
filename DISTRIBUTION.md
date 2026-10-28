@@ -6,7 +6,7 @@ The SDK can be used as a headless object model, an optional document/LLM pipelin
 
 ## Private distribution
 
-Packages are currently supplied in `ocker-ai-sdk-0.1.0.tar.gz`, not public registries. The bundle contains `npm/` tarballs, a `maven/` repository, `nuget/` packages, the specification, public prompts, integration guides, `LICENSE`, `NOTICE`, `MANIFEST.json` and `SHA256SUMS`. A web-only bundle contains only the npm packages and common documentation. No registry credentials are needed to build or use the private artifacts; ordinary third-party dependencies still need an accessible package source or cache.
+Packages are currently supplied in `ocker-ai-sdk-0.1.0.tar.gz`, not public registries. The bundle contains `npm/` tarballs, a `maven/` repository, `nuget/` packages, the specification, public prompts, integration guides, `LICENSE`, `NOTICE`, `MANIFEST.json` and `SHA256SUMS`. A web-only bundle contains only the npm packages and common documentation. No registry credentials are needed to build or use the downloadable artifacts; ordinary third-party dependencies still need an accessible package source or cache.
 
 Verify the archive before extracting, then verify its contents:
 

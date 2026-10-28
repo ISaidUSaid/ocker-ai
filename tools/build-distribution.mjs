@@ -90,5 +90,5 @@ try {
   await rename(bundle,destination);
   await rm(join(output,name+'.tar.gz'),{force:true});await rename(archive,join(output,name+'.tar.gz'));
   await writeFile(join(output,name+'.tar.gz.sha256'),archiveHash+'  '+name+'.tar.gz\n');
-  console.log(`Prepared ${join(output,name+'.tar.gz')}\nSHA-256 ${archiveHash}\nPrivate distribution only; no packages were published.`);
+  console.log(`Prepared ${join(output,name+'.tar.gz')}\nSHA-256 ${archiveHash}\nSDK archive prepared; no packages were published to registries.`);
 } finally {await rm(temporary,{recursive:true,force:true});}

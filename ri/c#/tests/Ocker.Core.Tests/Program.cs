@@ -8,6 +8,8 @@ using DocumentFormat.OpenXml.Packaging;
 using W = DocumentFormat.OpenXml.Wordprocessing;
 
 var chronology = Ocker.Ocker.CreateRecord("Synthetic record");
+if (!Ocker.Ocker.GetPrompt(OckerPromptLocale.Es, "extract").StartsWith("Lee los párrafos", StringComparison.Ordinal) || !Ocker.Ocker.GetPrompt(OckerPromptLocale.Pt, "relate").StartsWith("Compare os relatos", StringComparison.Ordinal) || !Ocker.Ocker.GetPrompt(OckerPromptLocale.Fr, "extract").StartsWith("Lis les paragraphes", StringComparison.Ordinal) || !Ocker.Ocker.GetPrompt(OckerPromptLocale.De, "relate").StartsWith("Vergleiche die bereitgestellten", StringComparison.Ordinal)) throw new Exception("Locale prompt resources were not embedded correctly.");
+if (OckerPromptLanguages.FromLanguageTag("pt-BR") != OckerPromptLocale.Pt || OckerPromptLanguages.FromLanguageTag("unavailable") != OckerPromptLocale.En) throw new Exception("Prompt locale fallback is incorrect.");
 var document = new Document("doc", "Synthetic source", "report", [new Paragraph("p1", 1, "A synthetic source excerpt.")]);
 var eventOne = new OckerEvent("event-1", "Synthetic event", "A test event", new DateValue("day", "2026-10-23"), [new Source("doc", "p1", 1, "A synthetic source excerpt.")]);
 chronology = chronology with { Documents = [document], Events = [eventOne] };

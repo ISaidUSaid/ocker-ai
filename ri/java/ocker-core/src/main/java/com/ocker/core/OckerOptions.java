@@ -5,10 +5,10 @@ import java.util.*;
 import java.util.function.Consumer;
 /** Per-call configuration. Keys are held only by an adapter instance in memory. */
 public final class OckerOptions {
-  public final CompletionAdapter llm; public final Consumer<Progress> progress; public final Cancellation cancellation; public final String authorId; public final DoclingServeClient doclingServe;
-  private OckerOptions(Builder b) { llm=b.llm; progress=b.progress; cancellation=b.cancellation; authorId=b.authorId; doclingServe=b.doclingServe; }
+  public final CompletionAdapter llm; public final Consumer<Progress> progress; public final Cancellation cancellation; public final String authorId; public final DoclingServeClient doclingServe; public final PromptLocale promptLocale;
+  private OckerOptions(Builder b) { llm=b.llm; progress=b.progress; cancellation=b.cancellation; authorId=b.authorId; doclingServe=b.doclingServe; promptLocale=b.promptLocale; }
   public static Builder builder(){ return new Builder(); }
-  public static final class Builder { CompletionAdapter llm; Consumer<Progress> progress=p->{}; Cancellation cancellation=()->false; String authorId; DoclingServeClient doclingServe=DoclingServeClient.local();
-    public Builder llm(CompletionAdapter x){llm=x;return this;} public Builder onProgress(Consumer<Progress> x){progress=Objects.requireNonNull(x);return this;} public Builder cancellation(Cancellation x){cancellation=Objects.requireNonNull(x);return this;} public Builder authorId(String x){authorId=x;return this;} public Builder doclingServe(DoclingServeClient x){doclingServe=Objects.requireNonNull(x);return this;} public OckerOptions build(){return new OckerOptions(this);} }
+  public static final class Builder { CompletionAdapter llm; Consumer<Progress> progress=p->{}; Cancellation cancellation=()->false; String authorId; DoclingServeClient doclingServe=DoclingServeClient.local(); PromptLocale promptLocale=PromptLocale.EN;
+    public Builder llm(CompletionAdapter x){llm=x;return this;} public Builder onProgress(Consumer<Progress> x){progress=Objects.requireNonNull(x);return this;} public Builder cancellation(Cancellation x){cancellation=Objects.requireNonNull(x);return this;} public Builder authorId(String x){authorId=x;return this;} public Builder doclingServe(DoclingServeClient x){doclingServe=Objects.requireNonNull(x);return this;} public Builder promptLocale(PromptLocale x){promptLocale=Objects.requireNonNull(x);return this;} public Builder promptLanguageTag(String x){promptLocale=PromptLocale.fromLanguageTag(x);return this;} public OckerOptions build(){return new OckerOptions(this);} }
   public record Progress(String phase, String message) {} public interface Cancellation { boolean cancelled(); }
 }

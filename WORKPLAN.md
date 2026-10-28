@@ -2,7 +2,7 @@
 
 Owner: Jenko <adam@isaidusaid.com>
 
-The repository remains private until Adam chooses to publish it. Only this checkout may be changed.
+Adam made the repository public on 29 October 2026. Only this checkout may be changed. Earlier dated entries below retain the implementation history.
 
 ## Scope
 
@@ -105,3 +105,15 @@ The Java, C# and web-consumer workers completed their bounded assignments. Paren
 - [x] Verify all browser builds, thirteen shared interactions, three framework runtimes and native resource/build checks.
 
 The Java, C# and framework workers completed their assignments. Parent fixed guidance after example/import loading, added removable JS build-queue entries and checked the real browser layout. No model settings, proprietary application source, public visibility or registry publication changed. No approval is pending; the next useful step is Adam trying the refreshed local demo, followed by a real-provider acceptance run with his chosen model/key.
+
+## Public website release — 29 October 2026
+
+- [x] Publish the repository (Adam completed GitHub visibility confirmation).
+- [x] Build the responsive five-language website, browser-language selection and localised sponsor links.
+- [x] Configure the approved Heroku Basic dyno and DNSimple zone; verify HTTPS for apex and www.
+- [x] Localise the shared prompt library and wire the selected language into the reference implementations.
+- [x] Correct live-site visual feedback and inspect desktop, tablet and mobile layouts, including narrow German text.
+
+GitHub validation, the final source push/Heroku update and the first downloadable SDK release complete this release handoff. Package registries remain unconfigured; the downloadable bundle and source are the installation routes.
+
+Final local regression checks passed: all 14 browser scenarios, three framework runtimes, installed web/native package consumers, core/schema tests and website HTTP/content/visual checks. The two browser selector fixes follow translated accessible labels; the desktop test remains at its original 1280px viewport.

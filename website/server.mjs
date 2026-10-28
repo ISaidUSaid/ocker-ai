@@ -34,8 +34,9 @@ export const server = createServer(async (req, res) => {
     const info = await stat(path);
     if (!info.isFile()) { res.writeHead(404).end('Not found'); return; }
     const ext = extname(path);
-    res.setHeader('Content-Type', types[ext] || 'application/octet-stream');
-    res.setHeader('Cache-Control', ext === '.html' ? 'no-cache' : 'public, max-age=3600');
+    res.setHeader('Content-Type', types[ext] || (['LICENSE', 'NOTICE'].some(name => path.endsWith(sep + name)) ? 'text/plain; charset=utf-8' : 'application/octet-stream'));
+    // Revalidate stable URLs so a release cannot pair new markup with yesterday's styles.
+    res.setHeader('Cache-Control', ext === '.wasm' ? 'public, max-age=3600' : 'no-cache');
     const etag = 'W/"' + info.size + '-' + Math.trunc(info.mtimeMs) + '"';
     res.setHeader('ETag', etag);
     if (req.headers['if-none-match'] === etag) { res.writeHead(304).end(); return; }

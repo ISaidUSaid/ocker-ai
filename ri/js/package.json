@@ -28,6 +28,10 @@
       "types": "./demo/provider-shortcuts.d.ts",
       "import": "./demo/provider-shortcuts.js"
     },
+    "./demo/locales": {
+      "types": "./demo/locales.d.ts",
+      "import": "./demo/locales.js"
+    },
     "./headless": {
       "types": "./src/headless.d.ts",
       "import": "./src/headless.js"
@@ -48,6 +52,8 @@
     "demo/record-editor.js",
     "demo/provider-shortcuts.d.ts",
     "demo/provider-shortcuts.js",
+    "demo/locales.d.ts",
+    "demo/locales.js",
     "tools"
   ],
   "scripts": {

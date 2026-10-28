@@ -3,10 +3,11 @@
 import {exportRecord} from '../src/model.js';
 import {exportVisual} from '../src/ui.js';
 
-export function mountReviewActions(container,{getRecord}) {
+export function mountReviewActions(container,{getRecord,labels={}}) {
+  const t=(key,fallback)=>labels[key]??fallback;
   const actions=document.createElement('div');actions.className='ocker-review-actions';
   const status=document.createElement('p');status.setAttribute('role','status');status.hidden=true;
-  for(const [label,format]of [['Save JSON','json'],['Export PNG','png'],['Export PDF','pdf']]) {
+  for(const [label,format]of [[t('saveJson','Save JSON'),'json'],[t('exportPng','Export PNG'),'png'],[t('exportPdf','Export PDF'),'pdf']]) {
     const button=document.createElement('button');button.type='button';button.textContent=label;
     button.addEventListener('click',async()=>{
       button.disabled=true;status.hidden=true;
@@ -17,7 +18,7 @@ export function mountReviewActions(container,{getRecord}) {
           const link=document.createElement('a');link.href=url;link.download='chronology.ocker.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
         } else {
           const stage=container.closest('.demo, .ocker-workbench')?.querySelector('.ocker-stage');
-          if(!stage)throw new Error('Open a chronology before exporting.');
+          if(!stage)throw new Error(t('openChronologyBeforeExport','Open a chronology before exporting.'));
           await exportVisual(stage,format,record.title);
         }
       } catch(error) { status.textContent=error.message;status.hidden=false; }
@@ -161,18 +162,19 @@ var events = await Ocker.BuildChronologyAsync(document, options, cancellationTok
 // The host adds the returned document, asset and events to its record.`};
   return examples[language]??examples.js;
 }
-export function mountCodeDisclosure(container,{language='js',theme=()=>'glass'}={}) {
+export function mountCodeDisclosure(container,{language='js',theme=()=>'glass',labels={}}={}) {
+  const t=(key,fallback)=>labels[key]??fallback;
   const details=document.createElement('details');details.className='ocker-code-disclosure';
-  const summary=document.createElement('summary');summary.textContent='Show code';
+  const summary=document.createElement('summary');summary.textContent=t('showCode','Show code');
   const tools=document.createElement('div');tools.className='ocker-code-tools';
-  const label=document.createElement('label');label.append('Reference implementation ');
-  const select=document.createElement('select');select.setAttribute('aria-label','Reference implementation');
+  const label=document.createElement('label');label.append(`${t('referenceImplementation','Reference implementation')} `);
+  const select=document.createElement('select');select.setAttribute('aria-label',t('referenceImplementation','Reference implementation'));
   for(const [value,text]of Object.entries(languages)){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}select.value=language;
-  label.append(select);const copy=document.createElement('button');copy.type='button';copy.textContent='Copy code';
+  label.append(select);const copy=document.createElement('button');copy.type='button';copy.textContent=t('copyCode','Copy code');
   const status=document.createElement('span');status.className='ocker-code-status';status.setAttribute('role','status');
   const pre=document.createElement('pre'),code=document.createElement('code');pre.append(code);tools.append(label,copy,status);details.append(summary,tools,pre);container.append(details);
   const refresh=()=>{code.textContent=integrationCode(select.value,typeof theme==='function'?theme():theme);};
-  details.addEventListener('toggle',()=>{summary.textContent=details.open?'Hide code':'Show code';if(details.open)refresh();});select.addEventListener('change',refresh);
-  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code.textContent);status.textContent='Copied';}catch{const range=document.createRange();range.selectNodeContents(code);const selection=getSelection();selection.removeAllRanges();selection.addRange(range);status.textContent='Code selected—copy with your keyboard.';}});
+  details.addEventListener('toggle',()=>{summary.textContent=details.open?t('hideCode','Hide code'):t('showCode','Show code');if(details.open)refresh();});select.addEventListener('change',refresh);
+  copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(code.textContent);status.textContent=t('copied','Copied');}catch{const range=document.createRange();range.selectNodeContents(code);const selection=getSelection();selection.removeAllRanges();selection.addRange(range);status.textContent=t('copySelected','Code selected—copy with your keyboard.');}});
   refresh();return {refresh,destroy(){details.remove();}};
 }

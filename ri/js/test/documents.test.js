@@ -3,9 +3,12 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile}from'node:fs/promises';
 import {parseDocument,parseText,parseRichText,rtfText}from'../src/documents.js';
 import {sha256,assertIntermediate}from'../src/model.js';
-import {EXTRACTION_PROMPT,RELATIONSHIP_PROMPT}from'../src/pipeline.js';
-test('public prompts match the canonical library, not inline copies',async()=>{
- for(const [name,actual]of [['extract',EXTRACTION_PROMPT],['relate',RELATIONSHIP_PROMPT]])assert.equal(actual,(await readFile(new URL('../../../prompt-library/'+name+'.txt',import.meta.url),'utf8')).trim());
+import {EXTRACTION_PROMPT,RELATIONSHIP_PROMPT,getPrompts,normalisePromptLocale,SUPPORTED_PROMPT_LOCALES}from'../src/pipeline.js';
+test('public prompts match the canonical locale library, not inline copies',async()=>{
+ assert.deepEqual(SUPPORTED_PROMPT_LOCALES,['en','es','pt','fr','de']);
+ for(const locale of SUPPORTED_PROMPT_LOCALES)for(const name of ['extract','relate'])assert.equal(getPrompts(locale)[name],(await readFile(new URL('../../../prompt-library/'+locale+'/'+name+'.txt',import.meta.url),'utf8')).trim());
+ assert.equal(EXTRACTION_PROMPT,getPrompts('en').extract);assert.equal(RELATIONSHIP_PROMPT,getPrompts('en').relate);
+ assert.equal(normalisePromptLocale('pt-BR'),'pt');assert.equal(normalisePromptLocale('de_AT'),'de');assert.equal(normalisePromptLocale('ja-JP'),'en');
 });
 test('plain text and rich HTML retain original bytes and safe paragraph text',async()=>{
  const plain=await parseText('First account\n\nSecond account',{title:'Account.txt',kind:'report'});assert.equal(plain.document.paragraphs.length,2);assert.equal(plain.document.kind,'report');assertIntermediate(plain);

@@ -3,6 +3,14 @@
 package com.ocker.core;
 import org.junit.jupiter.api.Test; import static org.junit.jupiter.api.Assertions.*; import static com.ocker.core.OckerTypes.*; import java.time.*; import java.util.*; import java.nio.file.*; import com.fasterxml.jackson.databind.JsonNode; import org.apache.poi.xwpf.usermodel.XWPFDocument;
 class OckerTest {
+ @Test void publicPromptLibraryUsesOneSelectedLanguageAndFallsBackToEnglish() {
+  assertTrue(Ocker.prompt(PromptLocale.ES,"extract").startsWith("Lee los párrafos"));
+  assertTrue(Ocker.prompt(PromptLocale.PT,"relate").startsWith("Compare os relatos"));
+  assertTrue(Ocker.prompt(PromptLocale.FR,"extract").startsWith("Lis les paragraphes"));
+  assertTrue(Ocker.prompt(PromptLocale.DE,"relate").startsWith("Vergleiche die bereitgestellten"));
+  assertTrue(Ocker.prompt(PromptLocale.fromLanguageTag("zz-AU"),"extract").startsWith("Read the supplied"));
+  assertEquals(PromptLocale.PT,PromptLocale.fromLanguageTag("pt-BR"));
+ }
  @Test void successfulAdaptersUseTextOnlyAndDeduplicateRelationships() throws Exception {
   Path source=Files.createTempFile("ocker-account", ".txt"); Files.writeString(source,"Joe's account");
   var pdf=Ocker.parseDocument(source,"d","Joe","affidavit",OckerOptions.builder().build());

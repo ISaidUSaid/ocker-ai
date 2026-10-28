@@ -2,4 +2,6 @@
 import {defineConfig} from '@playwright/test';
 import {existsSync} from 'node:fs';
 const chrome=process.platform==='linux'?'/usr/bin/google-chrome':'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+// At desktop width the reference app presents three panels beside the chronology.
+// Keep the chronology host above its 740px compact-view threshold for desktop UI tests.
 export default defineConfig({testDir:'browser',workers:1,timeout:30000,outputDir:'../../.work/browser-results',use:{baseURL:'http://127.0.0.1:5173',viewport:{width:1280,height:900},headless:true,launchOptions:existsSync(chrome)?{executablePath:chrome}:{}},webServer:{command:'npm run dev',url:'http://127.0.0.1:5173',reuseExistingServer:!process.env.CI,timeout:30000},reporter:'list'});

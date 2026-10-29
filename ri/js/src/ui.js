@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
 import {assertRecord,clone,formatDate,saveNote,saveAuthority,deleteAnnotation,exportRecord,base64ToBytes,verifyAssetsSync,sha256} from './model.js';
+import {applyTheme} from './themes/index.js';
 const palette={blue:'#b7d9e8',lavender:'#d6c9e5',mint:'#c3dfcf',peach:'#ecd0bb',slate:'#c5d1d7'};
 const svgNS='http://www.w3.org/2000/svg';
 function el(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=text;return n;}
@@ -9,7 +10,7 @@ function download(bytes,type,name){const url=URL.createObjectURL(new Blob([bytes
 export function mountChronology(element,initial,configuration={}) {
   let record=clone(verifyAssetsSync(assertRecord(initial))),options={animate:true,showToolbar:true,theme:'glass',...configuration};
   let zoom=1,query='',status='',documentId='',selected=null,destroyed=false,mobile=!!options.mobile;
-  let drag=null,ghost=null,dragFrame=0,observer;const dialogs=new Set(),controllers=new Set();
+  let drag=null,ghost=null,dragFrame=0,observer;const appliedVariables=new Set();const dialogs=new Set(),controllers=new Set();
   const root=el('section','ocker-root '+(options.className??''));root.setAttribute('aria-label','OCKER chronology');element.appendChild(root);
   const toolbar=el('div','ocker-toolbar'),board=el('div','ocker-board'),stage=el('div','ocker-stage');stage.append(board);root.append(toolbar,stage);
   const t=(key,fallback)=>options.labels?.[key]??fallback;
@@ -97,8 +98,9 @@ export function mountChronology(element,initial,configuration={}) {
   }
   function render(){
     if(destroyed)return;root.classList.toggle('ocker-mobile',mobile);root.classList.toggle('ocker-readonly',!!options.readOnly);root.classList.toggle('ocker-no-motion',!options.animate);
-    root.classList.toggle('ocker-theme-glass',options.theme==='glass');
-    for(const [key,value]of Object.entries({...((typeof options.theme==='object'&&options.theme)||{}),...(options.themeVariables??{})}))root.style.setProperty(key.startsWith('--ocker-')?key:'--ocker-'+key,value);
+    applyTheme(root,options.theme);
+    for(const key of appliedVariables)root.style.removeProperty(key);appliedVariables.clear();
+    for(const [key,value]of Object.entries({...((typeof options.theme==='object'&&options.theme)||{}),...(options.themeVariables??{})})){const name=key.startsWith('--ocker-')?key:'--ocker-'+key;root.style.setProperty(name,value);appliedVariables.add(name);}
     toolbar.hidden=!options.showToolbar;const focusKey=document.activeElement?.dataset?.ockerControl;const focusSelection=document.activeElement?.selectionStart;
     toolbar.replaceChildren();const search=el('input');search.type='search';search.placeholder=t('search','Search events');search.setAttribute('aria-label',t('search','Search events'));search.value=query;search.dataset.ockerControl='search';search.addEventListener('input',()=>{query=search.value;render();});toolbar.append(search);
     const sf=el('select');sf.setAttribute('aria-label',t('filterStatus','Filter status'));for(const val of ['', 'alleged','agreed','disputed','unresolved']){const option=el('option','',val==='agreed'?t('commonGround','Common ground'):val?t(val,val):t('allStatuses','All statuses'));option.value=val;sf.append(option);}sf.value=status;sf.addEventListener('change',()=>{status=sf.value;render();});toolbar.append(sf);
@@ -137,7 +139,7 @@ export function mountChronology(element,initial,configuration={}) {
 export async function exportVisual(element,format,title='Chronology') {
   const {toPng}=await import('html-to-image');
   // Capture the filtered, zoomed board. The live view isn't modified for export.
-  const png=await toPng(element,{backgroundColor:'#f5f7fa',pixelRatio:2,cacheBust:true,width:Math.max(element.scrollWidth,element.clientWidth),height:Math.max(element.scrollHeight,element.clientHeight),style:{overflow:'visible'},filter:n=>!(n instanceof Element)||!n.matches('.ocker-note-tools,.ocker-pin')});
+  const png=await toPng(element,{backgroundColor:getComputedStyle(element).backgroundColor,pixelRatio:2,cacheBust:true,width:Math.max(element.scrollWidth,element.clientWidth),height:Math.max(element.scrollHeight,element.clientHeight),style:{overflow:'visible'},filter:n=>!(n instanceof Element)||!n.matches('.ocker-note-tools,.ocker-pin')});
   if(format==='png'){const response=await fetch(png);download(await response.arrayBuffer(),'image/png','chronology.png');return;}
   const {jsPDF}=await import('jspdf');const image=new Image();image.src=png;await image.decode();
   const width=297,margin=12,usable=width-margin*2,ratio=usable/image.naturalWidth,pageHeight=210,contentHeight=pageHeight-30;

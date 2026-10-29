@@ -1,0 +1,9 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+:is(.ocker-root,.ocker-workbench,.demo)[data-ocker-theme=after-hours]{--ocker-primary:#a9d8e5;--ocker-on-primary:#14252e;--ocker-accent:#dab777;--ocker-background:#17212b;--ocker-surface:#25333f;--ocker-text:#edf1f2;--ocker-muted:#bac9d2;--ocker-border:#536878;--ocker-hover:#354b5c;--ocker-soft:#1d2b36;--ocker-axis:#637f91;--ocker-card-shadow:0 8px 22px #0004;--ocker-shell-background:linear-gradient(125deg,#17212b,#222c38);--ocker-shell-header:#1b2833;--ocker-notice:#3a3427;--ocker-notice-text:#e7d6ad;--ocker-backdrop:#080f1acc;color-scheme:dark}
+/* The transparent wordmark needs a light backing to keep its navy lettering legible. */
+:is(.ocker-workbench,.demo)[data-ocker-theme=after-hours] :is(.wordmark img,.demo__wordmark){background:#f4f0e6;border-radius:10px;padding:5px}
+.ocker-root[data-ocker-theme=after-hours] .ocker-edge{stroke:#8cd5c2}
+.ocker-root[data-ocker-theme=after-hours] .ocker-edge-contradicts{stroke:#f29ba9}
+.ocker-root[data-ocker-theme=after-hours] :is(.ocker-danger,.ocker-editor-status){color:#ffb9bd}
+.ocker-root[data-ocker-theme=after-hours] .cm-editor .cm-selectionBackground{background:#456078!important}
+.ocker-root[data-ocker-theme=after-hours] .cm-editor .cm-content span{color:#dbcdf4}

@@ -57,6 +57,7 @@ try {
     }
   }
   for(const filename of ['LICENSE','NOTICE'])await cp(join(root,filename),join(bundle,filename));
+  await cp(join(root,'themes'),join(bundle,'themes'),{recursive:true});
   await cp(join(root,'spec'),join(bundle,'spec'),{recursive:true});
   await cp(join(root,'prompt-library'),join(bundle,'prompt-library'),{recursive:true,filter:source=>!source.endsWith('prepare.mjs')});
   for(const language of ['js','angular','react','node.js',...(!webOnly?['java','c#']:[])]) {

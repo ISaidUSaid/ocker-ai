@@ -1,0 +1,4 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+:is(.ocker-root,.ocker-workbench,.demo)[data-ocker-theme=blueprint]{--ocker-primary:#174e83;--ocker-accent:#2d86b2;--ocker-background:#e9f3fb;--ocker-surface:#fafdff;--ocker-text:#23455e;--ocker-muted:#486c86;--ocker-border:#a0bfd8;--ocker-hover:#dcecf8;--ocker-soft:#edf5fb;--ocker-axis:#648fb2;--ocker-card-radius:4px;--ocker-card-shadow:3px 3px 0 #86abc530;--ocker-shell-background:#e9f3fb;--ocker-shell-header:#fafdff;--ocker-heading-font:ui-sans-serif,system-ui,sans-serif;--ocker-board-image:linear-gradient(#89b6d52b 1px,transparent 1px),linear-gradient(90deg,#89b6d52b 1px,transparent 1px);--ocker-board-size:24px 24px}
+.ocker-root[data-ocker-theme=blueprint] .ocker-card{border:1px solid #648fb2}
+.ocker-root[data-ocker-theme=blueprint] .ocker-date{font-family:ui-monospace,monospace}

@@ -27,3 +27,6 @@ ri/js/src/prompts.generated.json
 
 **/public/docling/
 **/public/assets/docling/
+
+# Generated from the shared themes directory.
+/ri/js/src/themes/

@@ -1,3 +1,4 @@
+import {applyTheme} from '../src/themes/index.js';
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
 import {parseRecord,exportRecord} from '../src/model.js';
@@ -8,7 +9,7 @@ export function mountRecordEditor(container,{getRecord,onApply,theme='glass',lab
     open.disabled=true;
     try {
       const [{EditorView,basicSetup},{json}]=await Promise.all([import('codemirror'),import('@codemirror/lang-json')]);
-      const root=document.createElement('section');root.className='ocker-root ocker-import-host'+((typeof theme==='function'?theme():theme)==='glass'?' ocker-theme-glass':'');
+      const root=document.createElement('section');root.className='ocker-root ocker-import-host';applyTheme(root,typeof theme==='function'?theme():theme);
       root.innerHTML=`<dialog class="ocker-dialog ocker-json-dialog" aria-label="${t('editOckerFile','Edit OCKER file')}"><h2>${t('editOckerFile','Edit OCKER file')}</h2><div class="ocker-dialog-content"><p>${t('editorIntro','Edit the portable OCKER record. Invalid JSON will not be applied.')}</p><div class="ocker-json-editor"></div><p class="ocker-editor-status" role="status" aria-live="polite"></p></div><footer class="ocker-dialog-footer"><button type="button" data-editor="format">${t('prettyPrint','Pretty print')}</button><button type="button" data-editor="cancel">${t('cancel','Cancel')}</button><button type="button" data-editor="apply" class="ocker-primary">${t('applyChanges','Apply changes')}</button></footer></dialog>`;
       const dialog=root.querySelector('dialog'),status=root.querySelector('[role="status"]');document.body.append(root);
       const editor=new EditorView({doc:exportRecord(getRecord()),extensions:[basicSetup,json(),EditorView.contentAttributes.of({'aria-label':'OCKER JSON','spellcheck':'false'}),EditorView.theme({'&':{height:'min(60dvh,600px)',fontSize:'12px'},'.cm-scroller':{overflow:'auto',fontFamily:'ui-monospace,monospace'},'.cm-content':{padding:'12px 0'},'.cm-gutters':{backgroundColor:'#eff5f8',color:'#69808b'}})],parent:root.querySelector('.ocker-json-editor')});

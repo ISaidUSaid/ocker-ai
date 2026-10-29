@@ -1,0 +1,7 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+.ocker-theme-glass .ocker-dialog{background:#f8fbfce8;border:10px solid #ffffff55;outline:1px solid #ffffffa0;box-shadow:0 25px 90px #08273e55,inset 0 0 0 1px #ffffff80;backdrop-filter:blur(20px)}
+.ocker-theme-glass .ocker-dialog::backdrop{background:#17344465;backdrop-filter:blur(8px)}
+.ocker-theme-glass .ocker-dialog{background-clip:padding-box;border:10px solid #ffffff55;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.ocker-theme-glass .ocker-dialog::backdrop{-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.ocker-theme-glass .ocker-card{border-color:#ffffffbf;box-shadow:0 10px 26px #1637471c,inset 0 0 0 1px #ffffffcc}
+.ocker-theme-glass .ocker-card:after{content:'';position:absolute;inset:0;padding:8px;border-radius:inherit;background:var(--ocker-glass-rim,linear-gradient(135deg,#ffffffb3,#bdd7e18c 48%,#ffffff8c));pointer-events:none;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}

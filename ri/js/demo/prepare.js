@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
+import '../../../themes/prepare.mjs';
 import {copyFile,mkdir} from 'node:fs/promises';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';

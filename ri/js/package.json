@@ -36,7 +36,12 @@
       "types": "./src/headless.d.ts",
       "import": "./src/headless.js"
     },
-    "./prepare-docling-assets": "./tools/prepare-docling-assets.mjs"
+    "./prepare-docling-assets": "./tools/prepare-docling-assets.mjs",
+    "./themes": {
+      "types": "./src/themes.d.ts",
+      "import": "./src/themes/index.js"
+    },
+    "./themes.css": "./src/themes/index.css"
   },
   "files": [
     "src",
@@ -61,11 +66,11 @@
     "build": "vite build --config vite.library.config.js",
     "demo:build": "vite build",
     "test": "node --test test/*.test.js",
-    "predev": "node ../../prompt-library/prepare.mjs && node demo/prepare.js",
-    "predemo:build": "node ../../prompt-library/prepare.mjs && node demo/prepare.js",
-    "pretest": "node ../../prompt-library/prepare.mjs",
-    "prebuild": "node ../../prompt-library/prepare.mjs",
-    "prepack": "node ../../prompt-library/prepare.mjs"
+    "predev": "node ../../themes/prepare.mjs && node ../../prompt-library/prepare.mjs && node demo/prepare.js",
+    "predemo:build": "node ../../themes/prepare.mjs && node ../../prompt-library/prepare.mjs && node demo/prepare.js",
+    "pretest": "node ../../themes/prepare.mjs && node ../../prompt-library/prepare.mjs",
+    "prebuild": "node ../../themes/prepare.mjs && node ../../prompt-library/prepare.mjs",
+    "prepack": "node ../../themes/prepare.mjs && node ../../prompt-library/prepare.mjs"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.2",

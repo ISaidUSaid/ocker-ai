@@ -1,3 +1,6 @@
+export {THEME_NAMES,themeName,applyTheme} from './themes.js';
+import type {ThemeName} from './themes.js';
+export type {ThemeName} from './themes.js';
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
 export interface DateValue {precision:'day'|'month'|'year'|'range'|'unknown';value?:string;end?:string;approximate?:boolean;basis?:string}
@@ -48,7 +51,7 @@ export type LlmAdapter=(request:{task:'extract'|'relate';locale?:string;prompt:s
 export interface PipelineOptions {llm?:LlmAdapter;onProgress?:(progress:Progress)=>void;signal?:AbortSignal;title?:string;authorId?:string;locale?:string;maxDocumentCharacters?:number;maxRelationshipCharacters?:number;maxEventsPerDocument?:number}
 export interface DoclingOptions {endpoint?:string;timeoutMs?:number;assetBaseUrl?:string;modelBaseUrl?:string;ocrLanguage?:'en'|'ch'|'cyrillic';tableStructure?:boolean;fetch?:typeof fetch}
 export interface PdfOptions {docling?:DoclingOptions;maxTextCharacters?:number;workerSrc?:string;title?:string;kind?:Document['kind'];author?:string;maxBytes?:number;maxPages?:number;signal?:AbortSignal;onProgress?:(progress:Progress)=>void}
-export interface ChronologyOptions {onChange?:(record:Record)=>void;onProgress?:(progress:Progress)=>void;onError?:(error:Error)=>void;llm?:LlmAdapter;readOnly?:boolean;locale?:string;theme?:'glass'|'none'|{[key:string]:string};themeVariables?:{[key:string]:string};labels?:{[key:string]:string};assetResolver?:(asset:Asset)=>Promise<Uint8Array>;onEventClick?:(event:Event)=>void;onSourceClick?:(source:Source,event:Event)=>void;animate?:boolean;showToolbar?:boolean;mobile?:boolean;authorId?:string;className?:string}
+export interface ChronologyOptions {onChange?:(record:Record)=>void;onProgress?:(progress:Progress)=>void;onError?:(error:Error)=>void;llm?:LlmAdapter;readOnly?:boolean;locale?:string;theme?:ThemeName|{[key:string]:string};themeVariables?:{[key:string]:string};labels?:{[key:string]:string};assetResolver?:(asset:Asset)=>Promise<Uint8Array>;onEventClick?:(event:Event)=>void;onSourceClick?:(source:Source,event:Event)=>void;animate?:boolean;showToolbar?:boolean;mobile?:boolean;authorId?:string;className?:string}
 export interface ChronologyHandle {getRecord():Record;setRecord(record:Record):void;setOptions(options:Partial<ChronologyOptions>):void;destroy():void}
 export const VERSION:string;
 export function id():string;

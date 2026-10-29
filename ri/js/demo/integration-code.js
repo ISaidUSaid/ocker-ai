@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
+import {themeName} from '../src/themes/index.js';
 import {exportRecord} from '../src/model.js';
 import {exportVisual} from '../src/ui.js';
 
@@ -30,7 +31,7 @@ export function mountReviewActions(container,{getRecord,labels={}}) {
 }
 const languages={js:'JavaScript',angular:'Angular',react:'React',node:'Node + Angular',java:'Java / JavaFX',csharp:'C# / Avalonia'};
 export function integrationCode(language='js',theme='glass') {
-  theme=theme==='none'?'none':'glass';
+  theme=themeName(theme);
   const examples={
 js:`// Build setup, run in Node before the browser bundle:
 // import {prepareDoclingAssets} from '@ocker-ai/core/prepare-docling-assets';
@@ -145,7 +146,7 @@ await docling.TestConnectionAsync(cancellationToken);
 var view = new ChronologyView {
     Record = record,
     Options = new ChronologyViewOptions {
-        Theme = "${theme}",
+        Theme = "${theme==='glass'?'glass':'none'}",
         OnChange = next => SaveInYourApplication(next),
         OnError = error => ShowError(error)
     }

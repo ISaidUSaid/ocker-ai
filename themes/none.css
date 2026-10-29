@@ -1,0 +1,2 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+:is(.ocker-root,.ocker-workbench,.demo)[data-ocker-theme=none]{--ocker-shell-background:#f4f7f9;--ocker-shell-header:#fff}

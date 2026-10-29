@@ -9,3 +9,5 @@ export * from './graph.js';
 export * from './builder.js';
 
 export {testDoclingConnection,doclingParagraphs} from "./docling.js";
+
+export {THEME_NAMES,themeName,applyTheme} from './themes/index.js';

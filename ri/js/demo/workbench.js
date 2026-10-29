@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Author: Jenko <adam@isaidusaid.com>
-import {mountChronology,createRecord,parseRecord,verifyAssets,parsePdf,parseDocument,parseText,parseRichText,buildChronology,findRelationships,createProviderAdapter,isLoopbackEndpoint} from '../src/index.js';
+import {mountChronology,base64ToBytes,createRecord,parseRecord,verifyAssets,parsePdf,parseDocument,parseText,parseRichText,buildChronology,findRelationships,createProviderAdapter,isLoopbackEndpoint} from '../src/index.js';
 import {mountCodeDisclosure,mountReviewActions} from './integration-code.js';
 import {confirmPdfDocuments} from './document-import.js';
 import {mountRecordEditor} from './record-editor.js';
@@ -8,6 +8,7 @@ import {mountProviderShortcuts} from './provider-shortcuts.js';
 import {browserLocale,chronologyLabels,DEMO_LOCALES,demoText} from './locales.js';
 export function mountWorkbench(element,configuration={}) {
   let record=configuration.record,documents=configuration.documents??[],controller;
+  const documentUrls=new Map();
   let defaultRecord=configuration.defaultRecord??!record;
   const state={...configuration};let locale=browserLocale(globalThis.location?.search,configuration.locale??globalThis.navigator?.language),text=demoText(locale);const root=document.createElement('section');root.className='ocker-workbench';element.append(root);
   record??=createRecord(text.defaultTitle);
@@ -41,7 +42,13 @@ export function mountWorkbench(element,configuration={}) {
       label.textContent=`${item.document.title} · ${item.document.paragraphs.length} ${text.textParagraphs}`;
       remove.disabled=!!controller;remove.type='button';remove.textContent=text.remove;remove.setAttribute('aria-label',`${text.remove} ${item.document.title}`);remove.dataset.action='remove-document';
       remove.addEventListener('click',()=>{if(controller)return;documents.splice(index,1);showQueue();progress.textContent=text.reviewReady;});
-      li.append(label,remove);return li;
+      const actions=document.createElement('div');actions.className='document-actions';
+      if(item.asset?.mediaType==='application/pdf'&&item.asset.data){
+        if(!documentUrls.has(item.asset))documentUrls.set(item.asset,URL.createObjectURL(new Blob([base64ToBytes(item.asset.data)],{type:'application/pdf'})));
+        const link=document.createElement('a');link.className='document-view';link.href=documentUrls.get(item.asset);link.target='_blank';link.rel='noopener noreferrer';link.textContent=text.viewPdf;
+        link.setAttribute('aria-label',`${text.viewPdf}: ${item.document.title}`);actions.append(link);
+      }
+      actions.append(remove);li.append(label,actions);return li;
     }));
     $('[data-step="import"]').classList.toggle('is-complete',documents.length>0);refreshSetup();
   }
@@ -92,9 +99,9 @@ export function mountWorkbench(element,configuration={}) {
   $('[data-action="build"]').addEventListener('click',()=>run(async signal=>{if(!documents.length)throw new Error('Add at least one document first.');const llm=provider();$('[data-step="connect"]').classList.add('is-complete');const options={title:defaultRecord?text.importedTitle:record.title,llm,locale,...credentials(),signal,onProgress};const extracted=await (state.buildChronology??buildChronology)(documents,options);$('[data-step="build"]').classList.add('is-complete');const next=await (state.findRelationships??findRelationships)(extracted,options);await verifyAssets(next,{signal});update(next);$('[data-step="relate"]').classList.add('is-complete');}));
   $('[data-action="cancel"]').addEventListener('click',()=>controller?.abort());
   $('[data-action="intermediate"]').addEventListener('click',()=>{if(!documents.length){progress.textContent='Add a document or load the example first.';return;}const blob=new Blob([JSON.stringify(documents,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='documents.ocker-intermediate.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);});
-  refreshSetup();
+  showQueue();
   // Only seed a new demo. Language changes and host-supplied records keep their state.
   if(state.autoLoadExample&&!configuration.record&&!documents.length)void loadExample();
-  function dispose(){responsive.disconnect();controller?.abort();reviewActions.destroy();code.destroy();editor.destroy();providers.destroy();view.destroy();root.remove();}
+  function dispose(){for(const url of documentUrls.values())URL.revokeObjectURL(url);documentUrls.clear();responsive.disconnect();controller?.abort();reviewActions.destroy();code.destroy();editor.destroy();providers.destroy();view.destroy();root.remove();}
   return {getRecord:()=>view.getRecord(),setRecord:update,destroy:dispose};
 }

@@ -124,3 +124,20 @@ test('first visit loads Joe and Jill automatically and retains the reload button
  await expect(page.locator('.ocker-card')).toHaveCount(46);
  await expect(page.locator('.workbench-progress')).toHaveText('Loaded the Joe and Jill example.');
 });
+
+test('original affidavit PDFs open directly and survive a language change',async({page})=>{
+ await page.goto('/');await expect(page.locator('.ocker-card')).toHaveCount(46);
+ const sample=JSON.parse(await readFile('ri/js/demo/public/examples/joe-jill.ocker.json','utf8'));
+ for(const asset of sample.assets.filter(asset=>asset.mediaType==='application/pdf')){
+  const link=page.getByRole('link',{name:`View PDF: ${asset.name}`,exact:true});
+  await expect(link).toHaveAttribute('target','_blank');
+  const fingerprint=await link.evaluate(async element=>{const response=await fetch(element.href);const bytes=await response.arrayBuffer();const hash=await crypto.subtle.digest('SHA-256',bytes);return {type:response.headers.get('content-type'),sha256:Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('')};});
+  expect(fingerprint).toEqual({type:'application/pdf',sha256:asset.sha256});
+ }
+ await page.locator('[data-option="locale"]').selectOption('pt');
+ await expect(page.getByRole('link',{name:'Ver PDF: JoeBlogsAffidavit.pdf',exact:true})).toBeVisible();
+ await expect(page.getByRole('link',{name:'Ver PDF: JillBlogsAffidavit.pdf',exact:true})).toBeVisible();
+ await page.setViewportSize({width:390,height:844});
+ await expect(page.getByRole('link',{name:'Ver PDF: JillBlogsAffidavit.pdf',exact:true})).toBeVisible();
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

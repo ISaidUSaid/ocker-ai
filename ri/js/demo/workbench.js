@@ -15,7 +15,7 @@ export function mountWorkbench(element,configuration={}) {
   if(defaultRecord)record={...record,title:text.defaultTitle};
   root.lang=locale;applyTheme(root,state.theme??'glass');
   const languageOptions=DEMO_LOCALES.map(([value,label])=>`<option value="${value}"${locale===value?' selected':''}>${label}</option>`).join('');
-  root.innerHTML=`<header class="workbench-header"><a class="wordmark" href="#"><img src="assets/ocker-wordmark.png" alt="OCKER"></a><span class="project-tag">${text.acronym}</span><a class="repo-link" href="https://github.com/ISaidUSaid/ocker-ai" target="_blank" rel="noopener noreferrer">${text.specCode} ↗</a></header>
+  root.innerHTML=`<header class="workbench-header"><a class="wordmark" href="https://ocker.ai/${locale}/"><img src="assets/ocker-wordmark.png" alt="OCKER"></a><span class="project-tag">${text.acronym}</span><a class="repo-link" href="https://github.com/ISaidUSaid/ocker-ai" target="_blank" rel="noopener noreferrer">${text.specCode} ↗</a></header>
   <main><section class="workbench-intro"><p class="kicker">${text.acronym}</p><h1>${text.acronym}</h1><p class="workbench-tagline">${text.tagline}</p><p>${text.intro}</p><p class="browser-assurance">${text.browser}</p></section>
   <section class="workbench-controls" aria-label="Chronology workspace"><div class="journey-grid">
   <div class="appearance-settings"><span class="config-kicker">${text.liveReference}</span><label>${text.language} <select data-option="locale">${languageOptions}</select></label><label>${text.theme} <select data-option="theme">${THEME_NAMES.map(name=>`<option value="${name}">${text[name]}</option>`).join('')}</select></label></div>

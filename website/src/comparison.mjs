@@ -8,7 +8,8 @@ export function renderComparison(locale, sponsor) {
   const copy = comparisonCopy[locale];
   const text = value => esc(value.replaceAll('{brand}', sponsor.name));
   const status = included => `<span class="comparison-status ${included ? 'included' : 'unavailable'}"><span aria-hidden="true">${included ? '✓' : '—'}</span><span class="sr-only">${esc(included ? copy.yes : copy.no)}</span></span>`;
-  const headers = `<thead><tr><th scope="col">${esc(copy.capability)}</th><th scope="col">Ocker.ai</th><th scope="col"><a href="${esc(sponsor.url)}">${esc(sponsor.name)}</a></th></tr></thead>`;
+  const headerBrand = esc(sponsor.name).replace(/([a-zéêç])([A-Z])/g, '$1<wbr>$2').replace(/\.com$/, '<wbr><span class="comparison-domain-suffix">.com</span>');
+  const headers = `<thead><tr><th scope="col">${esc(copy.capability)}</th><th scope="col">Ocker.ai</th><th scope="col"><a href="${esc(sponsor.url)}">${headerBrand}</a></th></tr></thead>`;
   const groups = copy.groups.map((group, index) => `<tbody><tr class="comparison-group"><th colspan="3" scope="rowgroup">${esc(group.title)}</th></tr>${group.rows.map((label, row) => {
     const open = index === 0 || index === 3;
     const hosted = index !== 3 || row === 0;

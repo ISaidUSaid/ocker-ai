@@ -67,3 +67,5 @@
 .comparison-details th p{font-weight:400;color:#416582;margin:6px 0 0;line-height:1.55}
 .comparison-actions{display:flex;flex-wrap:wrap;gap:14px;margin:26px 0 0}
 @media(max-width:560px){.comparison{padding-block:32px}.comparison h2{font-size:26px}.comparison-intro{font-size:16px}.comparison-table{font-size:13px}.comparison-table .capability-column{width:52%}.comparison-table th,.comparison-table td{padding:12px 7px}.comparison-demo{font-size:12px}.comparison-details summary{font-size:15px;padding:16px}.comparison-actions{flex-direction:column}.comparison-table thead th{font-size:12px}}
+
+.comparison-domain-suffix{white-space:nowrap}

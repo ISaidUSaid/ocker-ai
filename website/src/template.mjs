@@ -1,3 +1,6 @@
+import { renderComparison } from './comparison.mjs';
+import { comparisonCopy } from './comparison-copy.mjs';
+
 const esc = (value) => String(value).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const lines = (value) => esc(value).replace(/\n/g, '<br>');
 
@@ -50,11 +53,12 @@ const chronology = <b>parseRecord</b>(await file.text());
 
 <i>// Render in your application</i>
 view.<b>setRecord</b>(chronology);</code></pre><p class="tech">JavaScript · React · Angular · Node.js · Java · C#</p><a class="text-link" href="/${locale}/spec/">${esc(t.guide)} <b>→</b></a></article></section>
+    ${renderComparison(locale, sponsor)}
     <section class="wrap why" id="why"><div><p class="eyebrow">${esc(t.slangLabel)}</p><h2 class="ocker-word">${esc(t.slangWord)}</h2><b>${esc(t.slangMeta)}</b></div><div><h3>${esc(t.slang)}</h3><small>${esc(t.slangSource)}</small></div><div class="case"><h3>${esc(t.caseLead)}</h3><img class="case-brand" src="/favicon.png" alt="" width="96" height="96"><p>${esc(t.acronym)}</p></div></section>
     <section class="founder wrap"><div><span class="quote">“</span><h2>${esc(t.founderTitle)}</h2></div><p>${esc(t.founder)}</p></section>
   </main>
   <section class="sponsor"><div class="wrap"><p>${esc(t.sponsor)} <a href="${esc(sponsor.url)}" target="_blank" rel="noreferrer">${esc(sponsor.name)}</a></p><div class="sponsor-row"><img src="/assets/isaidusaid-logo.png" alt="${esc(sponsor.name)}"><div class="sponsor-brand">${esc(sponsor.logoText)}<sup>${esc(sponsor.mark)}</sup>.com<small>${esc(t.tagline)}<sup>®</sup></small></div><a class="visit" href="${esc(sponsor.url)}" target="_blank" rel="noreferrer">${esc(t.visit)} ↗</a></div><small>${esc(t.marks)}</small></div></section>
-  <footer class="footer"><div class="wrap"><div>${ockerLogo(locale)}<span>${esc(t.footer)}</span></div><nav><a href="/LICENSE">Apache 2.0</a><a href="https://github.com/ISaidUSaid/ocker-ai">GitHub</a><a href="/${locale}/spec/">${esc(t.docs)}</a></nav></div></footer>
+  <footer class="footer"><div class="wrap"><div>${ockerLogo(locale)}<span>${esc(t.footer)}</span></div><nav><a href="#compare">${esc(comparisonCopy[locale].navCompare)}</a><a href="/LICENSE">Apache 2.0</a><a href="https://github.com/ISaidUSaid/ocker-ai">GitHub</a><a href="/${locale}/spec/">${esc(t.docs)}</a></nav></div></footer>
   <script src="/assets/site.js" defer></script>
 </body></html>`;
 }

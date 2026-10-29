@@ -78,3 +78,31 @@ test('first run has a working icon and guides a removable build queue',async({pa
  await page.locator('.document-queue button').click();await expect(build).toBeDisabled();await expect(page.locator('.document-queue li')).toHaveCount(0);
  await page.getByRole('button',{name:'Joe and Jill Blogs Example Chronology',exact:true}).click();await expect(page.getByText('46 of 46 events',{exact:true})).toBeVisible();await expect(page.locator('.workbench-next')).toContainText('Review');await expect(page.getByRole('button',{name:'Connect AI provider',exact:true})).toBeHidden();
 });
+
+test('localized headers, filters and empty chronology follow the language without changing imported content',async({page})=>{
+ const {demoText}=await import('../demo/locales.js');
+ await page.goto('/');
+ for(const locale of ['pt','es','fr','de','en']){
+  const text=demoText(locale);
+  await page.locator('[data-option="locale"]').selectOption(locale);
+  await expect(page.locator('.workbench-intro h1')).toHaveText(text.acronym);
+  await expect(page.locator('.workbench-tagline')).toHaveText(text.tagline);
+  await expect(page.locator('.ocker-board-heading h2')).toHaveText(text.defaultTitle);
+  await expect(page.getByRole('searchbox',{name:text.search})).toHaveAttribute('placeholder',text.search);
+  await expect(page.getByRole('combobox',{name:text.filterStatus}).locator('option').first()).toHaveText(text.allStatuses);
+  await expect(page.getByRole('combobox',{name:text.filterDocument}).locator('option').first()).toHaveText(text.allDocuments);
+  await expect(page.locator('.ocker-empty')).toHaveText(text.empty);
+  await expect(page.locator('.ocker-count')).toHaveText(`0 ${text.of} 0 ${text.events}`);
+  await expect(page.locator('.ocker-credit')).toContainText(text.portable);
+ }
+ await page.getByRole('button',{name:'Joe and Jill Blogs Example Chronology',exact:true}).click();
+ await expect(page.locator('.ocker-card')).toHaveCount(46);
+ const title=await page.locator('.ocker-board-heading h2').textContent();
+ const firstCard=await page.locator('.ocker-card h3').first().textContent();
+ await page.locator('[data-option="locale"]').selectOption('pt');
+ await expect(page.locator('.ocker-board-heading h2')).toHaveText(title);
+ await expect(page.locator('.ocker-card h3').first()).toHaveText(firstCard);
+ await page.getByRole('combobox',{name:'Filtrar por estado'}).selectOption('disputed');
+ await expect(page.locator('.ocker-card')).toHaveCount(8);
+ await expect(page.locator('.ocker-status').first()).toHaveText('Contestado');
+});

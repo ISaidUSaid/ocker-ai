@@ -21,5 +21,109 @@ const shell={
  fr:{compare:'Comparer les récits',aiOnly:'L’IA est nécessaire uniquement pour créer à partir de documents. Les exemples et chronologies enregistrées s’ouvrent immédiatement.',modelHelp:'Saisissez le modèle à utiliser.',memoryOnly:'Conservée seulement en mémoire',ollamaOptional:'Facultatif pour Ollama local',pipeline:'La chronologie comprendra des événements liés aux sources, des points communs et d’éventuelles contradictions. Chaque événement renvoie au document original.',exportIntermediate:'Exporter le JSON intermédiaire',textParagraphs:'paragraphes de texte',remove:'Supprimer',documentsAdded:'Documents ajoutés. Connectez votre fournisseur, puis créez la chronologie.',pasteHint:'Collez des notes ou un extrait de document',addPasted:'Ajouter le texte collé',reading:'Lecture',documentsReady:'documents prêts à créer.',importFailed:'Échec de l’importation.',pasteFailed:'Échec du collage.',recordImported:'Dossier OCKER importé.',exampleLoaded:'Exemple de Joe et Jill chargé.',findingRelationships:'Recherche des relations…',built:'Chronologie créée avec relations.',buildFailed:'Échec de la création.',working:'Traitement en cours. Vous pouvez annuler cette opération.',readyBuild:'Tout est prêt. Nous créerons les événements et comparerons les récits en une étape.',chooseProvider:'Choisissez un fournisseur IA pour créer depuis vos documents.',enterModel:'Saisissez le nom de modèle fourni par votre fournisseur.',enterKey:'Saisissez votre clé API. Elle reste uniquement en mémoire.',reviewReady:'Révisez votre chronologie, ajoutez des notes et précédents, ou enregistrez une copie.',addOrOpen:'Ajoutez des documents, ouvrez un fichier OCKER ou essayez l’exemple de Joe et Jill.',cancelled:'Annulé. Votre chronologie enregistrée reste inchangée.'},
  de:{compare:'Darstellungen vergleichen',aiOnly:'KI wird nur benötigt, um aus Dokumenten zu erstellen. Beispiele und gespeicherte Chronologien öffnen sich sofort.',modelHelp:'Geben Sie das gewünschte Modell ein.',memoryOnly:'Nur im Speicher',ollamaOptional:'Optional für lokales Ollama',pipeline:'Die Chronologie enthält quellenverknüpfte Ereignisse, gemeinsame Punkte und mögliche Widersprüche. Jedes Ereignis führt zum Originaldokument zurück.',exportIntermediate:'Zwischen-JSON exportieren',textParagraphs:'Textabsätze',remove:'Löschen',documentsAdded:'Dokumente hinzugefügt. Verbinden Sie Ihren Anbieter und erstellen Sie dann die Chronologie.',pasteHint:'Notizen oder einen Dokumentauszug einfügen',addPasted:'Eingefügten Text hinzufügen',reading:'Wird gelesen',documentsReady:'Dokumente bereit zum Erstellen.',importFailed:'Import fehlgeschlagen.',pasteFailed:'Einfügen fehlgeschlagen.',recordImported:'OCKER-Datensatz importiert.',exampleLoaded:'Joe-und-Jill-Beispiel geladen.',findingRelationships:'Beziehungen werden gesucht…',built:'Chronologie mit Beziehungen erstellt.',buildFailed:'Erstellung fehlgeschlagen.',working:'Wird verarbeitet. Sie können diesen Vorgang abbrechen.',readyBuild:'Bereit. Ereignisse und Darstellungen werden in einem Schritt verglichen.',chooseProvider:'Wählen Sie einen KI-Anbieter zum Erstellen aus Ihren Dokumenten.',enterModel:'Geben Sie den Modellnamen Ihres KI-Anbieters ein.',enterKey:'Geben Sie Ihren API-Schlüssel ein. Er bleibt nur im Speicher.',reviewReady:'Prüfen Sie Ihre Chronologie, fügen Sie Notizen und Präzedenzfälle hinzu oder speichern Sie eine Kopie.',addOrOpen:'Fügen Sie Dokumente hinzu, öffnen Sie eine OCKER-Datei oder probieren Sie das Joe-und-Jill-Beispiel.',cancelled:'Abgebrochen. Ihre gespeicherte Chronologie bleibt unverändert.'}
 };
-export function demoText(locale) { const key=normalisePromptLocale(locale);return {...translations[key],...shell[key],liveReference:shell[key].liveReference??'Live reference implementation'}; }
-export function chronologyLabels(locale) { const text=demoText(locale);return Object.fromEntries(Object.entries(text).filter(([key])=>['addNote','addAuthority','editNote','editAuthority','saveNote','saveAuthority','delete','close','notes','noteText','authorityTitle','authorityType','citation','colour','pinpoint','court','jurisdiction','sourceUrl','application','binding','persuasive','unspecified','evidence','related','exportJson','viewSource','dragNote','commonGround'].includes(key))); }
+const headings={
+  "en": {
+    "acronym": "Open Chronology, Knowledge and Evidence Record",
+    "tagline": "Every account. In its place.",
+    "defaultTitle": "Your chronology",
+    "importedTitle": "Imported document chronology",
+    "specCode": "Specification & code",
+    "liveReference": "Live reference implementation",
+    "search": "Search events",
+    "filterStatus": "Filter status",
+    "allStatuses": "All statuses",
+    "filterDocument": "Filter document",
+    "allDocuments": "All documents",
+    "of": "of",
+    "events": "events",
+    "empty": "No events match this view. Import a chronology or build one from your documents.",
+    "portable": "Portable chronology and evidence",
+    "alleged": "alleged",
+    "disputed": "disputed",
+    "unresolved": "unresolved"
+  },
+  "es": {
+    "acronym": "Registro Abierto de Cronología, Conocimiento y Prueba",
+    "tagline": "Cada relato en su lugar.",
+    "defaultTitle": "Tu cronología",
+    "importedTitle": "Cronología de documentos importados",
+    "specCode": "Especificación y código",
+    "liveReference": "Implementación de referencia en vivo",
+    "search": "Buscar eventos",
+    "filterStatus": "Filtrar por estado",
+    "allStatuses": "Todos los estados",
+    "filterDocument": "Filtrar por documento",
+    "allDocuments": "Todos los documentos",
+    "of": "de",
+    "events": "eventos",
+    "empty": "Ningún evento coincide con esta vista. Importa una cronología o crea una a partir de tus documentos.",
+    "portable": "Cronología y pruebas portátiles",
+    "alleged": "Alegado",
+    "disputed": "Disputado",
+    "unresolved": "Sin resolver"
+  },
+  "pt": {
+    "acronym": "Registro Aberto de Cronologia, Conhecimento e Provas",
+    "tagline": "Cada relato em seu lugar.",
+    "defaultTitle": "Sua cronologia",
+    "importedTitle": "Cronologia de documentos importados",
+    "specCode": "Especificação e código",
+    "liveReference": "Implementação de referência ao vivo",
+    "search": "Pesquisar eventos",
+    "filterStatus": "Filtrar por estado",
+    "allStatuses": "Todos os estados",
+    "filterDocument": "Filtrar por documento",
+    "allDocuments": "Todos os documentos",
+    "of": "de",
+    "events": "eventos",
+    "empty": "Nenhum evento corresponde a esta visualização. Importe uma cronologia ou crie uma a partir dos seus documentos.",
+    "portable": "Cronologia e provas portáteis",
+    "alleged": "Alegado",
+    "disputed": "Contestado",
+    "unresolved": "Não resolvido"
+  },
+  "fr": {
+    "acronym": "Registre ouvert de chronologie, connaissance et preuve",
+    "tagline": "Chaque récit à sa place.",
+    "defaultTitle": "Votre chronologie",
+    "importedTitle": "Chronologie des documents importés",
+    "specCode": "Spécification et code",
+    "liveReference": "Implémentation de référence en direct",
+    "search": "Rechercher des événements",
+    "filterStatus": "Filtrer par statut",
+    "allStatuses": "Tous les statuts",
+    "filterDocument": "Filtrer par document",
+    "allDocuments": "Tous les documents",
+    "of": "sur",
+    "events": "événements",
+    "empty": "Aucun événement ne correspond à cette vue. Importez une chronologie ou créez-en une à partir de vos documents.",
+    "portable": "Chronologie et preuves portables",
+    "alleged": "Allégué",
+    "disputed": "Contesté",
+    "unresolved": "Non résolu"
+  },
+  "de": {
+    "acronym": "Offenes Chronologie-, Wissens- und Beweisregister",
+    "tagline": "Jede Darstellung an ihrem Platz.",
+    "defaultTitle": "Ihre Chronologie",
+    "importedTitle": "Chronologie importierter Dokumente",
+    "specCode": "Spezifikation und Code",
+    "liveReference": "Interaktive Referenzimplementierung",
+    "search": "Ereignisse suchen",
+    "filterStatus": "Nach Status filtern",
+    "allStatuses": "Alle Status",
+    "filterDocument": "Nach Dokument filtern",
+    "allDocuments": "Alle Dokumente",
+    "of": "von",
+    "events": "Ereignisse",
+    "empty": "Keine Ereignisse entsprechen dieser Ansicht. Importieren Sie eine Chronologie oder erstellen Sie eine aus Ihren Dokumenten.",
+    "portable": "Portable Chronologie und Belege",
+    "alleged": "Behauptet",
+    "disputed": "Bestritten",
+    "unresolved": "Ungeklärt"
+  }
+};
+
+export function demoText(locale) { const key=normalisePromptLocale(locale);return {...translations[key],...shell[key],...headings[key]}; }
+// The component consumes labels by key; do not discard translations at the demo boundary.
+export function chronologyLabels(locale) { return demoText(locale); }

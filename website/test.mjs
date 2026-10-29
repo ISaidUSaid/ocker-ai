@@ -7,6 +7,7 @@ import { comparisonCopy } from './src/comparison-copy.mjs';
 for (const locale of Object.keys(locales)) {
   const page = await readFile(join('website', 'dist', locale, 'index.html'), 'utf8');
   assert.match(page, new RegExp(`<html lang="${locale === 'pt' ? 'pt-BR' : locale}">`));
+  assert.ok(page.includes(`<small>${locales[locale].acronym}</small>`));
   assert.match(page, /Apache 2\.0/);
   assert.match(page, /https:\/\/github\.com\/ISaidUSaid\/ocker-ai/);
   assert.match(page, new RegExp(`/demo/\\?lang=${locale}`));
